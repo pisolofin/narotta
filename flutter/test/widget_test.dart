@@ -9,7 +9,7 @@ import 'package:narotta/pages/settings/widgets/settings.widget.dart';
 void main() {
   testWidgets('NaRottaApp renders MapView, switches to Settings, and changes language and theme', (WidgetTester tester) async {
     await tester.pumpWidget(const NaRottaApp());
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     // Verify that HomePage and MapView are displayed initially
     expect(find.byType(HomePage), findsOneWidget);

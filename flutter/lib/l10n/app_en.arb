@@ -7,6 +7,47 @@
   "settingsTab": "Settings",
   "mapEmptyTitle": "No map data",
   "mapEmptySubtitle": "Offline map data has not been loaded yet.",
+  "locationCurrentPositionTitle": "Current position",
+  "locationSearching": "Acquiring GPS position...",
+  "locationServiceDisabled": "Location services are disabled on this device.",
+  "locationPermissionDenied": "Location permission denied.",
+  "locationError": "Unable to read current position.",
+  "locationRefresh": "Refresh position",
+  "locationCoordinates": "{latitude}, {longitude}",
+  "@locationCoordinates": {
+    "placeholders": {
+      "latitude": {
+        "type": "String"
+      },
+      "longitude": {
+        "type": "String"
+      }
+    }
+  },
+  "locationAccuracyValue": "Accuracy: ±{meters} m",
+  "@locationAccuracyValue": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "locationAltitudeValue": "Altitude: {meters} m",
+  "@locationAltitudeValue": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "locationSpeedValue": "Speed: {kmh} km/h",
+  "@locationSpeedValue": {
+    "placeholders": {
+      "kmh": {
+        "type": "String"
+      }
+    }
+  },
   "settingsTitle": "Settings",
   "settingsGeneralSection": "General",
   "settingsLanguage": "Language",

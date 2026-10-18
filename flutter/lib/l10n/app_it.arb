@@ -7,6 +7,47 @@
   "settingsTab": "Impostazioni",
   "mapEmptyTitle": "Nessun dato cartografico",
   "mapEmptySubtitle": "I dati cartografici offline non sono ancora stati caricati.",
+  "locationCurrentPositionTitle": "Posizione corrente",
+  "locationSearching": "Rilevamento posizione GPS in corso...",
+  "locationServiceDisabled": "Servizi di localizzazione disattivati sul dispositivo.",
+  "locationPermissionDenied": "Permesso di localizzazione negato.",
+  "locationError": "Impossibile rilevare la posizione corrente.",
+  "locationRefresh": "Aggiorna posizione",
+  "locationCoordinates": "{latitude}, {longitude}",
+  "@locationCoordinates": {
+    "placeholders": {
+      "latitude": {
+        "type": "String"
+      },
+      "longitude": {
+        "type": "String"
+      }
+    }
+  },
+  "locationAccuracyValue": "Precisione: ±{meters} m",
+  "@locationAccuracyValue": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "locationAltitudeValue": "Altitudine: {meters} m",
+  "@locationAltitudeValue": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "locationSpeedValue": "Velocità: {kmh} km/h",
+  "@locationSpeedValue": {
+    "placeholders": {
+      "kmh": {
+        "type": "String"
+      }
+    }
+  },
   "settingsTitle": "Impostazioni",
   "settingsGeneralSection": "Generali",
   "settingsLanguage": "Lingua",

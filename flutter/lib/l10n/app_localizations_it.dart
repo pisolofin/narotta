@@ -32,6 +32,45 @@ class AppLocalizationsIt extends AppLocalizations {
       'I dati cartografici offline non sono ancora stati caricati.';
 
   @override
+  String get locationCurrentPositionTitle => 'Posizione corrente';
+
+  @override
+  String get locationSearching => 'Rilevamento posizione GPS in corso...';
+
+  @override
+  String get locationServiceDisabled =>
+      'Servizi di localizzazione disattivati sul dispositivo.';
+
+  @override
+  String get locationPermissionDenied => 'Permesso di localizzazione negato.';
+
+  @override
+  String get locationError => 'Impossibile rilevare la posizione corrente.';
+
+  @override
+  String get locationRefresh => 'Aggiorna posizione';
+
+  @override
+  String locationCoordinates(String latitude, String longitude) {
+    return '$latitude, $longitude';
+  }
+
+  @override
+  String locationAccuracyValue(String meters) {
+    return 'Precisione: ±$meters m';
+  }
+
+  @override
+  String locationAltitudeValue(String meters) {
+    return 'Altitudine: $meters m';
+  }
+
+  @override
+  String locationSpeedValue(String kmh) {
+    return 'Velocità: $kmh km/h';
+  }
+
+  @override
   String get settingsTitle => 'Impostazioni';
 
   @override

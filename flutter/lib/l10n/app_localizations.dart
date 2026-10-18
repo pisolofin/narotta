@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:flutter/foundation.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'app_localizations_en.dart';
 import 'app_localizations_it.dart';
@@ -139,6 +139,66 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'I dati cartografici offline non sono ancora stati caricati.'**
   String get mapEmptySubtitle;
+
+  /// No description provided for @locationCurrentPositionTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Posizione corrente'**
+  String get locationCurrentPositionTitle;
+
+  /// No description provided for @locationSearching.
+  ///
+  /// In it, this message translates to:
+  /// **'Rilevamento posizione GPS in corso...'**
+  String get locationSearching;
+
+  /// No description provided for @locationServiceDisabled.
+  ///
+  /// In it, this message translates to:
+  /// **'Servizi di localizzazione disattivati sul dispositivo.'**
+  String get locationServiceDisabled;
+
+  /// No description provided for @locationPermissionDenied.
+  ///
+  /// In it, this message translates to:
+  /// **'Permesso di localizzazione negato.'**
+  String get locationPermissionDenied;
+
+  /// No description provided for @locationError.
+  ///
+  /// In it, this message translates to:
+  /// **'Impossibile rilevare la posizione corrente.'**
+  String get locationError;
+
+  /// No description provided for @locationRefresh.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiorna posizione'**
+  String get locationRefresh;
+
+  /// No description provided for @locationCoordinates.
+  ///
+  /// In it, this message translates to:
+  /// **'{ latitude }, { longitude }'**
+  String locationCoordinates(String latitude, String longitude);
+
+  /// No description provided for @locationAccuracyValue.
+  ///
+  /// In it, this message translates to:
+  /// **'Precisione: ±{ meters } m'**
+  String locationAccuracyValue(String meters);
+
+  /// No description provided for @locationAltitudeValue.
+  ///
+  /// In it, this message translates to:
+  /// **'Altitudine: { meters } m'**
+  String locationAltitudeValue(String meters);
+
+  /// No description provided for @locationSpeedValue.
+  ///
+  /// In it, this message translates to:
+  /// **'Velocità: { kmh } km/h'**
+  String locationSpeedValue(String kmh);
 
   /// No description provided for @settingsTitle.
   ///

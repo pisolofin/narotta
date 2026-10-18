@@ -31,6 +31,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mapEmptySubtitle => 'Offline map data has not been loaded yet.';
 
   @override
+  String get locationCurrentPositionTitle => 'Current position';
+
+  @override
+  String get locationSearching => 'Acquiring GPS position...';
+
+  @override
+  String get locationServiceDisabled =>
+      'Location services are disabled on this device.';
+
+  @override
+  String get locationPermissionDenied => 'Location permission denied.';
+
+  @override
+  String get locationError => 'Unable to read current position.';
+
+  @override
+  String get locationRefresh => 'Refresh position';
+
+  @override
+  String locationCoordinates(String latitude, String longitude) {
+    return '$latitude, $longitude';
+  }
+
+  @override
+  String locationAccuracyValue(String meters) {
+    return 'Accuracy: ±$meters m';
+  }
+
+  @override
+  String locationAltitudeValue(String meters) {
+    return 'Altitude: $meters m';
+  }
+
+  @override
+  String locationSpeedValue(String kmh) {
+    return 'Speed: $kmh km/h';
+  }
+
+  @override
   String get settingsTitle => 'Settings';
 
   @override

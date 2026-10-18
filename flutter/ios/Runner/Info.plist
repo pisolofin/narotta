@@ -66,5 +66,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>NaRotta requires access to your location to display your current position and navigate along routes.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>NaRotta requires access to your location to display your current position and navigate along routes.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>NaRotta requires access to your location to display your current position and navigate along routes.</string>
 </dict>
 </plist>
