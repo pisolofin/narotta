@@ -1,0 +1,20 @@
+{
+  "@@locale": "it",
+  "commonAppTitle": "NaRotta",
+  "commonCancel": "Annulla",
+  "commonSystemDefault": "Predefinito di sistema",
+  "mapTab": "Mappa",
+  "settingsTab": "Impostazioni",
+  "mapEmptyTitle": "Nessun dato cartografico",
+  "mapEmptySubtitle": "I dati cartografici offline non sono ancora stati caricati.",
+  "settingsTitle": "Impostazioni",
+  "settingsGeneralSection": "Generali",
+  "settingsLanguage": "Lingua",
+  "settingsLanguageSelect": "Seleziona lingua",
+  "settingsLanguageItalian": "Italiano",
+  "settingsLanguageEnglish": "Inglese",
+  "settingsTheme": "Tema",
+  "settingsThemeSelect": "Seleziona tema",
+  "settingsLightTheme": "Chiaro",
+  "settingsDarkTheme": "Scuro"
+}

@@ -1,0 +1,20 @@
+{
+  "@@locale": "en",
+  "commonAppTitle": "NaRotta",
+  "commonCancel": "Cancel",
+  "commonSystemDefault": "System default",
+  "mapTab": "Map",
+  "settingsTab": "Settings",
+  "mapEmptyTitle": "No map data",
+  "mapEmptySubtitle": "Offline map data has not been loaded yet.",
+  "settingsTitle": "Settings",
+  "settingsGeneralSection": "General",
+  "settingsLanguage": "Language",
+  "settingsLanguageSelect": "Select language",
+  "settingsLanguageItalian": "Italian",
+  "settingsLanguageEnglish": "English",
+  "settingsTheme": "Theme",
+  "settingsThemeSelect": "Select theme",
+  "settingsLightTheme": "Light",
+  "settingsDarkTheme": "Dark"
+}
