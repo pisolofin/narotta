@@ -1,0 +1,196 @@
+schema_name: NaRotta Driving Base
+schema_description: Regional and national driving navigation vector tiles (Zoom 8 to 14) with progressive road hierarchy simplification.
+attribution: "<a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\">&copy; OpenStreetMap contributors</a>"
+args:
+  minzoom: 8
+  maxzoom: 14
+  osm_url:
+    description: OSM file path or download URL
+    default: data/sources/osm.pbf
+
+sources:
+  osm:
+    type: osm
+    url: "${args.osm_url}"
+
+layers:
+  - id: water
+    features:
+      - source: osm
+        geometry: polygon
+        min_zoom: 8
+        max_zoom: 14
+        include_when:
+          natural:
+            - water
+          waterway:
+            - riverbank
+          landuse:
+            - reservoir
+            - basin
+        attributes:
+          - key: name
+            tag_value: name
+
+  - id: waterway
+    features:
+      - source: osm
+        geometry: line
+        min_zoom: 9
+        max_zoom: 14
+        include_when:
+          waterway:
+            - river
+            - canal
+            - stream
+        attributes:
+          - key: class
+            tag_value: waterway
+          - key: name
+            tag_value: name
+
+  - id: landcover
+    features:
+      - source: osm
+        geometry: polygon
+        min_zoom: 8
+        max_zoom: 14
+        min_size: 4.0
+        include_when:
+          landuse:
+            - forest
+            - meadow
+            - grass
+            - residential
+            - industrial
+            - commercial
+          natural:
+            - wood
+            - scrub
+            - glacier
+            - sand
+          leisure:
+            - park
+            - nature_reserve
+        attributes:
+          - key: class
+            tag_value: landuse
+          - key: subclass
+            tag_value: natural
+          - key: name
+            tag_value: name
+
+  - id: boundary
+    features:
+      - source: osm
+        geometry: line
+        min_zoom: 8
+        max_zoom: 14
+        include_when:
+          boundary: administrative
+          admin_level:
+            - "2"
+            - "4"
+            - "6"
+            - "8"
+        attributes:
+          - key: admin_level
+            type: integer
+
+  - id: transportation
+    features:
+      - source: osm
+        geometry: line
+        min_zoom: 8
+        max_zoom: 14
+        include_when:
+          highway:
+            - motorway
+            - motorway_link
+            - trunk
+            - trunk_link
+        attributes:
+          - key: class
+            tag_value: highway
+          - key: name
+            tag_value: name
+          - key: ref
+            tag_value: ref
+          - key: oneway
+            tag_value: oneway
+          - key: bridge
+            tag_value: bridge
+          - key: tunnel
+            tag_value: tunnel
+          - key: layer
+            tag_value: layer
+            type: integer
+      - source: osm
+        geometry: line
+        min_zoom: 10
+        max_zoom: 14
+        include_when:
+          highway:
+            - primary
+            - primary_link
+            - secondary
+            - secondary_link
+        attributes:
+          - key: class
+            tag_value: highway
+          - key: name
+            tag_value: name
+          - key: ref
+            tag_value: ref
+          - key: oneway
+            tag_value: oneway
+          - key: bridge
+            tag_value: bridge
+          - key: tunnel
+            tag_value: tunnel
+      - source: osm
+        geometry: line
+        min_zoom: 12
+        max_zoom: 14
+        include_when:
+          highway:
+            - tertiary
+            - tertiary_link
+            - unclassified
+            - residential
+            - living_street
+            - service
+        attributes:
+          - key: class
+            tag_value: highway
+          - key: name
+            tag_value: name
+          - key: oneway
+            tag_value: oneway
+          - key: maxspeed
+            tag_value: maxspeed
+          - key: surface
+            tag_value: surface
+
+  - id: place
+    features:
+      - source: osm
+        geometry: point
+        min_zoom: 8
+        max_zoom: 14
+        include_when:
+          place:
+            - city
+            - town
+            - village
+            - hamlet
+            - suburb
+            - neighbourhood
+        attributes:
+          - key: name
+            tag_value: name
+          - key: class
+            tag_value: place
+          - key: population
+            tag_value: population
+            type: integer

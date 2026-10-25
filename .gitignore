@@ -29,3 +29,16 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 /build/
 /coverage/
+
+# .NET / C# MapBuilder
+**/bin/
+**/obj/
+**/.vs/
+map-builder/workspace/
+map-builder/output/
+map-builder/tools/*.jar
+
+
+**/appsettings.Local.json
+**/appsettings.*.Local.json
+**/mapbuilder.settings.json

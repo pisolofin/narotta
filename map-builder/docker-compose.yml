@@ -1,0 +1,25 @@
+services:
+  narotta-map-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: narotta-map-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - ASPNETCORE_ENVIRONMENT=Production
+      - WORKSPACE_DIR=/app/workspace
+      - OUTPUT_DIR=/app/output
+      - BASE_URL=https://storage.narotta.app/maps/
+    volumes:
+      # Persistent storage for workspace cache (PBF, elevation) and compiled map packages
+      - narotta_workspace:/app/workspace
+      - narotta_output:/app/output
+
+volumes:
+  narotta_workspace:
+    driver: local
+  narotta_output:
+    driver: local

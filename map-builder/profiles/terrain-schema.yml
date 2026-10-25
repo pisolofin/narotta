@@ -1,0 +1,62 @@
+schema_name: NaRotta Terrain HD & Alpine Features
+schema_description: Topographic peaks, mountain passes, saddles, ridges, and micro-hydrography (Zoom 9 to 14).
+attribution: "<a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\">&copy; OpenStreetMap contributors</a>"
+args:
+  minzoom: 9
+  maxzoom: 14
+  osm_url:
+    description: OSM file path or download URL
+    default: data/sources/osm.pbf
+
+sources:
+  osm:
+    type: osm
+    url: "${args.osm_url}"
+
+layers:
+  - id: mountain_peak
+    features:
+      - source: osm
+        geometry: point
+        min_zoom: 9
+        max_zoom: 14
+        include_when:
+          natural:
+            - peak
+            - volcano
+            - saddle
+            - spring
+          mountain_pass:
+            - "yes"
+        attributes:
+          - key: name
+            tag_value: name
+          - key: class
+            tag_value: natural
+          - key: ele
+            tag_value: ele
+          - key: mountain_pass
+            tag_value: mountain_pass
+
+  - id: terrain_lines
+    features:
+      - source: osm
+        geometry: line
+        min_zoom: 11
+        max_zoom: 14
+        include_when:
+          natural:
+            - cliff
+            - ridge
+            - arete
+            - valley
+          waterway:
+            - ditch
+            - drain
+        attributes:
+          - key: class
+            tag_value: natural
+          - key: waterway
+            tag_value: waterway
+          - key: name
+            tag_value: name

@@ -1,0 +1,77 @@
+{
+  "mjolnir": {
+    "max_cache_size": 1000000000,
+    "tile_dir": "{{TILE_DIR}}",
+    "tile_extract": "{{TILE_EXTRACT_PATH}}",
+    "admin": "{{ADMIN_DB_PATH}}",
+    "timezone": "{{TIMEZONE_DB_PATH}}",
+    "hierarchy": true,
+    "shortcuts": true,
+    "include_driveways": true,
+    "include_construction": false,
+    "include_bicycle": true,
+    "include_pedestrian": true,
+    "include_driving": true,
+    "logging": {
+      "type": "std_out",
+      "color": true
+    }
+  },
+  "additional_data": {
+    "elevation": "{{ELEVATION_DIR}}"
+  },
+  "loki": {
+    "actions": [
+      "locate",
+      "route",
+      "height",
+      "one_to_many",
+      "many_to_one",
+      "many_to_many",
+      "sources_to_targets",
+      "optimized_route",
+      "isochrone",
+      "trace_route",
+      "trace_attributes",
+      "status"
+    ],
+    "use_connectivity": true,
+    "service_defaults": {
+      "minimum_reachability": 50,
+      "radius": 0,
+      "search_cutoff": 35000,
+      "node_snap_tolerance": 5,
+      "street_side_tolerance": 5,
+      "street_side_max_distance": 1000,
+      "heading_tolerance": 60
+    }
+  },
+  "thor": {
+    "logging": {
+      "type": "std_out",
+      "color": true
+    }
+  },
+  "odin": {
+    "logging": {
+      "type": "std_out",
+      "color": true
+    }
+  },
+  "service_limits": {
+    "auto": {
+      "max_distance": 10000000.0,
+      "max_locations": 50
+    },
+    "bicycle": {
+      "max_distance": 500000.0,
+      "max_locations": 50
+    },
+    "pedestrian": {
+      "max_distance": 250000.0,
+      "max_locations": 50,
+      "min_transit_walking_distance": 1,
+      "max_transit_walking_distance": 10000
+    }
+  }
+}

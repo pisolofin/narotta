@@ -200,6 +200,66 @@ abstract class AppLocalizations {
   /// **'Velocità: { kmh } km/h'**
   String locationSpeedValue(String kmh);
 
+  /// No description provided for @mapVoidGridBadge.
+  ///
+  /// In it, this message translates to:
+  /// **'Reticolo cartografico • In attesa della mappa'**
+  String get mapVoidGridBadge;
+
+  /// No description provided for @mapZoomIn.
+  ///
+  /// In it, this message translates to:
+  /// **'Ingrandisci'**
+  String get mapZoomIn;
+
+  /// No description provided for @mapZoomOut.
+  ///
+  /// In it, this message translates to:
+  /// **'Rimpicciolisci'**
+  String get mapZoomOut;
+
+  /// No description provided for @mapRecenter.
+  ///
+  /// In it, this message translates to:
+  /// **'Ricentra sulla posizione'**
+  String get mapRecenter;
+
+  /// No description provided for @mapFollowingUser.
+  ///
+  /// In it, this message translates to:
+  /// **'Centrato'**
+  String get mapFollowingUser;
+
+  /// No description provided for @mapFreeExploration.
+  ///
+  /// In it, this message translates to:
+  /// **'Esplorazione libera'**
+  String get mapFreeExploration;
+
+  /// No description provided for @mapScaleMeters.
+  ///
+  /// In it, this message translates to:
+  /// **'{ meters } m'**
+  String mapScaleMeters(String meters);
+
+  /// No description provided for @mapScaleKilometers.
+  ///
+  /// In it, this message translates to:
+  /// **'{ kilometers } km'**
+  String mapScaleKilometers(String kilometers);
+
+  /// No description provided for @mapHeadingValue.
+  ///
+  /// In it, this message translates to:
+  /// **'Direzione: { degrees }°'**
+  String mapHeadingValue(String degrees);
+
+  /// No description provided for @mapTelemetryToggle.
+  ///
+  /// In it, this message translates to:
+  /// **'Dettagli telemetria'**
+  String get mapTelemetryToggle;
+
   /// No description provided for @settingsTitle.
   ///
   /// In it, this message translates to:
@@ -259,6 +319,306 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Scuro'**
   String get settingsDarkTheme;
+
+  /// No description provided for @settingsMapsSection.
+  ///
+  /// In it, this message translates to:
+  /// **'Mappe e Download Offline'**
+  String get settingsMapsSection;
+
+  /// No description provided for @settingsMapDownloadMode.
+  ///
+  /// In it, this message translates to:
+  /// **'Modalità di download'**
+  String get settingsMapDownloadMode;
+
+  /// No description provided for @settingsMapDownloadModeSelect.
+  ///
+  /// In it, this message translates to:
+  /// **'Seleziona modalità di download'**
+  String get settingsMapDownloadModeSelect;
+
+  /// No description provided for @settingsMapModeByRegionTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Per Stato o Regione'**
+  String get settingsMapModeByRegionTitle;
+
+  /// No description provided for @settingsMapModeByRegionDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Scarica intere nazioni o regioni amministrative dal catalogo'**
+  String get settingsMapModeByRegionDesc;
+
+  /// No description provided for @settingsMapModeCircleAreaTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Cerchia con il dito'**
+  String get settingsMapModeCircleAreaTitle;
+
+  /// No description provided for @settingsMapModeCircleAreaDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Disegna a mano libera sulla mappa e scarica solo l\'area desiderata'**
+  String get settingsMapModeCircleAreaDesc;
+
+  /// No description provided for @settingsMapModeRouteCorridorTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Solo lungo la rotta'**
+  String get settingsMapModeRouteCorridorTitle;
+
+  /// No description provided for @settingsMapModeRouteCorridorDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Dettaglio nel corridoio ±15 km e destinazione HD, mappa base altrove'**
+  String get settingsMapModeRouteCorridorDesc;
+
+  /// No description provided for @settingsMapCircleDownloadAction.
+  ///
+  /// In it, this message translates to:
+  /// **'Cerchia e scarica'**
+  String get settingsMapCircleDownloadAction;
+
+  /// No description provided for @settingsMapCircleDownloadDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Seleziona e scarica celle 0.5° × 0.5° col dito'**
+  String get settingsMapCircleDownloadDesc;
+
+  /// No description provided for @settingsMapWifiOnlyTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Scarica solo con Wi-Fi'**
+  String get settingsMapWifiOnlyTitle;
+
+  /// No description provided for @settingsMapWifiOnlyDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Evita il consumo della connessione dati cellulare'**
+  String get settingsMapWifiOnlyDesc;
+
+  /// No description provided for @settingsMapLayersSection.
+  ///
+  /// In it, this message translates to:
+  /// **'Livelli di dettaglio aggiuntivi'**
+  String get settingsMapLayersSection;
+
+  /// No description provided for @settingsMapLayerBuildingsTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Edifici 3D (Z13–15)'**
+  String get settingsMapLayerBuildingsTitle;
+
+  /// No description provided for @settingsMapLayerBuildingsDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Estrusioni volumetriche degli isolati urbani'**
+  String get settingsMapLayerBuildingsDesc;
+
+  /// No description provided for @settingsMapLayerPedestrianTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Pedonale e Mobilità Dolce (Z13–15)'**
+  String get settingsMapLayerPedestrianTitle;
+
+  /// No description provided for @settingsMapLayerPedestrianDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Sentieri, marciapiedi e percorsi a piedi Park & Walk'**
+  String get settingsMapLayerPedestrianDesc;
+
+  /// No description provided for @settingsMapLayerTerrainTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Rilievi altimetrici HD'**
+  String get settingsMapLayerTerrainTitle;
+
+  /// No description provided for @settingsMapLayerTerrainDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Modelli DEM e curve di livello montane'**
+  String get settingsMapLayerTerrainDesc;
+
+  /// No description provided for @settingsMapServerUrlTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Server Mappe Web API'**
+  String get settingsMapServerUrlTitle;
+
+  /// No description provided for @settingsMapServerUrlDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Indirizzo del servizio di distribuzione mappe'**
+  String get settingsMapServerUrlDesc;
+
+  /// No description provided for @settingsMapServerUrlDialogTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Configura Server Mappe'**
+  String get settingsMapServerUrlDialogTitle;
+
+  /// No description provided for @settingsMapServerLocalhost.
+  ///
+  /// In it, this message translates to:
+  /// **'Server Locale (localhost:5001)'**
+  String get settingsMapServerLocalhost;
+
+  /// No description provided for @settingsMapServerLocalhostDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Per sviluppo e test su Windows o Mac'**
+  String get settingsMapServerLocalhostDesc;
+
+  /// No description provided for @settingsMapServerAndroidEmulator.
+  ///
+  /// In it, this message translates to:
+  /// **'Emulatore Android (10.0.2.2:5001)'**
+  String get settingsMapServerAndroidEmulator;
+
+  /// No description provided for @settingsMapServerAndroidEmulatorDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Alias di rete predefinito per emulatore Android'**
+  String get settingsMapServerAndroidEmulatorDesc;
+
+  /// No description provided for @settingsMapServerLan.
+  ///
+  /// In it, this message translates to:
+  /// **'Rete Locale (192.168.8.53:5001)'**
+  String get settingsMapServerLan;
+
+  /// No description provided for @settingsMapServerLanDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Server storage MapBuilder su rete LAN locale'**
+  String get settingsMapServerLanDesc;
+
+  /// No description provided for @settingsMapServerProduction.
+  ///
+  /// In it, this message translates to:
+  /// **'Produzione (maps.narotta.app)'**
+  String get settingsMapServerProduction;
+
+  /// No description provided for @settingsMapServerProductionDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Server cloud ufficiale di distribuzione mappe'**
+  String get settingsMapServerProductionDesc;
+
+  /// No description provided for @settingsMapServerCustom.
+  ///
+  /// In it, this message translates to:
+  /// **'URL Personalizzato...'**
+  String get settingsMapServerCustom;
+
+  /// No description provided for @settingsMapServerCustomDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci manualmente l\'indirizzo IP e la porta'**
+  String get settingsMapServerCustomDesc;
+
+  /// No description provided for @settingsMapServerCustomHint.
+  ///
+  /// In it, this message translates to:
+  /// **'http://192.168.x.x:5001'**
+  String get settingsMapServerCustomHint;
+
+  /// No description provided for @commonSave.
+  ///
+  /// In it, this message translates to:
+  /// **'Salva'**
+  String get commonSave;
+
+  /// No description provided for @circleDownloadTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Cerchia e Scarica'**
+  String get circleDownloadTitle;
+
+  /// No description provided for @circleDownloadDrawInstruction.
+  ///
+  /// In it, this message translates to:
+  /// **'Disegna un cerchio o poligono col dito per delimitare l\'area'**
+  String get circleDownloadDrawInstruction;
+
+  /// No description provided for @circleDownloadModeDraw.
+  ///
+  /// In it, this message translates to:
+  /// **'Disegna'**
+  String get circleDownloadModeDraw;
+
+  /// No description provided for @circleDownloadModePan.
+  ///
+  /// In it, this message translates to:
+  /// **'Sposta'**
+  String get circleDownloadModePan;
+
+  /// No description provided for @circleDownloadActionClear.
+  ///
+  /// In it, this message translates to:
+  /// **'Cancella'**
+  String get circleDownloadActionClear;
+
+  /// No description provided for @circleDownloadActionRecenter.
+  ///
+  /// In it, this message translates to:
+  /// **'Centra'**
+  String get circleDownloadActionRecenter;
+
+  /// No description provided for @circleDownloadSelectedCellsCount.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{ 1 cella (0.5° × 0.5°) } other{{ count } celle (0.5° × 0.5°)}}'**
+  String circleDownloadSelectedCellsCount(int count);
+
+  /// No description provided for @circleDownloadEstimatedSize.
+  ///
+  /// In it, this message translates to:
+  /// **'Dimensione stimata: { size } MB'**
+  String circleDownloadEstimatedSize(String size);
+
+  /// No description provided for @circleDownloadActionDownload.
+  ///
+  /// In it, this message translates to:
+  /// **'Scarica area selezionata'**
+  String get circleDownloadActionDownload;
+
+  /// No description provided for @circleDownloadProgressPercent.
+  ///
+  /// In it, this message translates to:
+  /// **'Download in corso: { percent }%'**
+  String circleDownloadProgressPercent(int percent);
+
+  /// No description provided for @circleDownloadCompleted.
+  ///
+  /// In it, this message translates to:
+  /// **'Download completato con successo!'**
+  String get circleDownloadCompleted;
+
+  /// No description provided for @circleDownloadNoSelectionHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna area selezionata. Tocca \'Disegna\' e traccia col dito sulla mappa.'**
+  String get circleDownloadNoSelectionHint;
+
+  /// No description provided for @circleDownloadLayerBase.
+  ///
+  /// In it, this message translates to:
+  /// **'Base Guida'**
+  String get circleDownloadLayerBase;
+
+  /// No description provided for @circleDownloadLayerBuildings.
+  ///
+  /// In it, this message translates to:
+  /// **'Edifici 3D'**
+  String get circleDownloadLayerBuildings;
+
+  /// No description provided for @circleDownloadLayerPedestrian.
+  ///
+  /// In it, this message translates to:
+  /// **'Pedonale'**
+  String get circleDownloadLayerPedestrian;
 }
 
 class _AppLocalizationsDelegate

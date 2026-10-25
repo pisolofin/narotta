@@ -48,6 +48,37 @@
       }
     }
   },
+  "mapVoidGridBadge": "Reticolo cartografico • In attesa della mappa",
+  "mapZoomIn": "Ingrandisci",
+  "mapZoomOut": "Rimpicciolisci",
+  "mapRecenter": "Ricentra sulla posizione",
+  "mapFollowingUser": "Centrato",
+  "mapFreeExploration": "Esplorazione libera",
+  "mapScaleMeters": "{meters} m",
+  "@mapScaleMeters": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "mapScaleKilometers": "{kilometers} km",
+  "@mapScaleKilometers": {
+    "placeholders": {
+      "kilometers": {
+        "type": "String"
+      }
+    }
+  },
+  "mapHeadingValue": "Direzione: {degrees}°",
+  "@mapHeadingValue": {
+    "placeholders": {
+      "degrees": {
+        "type": "String"
+      }
+    }
+  },
+  "mapTelemetryToggle": "Dettagli telemetria",
   "settingsTitle": "Impostazioni",
   "settingsGeneralSection": "Generali",
   "settingsLanguage": "Lingua",
@@ -57,5 +88,77 @@
   "settingsTheme": "Tema",
   "settingsThemeSelect": "Seleziona tema",
   "settingsLightTheme": "Chiaro",
-  "settingsDarkTheme": "Scuro"
+  "settingsDarkTheme": "Scuro",
+  "settingsMapsSection": "Mappe e Download Offline",
+  "settingsMapDownloadMode": "Modalità di download",
+  "settingsMapDownloadModeSelect": "Seleziona modalità di download",
+  "settingsMapModeByRegionTitle": "Per Stato o Regione",
+  "settingsMapModeByRegionDesc": "Scarica intere nazioni o regioni amministrative dal catalogo",
+  "settingsMapModeCircleAreaTitle": "Cerchia con il dito",
+  "settingsMapModeCircleAreaDesc": "Disegna a mano libera sulla mappa e scarica solo l'area desiderata",
+  "settingsMapModeRouteCorridorTitle": "Solo lungo la rotta",
+  "settingsMapModeRouteCorridorDesc": "Dettaglio nel corridoio ±15 km e destinazione HD, mappa base altrove",
+  "settingsMapCircleDownloadAction": "Cerchia e scarica",
+  "settingsMapCircleDownloadDesc": "Seleziona e scarica celle 0.5° × 0.5° col dito",
+  "settingsMapWifiOnlyTitle": "Scarica solo con Wi-Fi",
+  "settingsMapWifiOnlyDesc": "Evita il consumo della connessione dati cellulare",
+  "settingsMapLayersSection": "Livelli di dettaglio aggiuntivi",
+  "settingsMapLayerBuildingsTitle": "Edifici 3D (Z13–15)",
+  "settingsMapLayerBuildingsDesc": "Estrusioni volumetriche degli isolati urbani",
+  "settingsMapLayerPedestrianTitle": "Pedonale e Mobilità Dolce (Z13–15)",
+  "settingsMapLayerPedestrianDesc": "Sentieri, marciapiedi e percorsi a piedi Park & Walk",
+  "settingsMapLayerTerrainTitle": "Rilievi altimetrici HD",
+  "settingsMapLayerTerrainDesc": "Modelli DEM e curve di livello montane",
+  "settingsMapServerUrlTitle": "Server Mappe Web API",
+  "settingsMapServerUrlDesc": "Indirizzo del servizio di distribuzione mappe",
+  "settingsMapServerUrlDialogTitle": "Configura Server Mappe",
+  "settingsMapServerLocalhost": "Server Locale (localhost:5001)",
+  "settingsMapServerLocalhostDesc": "Per sviluppo e test su Windows o Mac",
+  "settingsMapServerAndroidEmulator": "Emulatore Android (10.0.2.2:5001)",
+  "settingsMapServerAndroidEmulatorDesc": "Alias di rete predefinito per emulatore Android",
+  "settingsMapServerLan": "Rete Locale (192.168.8.53:5001)",
+  "settingsMapServerLanDesc": "Server storage MapBuilder su rete LAN locale",
+  "settingsMapServerProduction": "Produzione (maps.narotta.app)",
+  "settingsMapServerProductionDesc": "Server cloud ufficiale di distribuzione mappe",
+  "settingsMapServerCustom": "URL Personalizzato...",
+  "settingsMapServerCustomDesc": "Inserisci manualmente l'indirizzo IP e la porta",
+  "settingsMapServerCustomHint": "http://192.168.x.x:5001",
+  "commonSave": "Salva",
+  "circleDownloadTitle": "Cerchia e Scarica",
+  "circleDownloadDrawInstruction": "Disegna un cerchio o poligono col dito per delimitare l'area",
+  "circleDownloadModeDraw": "Disegna",
+  "circleDownloadModePan": "Sposta",
+  "circleDownloadActionClear": "Cancella",
+  "circleDownloadActionRecenter": "Centra",
+  "circleDownloadSelectedCellsCount": "{count, plural, =1{1 cella (0.5° × 0.5°)} other{{count} celle (0.5° × 0.5°)}}",
+  "@circleDownloadSelectedCellsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "circleDownloadEstimatedSize": "Dimensione stimata: {size} MB",
+  "@circleDownloadEstimatedSize": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "circleDownloadActionDownload": "Scarica area selezionata",
+  "circleDownloadProgressPercent": "Download in corso: {percent}%",
+  "@circleDownloadProgressPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "circleDownloadCompleted": "Download completato con successo!",
+  "circleDownloadNoSelectionHint": "Nessuna area selezionata. Tocca 'Disegna' e traccia col dito sulla mappa.",
+  "circleDownloadLayerBase": "Base Guida",
+  "circleDownloadLayerBuildings": "Edifici 3D",
+  "circleDownloadLayerPedestrian": "Pedonale"
 }
+

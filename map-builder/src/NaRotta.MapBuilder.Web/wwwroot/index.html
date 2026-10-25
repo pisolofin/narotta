@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="it" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NaRotta Map Server | Build & OSM Manager</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Alpine.js via CDN -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    [x-cloak] { display: none !important; }
+    /* Custom scrollbars for dark terminal */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans" x-data="mapServerApp()" x-init="initApp()" x-cloak>
+
+  <!-- Top Navigation Bar -->
+  <header class="bg-slate-900 border-b border-slate-800 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-40 shadow-lg">
+    <!-- Brand & Status Pill -->
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <svg class="w-5 h-5 text-slate-950 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-2">
+            NaRotta <span class="text-xs px-2 py-0.5 rounded-full font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Map Server</span>
+          </h1>
+          <p class="text-xs text-slate-400">Offline Vector Tiles & Routing Orchestrator</p>
+        </div>
+      </div>
+
+      <!-- Live Job Status Badge -->
+      <div class="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border"
+           :class="{
+             'bg-slate-800/80 text-slate-300 border-slate-700': progress.status === 0 || progress.status === 'Idle',
+             'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 animate-pulse': progress.status === 1 || progress.status === 'Running',
+             'bg-amber-950/80 text-amber-300 border-amber-500/40 animate-pulse': progress.status === 2 || progress.status === 'Cancelling',
+             'bg-blue-950/80 text-blue-300 border-blue-500/40': progress.status === 3 || progress.status === 'Completed',
+             'bg-rose-950/80 text-rose-300 border-rose-500/40': progress.status === 4 || progress.status === 'Failed',
+             'bg-yellow-950/80 text-yellow-300 border-yellow-500/40': progress.status === 5 || progress.status === 'Cancelled',
+           }">
+        <span class="w-2 h-2 rounded-full"
+              :class="{
+                'bg-slate-400': progress.status === 0 || progress.status === 'Idle',
+                'bg-emerald-400': progress.status === 1 || progress.status === 'Running',
+                'bg-amber-400': progress.status === 2 || progress.status === 'Cancelling',
+                'bg-blue-400': progress.status === 3 || progress.status === 'Completed',
+                'bg-rose-400': progress.status === 4 || progress.status === 'Failed',
+                'bg-yellow-400': progress.status === 5 || progress.status === 'Cancelled',
+              }"></span>
+        <span x-text="getStatusLabel(progress.status)">IDLE</span>
+      </div>
+    </div>
+
+    <!-- Telemetry Pills & Action Controls -->
+    <div class="flex items-center gap-3">
+      <!-- Hardware Telemetry -->
+      <template x-if="hardware.cpuThreadCount">
+        <div class="hidden md:flex items-center gap-4 text-xs bg-slate-950/60 border border-slate-800/80 px-3.5 py-1.5 rounded-lg text-slate-300">
+          <div class="flex items-center gap-1.5" title="CPU Logical Threads">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+            <span class="font-mono text-slate-100" x-text="hardware.cpuThreadCount + ' Cores'"></span>
+          </div>
+          <span class="text-slate-700">|</span>
+          <div class="flex items-center gap-1.5" title="Total Physical RAM">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            <span class="font-mono text-slate-100" x-text="formatMb(hardware.totalRamMegabytes)"></span>
+          </div>
+          <span class="text-slate-700">|</span>
+          <div class="flex items-center gap-1.5" title="Free Disk Space">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7C5 4 4 5 4 7z"></path></svg>
+            <span class="font-mono text-slate-100" x-text="hardware.availableDiskGigabytes + ' GB Free'"></span>
+          </div>
+        </div>
+      </template>
+
+      <!-- Action: Start Build -->
+      <button @click="openStartBuildModal()"
+              :disabled="isBuildActive()"
+              class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg shadow-sm shadow-emerald-950 flex items-center gap-2 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span>Avvia Build</span>
+      </button>
+
+      <!-- Action: Stop Build -->
+      <button @click="confirmStopBuild()"
+              :disabled="!isBuildActive() || progress.status === 2 || progress.status === 'Cancelling'"
+              class="px-3.5 py-2 bg-rose-600/90 hover:bg-rose-500 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-2 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path></svg>
+        <span>Stop</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Active Build Banner / Live Progress Strip -->
+  <div class="bg-slate-900/60 border-b border-slate-800 px-6 py-3">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <!-- Left: Active stage description & Region target -->
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2.5 text-xs text-slate-400">
+          <span class="font-semibold text-slate-200" x-text="progress.commandName ? ('Command: ' + progress.commandName) : 'Nessun task attivo'"></span>
+          <template x-if="progress.activeRegionId">
+            <span class="flex items-center gap-1.5 bg-slate-800 px-2 py-0.5 rounded text-emerald-400 font-mono">
+              <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+              <span x-text="progress.activeRegionId"></span>
+              <template x-if="progress.totalRegionCount > 1">
+                <span class="text-slate-400 text-[10px]" x-text="'(' + progress.currentRegionIndex + '/' + progress.totalRegionCount + ')'"></span>
+              </template>
+            </span>
+          </template>
+          <template x-if="progress.elapsedDuration">
+            <span class="text-slate-400 font-mono text-[11px] ml-auto md:ml-0" x-text="'Tempo: ' + formatDuration(progress.elapsedDuration)"></span>
+          </template>
+        </div>
+        <p class="text-sm font-medium text-slate-100 truncate mt-0.5" x-text="progress.currentStageDescription || 'Il server è in attesa di nuove build.'"></p>
+      </div>
+
+      <!-- Right: Progress percentage & bar -->
+      <div class="w-full md:w-80 flex flex-col gap-1.5">
+        <div class="flex justify-between items-center text-xs font-mono">
+          <span class="text-slate-400">Progresso</span>
+          <span class="font-bold text-emerald-400" x-text="(progress.percentCompleted || 0).toFixed(1) + '%'">0.0%</span>
+        </div>
+        <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700/60">
+          <div class="bg-gradient-to-r from-teal-500 to-emerald-400 h-2 rounded-full transition-all duration-300"
+               :style="'width: ' + (progress.percentCompleted || 0) + '%'"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="bg-slate-900/40 border-b border-slate-800/80 px-6">
+    <div class="max-w-7xl mx-auto flex flex-wrap gap-6 text-sm font-medium">
+      <button @click="activeTab = 'terminal'; fetchRecentLogs()"
+              :class="activeTab === 'terminal' ? 'text-emerald-400 border-b-2 border-emerald-400 py-3' : 'text-slate-400 hover:text-slate-200 py-3'"
+              class="flex items-center gap-2 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+        <span>Live Terminal & Logs</span>
+        <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-300" x-text="logEntryList.length">0</span>
+      </button>
+
+      <button @click="activeTab = 'updates'"
+              :class="activeTab === 'updates' ? 'text-emerald-400 border-b-2 border-emerald-400 py-3' : 'text-slate-400 hover:text-slate-200 py-3'"
+              class="flex items-center gap-2 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        <span>Aggiornamenti OpenStreetMap</span>
+        <template x-if="updatesAvailableCount > 0">
+          <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40" x-text="updatesAvailableCount + ' nuovi'"></span>
+        </template>
+      </button>
+
+      <button @click="activeTab = 'storage'"
+              :class="activeTab === 'storage' ? 'text-emerald-400 border-b-2 border-emerald-400 py-3' : 'text-slate-400 hover:text-slate-200 py-3'"
+              class="flex items-center gap-2 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+        <span>Percorsi & Storage</span>
+      </button>
+
+      <button @click="activeTab = 'manifest'"
+              :class="activeTab === 'manifest' ? 'text-emerald-400 border-b-2 border-emerald-400 py-3' : 'text-slate-400 hover:text-slate-200 py-3'"
+              class="flex items-center gap-2 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+        <span>Mappe Compilate (Manifest)</span>
+      </button>
+
+      <button @click="activeTab = 'doctor'"
+              :class="activeTab === 'doctor' ? 'text-emerald-400 border-b-2 border-emerald-400 py-3' : 'text-slate-400 hover:text-slate-200 py-3'"
+              class="flex items-center gap-2 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+        <span>Diagnostica Sistema</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 overflow-y-auto p-6">
+    <div class="max-w-7xl mx-auto h-full">
+
+      <!-- TAB 1: Live Terminal & Logs -->
+      <section x-show="activeTab === 'terminal'" class="h-full flex flex-col gap-4">
+        <!-- Terminal Controls Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-3 rounded-xl">
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              Console Stream
+            </span>
+            <div class="relative">
+              <input type="text" x-model="logSearchQuery" placeholder="Filtra log..."
+                     class="bg-slate-950 border border-slate-800 text-xs text-slate-100 rounded-lg px-2.5 py-1.5 pl-8 w-48 focus:outline-none focus:border-emerald-500">
+              <svg class="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+            <select x-model="logLevelFilter" class="bg-slate-950 border border-slate-800 text-xs text-slate-100 rounded-lg px-2.5 py-1.5 focus:outline-none">
+              <option value="ALL">Tutti i livelli</option>
+              <option value="INFO">INFO</option>
+              <option value="WARN">WARN</option>
+              <option value="ERROR">ERROR</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs">
+            <label class="flex items-center gap-1.5 cursor-pointer text-slate-300">
+              <input type="checkbox" x-model="autoScroll" class="rounded bg-slate-950 border-slate-700 text-emerald-500 focus:ring-0">
+              <span>Auto-scroll</span>
+            </label>
+            <span class="text-slate-700">|</span>
+            <button @click="fetchRecentLogs()" class="text-slate-400 hover:text-slate-100 px-2 py-1 rounded hover:bg-slate-800 transition">Ricarica Log</button>
+            <button @click="downloadLogs()" class="text-slate-400 hover:text-slate-100 px-2 py-1 rounded hover:bg-slate-800 transition">Scarica TXT</button>
+            <button @click="logEntryList = []" class="text-slate-400 hover:text-rose-400 px-2 py-1 rounded hover:bg-slate-800 transition">Pulisci Vista</button>
+          </div>
+        </div>
+
+        <!-- Terminal Window -->
+        <div id="terminal-scroll-area" class="flex-1 bg-[#090d16] border border-slate-800 rounded-xl p-4 font-mono text-xs overflow-y-auto shadow-inner leading-relaxed min-h-[460px] max-h-[700px]">
+          <template x-for="entry in filteredLogList()" :key="entry.sequenceNumber">
+            <div class="flex items-start gap-2.5 py-0.5 hover:bg-slate-900/40 px-1 rounded">
+              <span class="text-slate-500 select-none text-[10px]" x-text="formatTime(entry.timestampUtc)"></span>
+              <span class="font-bold text-[10px] uppercase px-1 py-0.2 rounded"
+                    :class="{
+                      'text-sky-400 bg-sky-950/40': entry.level === 'INFO',
+                      'text-amber-400 bg-amber-950/40': entry.level === 'WARN',
+                      'text-rose-400 bg-rose-950/40': entry.level === 'ERROR',
+                      'text-slate-400 bg-slate-800': entry.level === 'DEBUG',
+                    }"
+                    x-text="entry.level"></span>
+              <template x-if="entry.regionId">
+                <span class="text-emerald-400 text-[10px] bg-emerald-950/30 px-1 rounded" x-text="entry.regionId"></span>
+              </template>
+              <span class="text-slate-200 break-all whitespace-pre-wrap flex-1" x-text="entry.message"></span>
+            </div>
+          </template>
+          <div x-show="filteredLogList().length === 0" class="text-slate-600 text-center py-16">
+            Nessun log registrato finora. Avvia una build per vedere l'output in streaming in tempo reale.
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: OpenStreetMap Updates -->
+      <section x-show="activeTab === 'updates'" class="space-y-4">
+        <!-- Filter and Search Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-4 rounded-xl">
+          <div>
+            <h2 class="text-sm font-bold text-white">Aggiornamenti Dati OpenStreetMap (Geofabrik)</h2>
+            <p class="text-xs text-slate-400">Verifica automatica tra i dati pubblicati su Geofabrik e i pacchetti compilati localmente.</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button @click="loadOsmUpdates(true)" :disabled="loadingUpdates" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-lg flex items-center gap-2 border border-slate-700 transition">
+              <svg class="w-3.5 h-3.5" :class="{'animate-spin': loadingUpdates}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              <span>Verifica Ora</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Updates Table -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+              <tr>
+                <th class="px-4 py-3">Regione</th>
+                <th class="px-4 py-3">Ultima Build Locale</th>
+                <th class="px-4 py-3">Ultimo Rilascio Geofabrik</th>
+                <th class="px-4 py-3">Dimensione</th>
+                <th class="px-4 py-3">Stato</th>
+                <th class="px-4 py-3 text-right">Azione</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/80">
+              <template x-for="item in osmUpdateList" :key="item.regionId">
+                <tr class="hover:bg-slate-800/40 transition">
+                  <td class="px-4 py-3">
+                    <div class="font-semibold text-slate-100" x-text="item.regionName"></div>
+                    <div class="text-[10px] font-mono text-slate-400" x-text="item.regionId"></div>
+                  </td>
+                  <td class="px-4 py-3 font-mono text-slate-300">
+                    <span x-text="item.localLastBuiltUtc ? formatDate(item.localLastBuiltUtc) : 'Mai compilata'"></span>
+                  </td>
+                  <td class="px-4 py-3 font-mono text-slate-300">
+                    <span x-text="item.remoteLastModifiedUtc ? formatDate(item.remoteLastModifiedUtc) : 'In verifica...'"></span>
+                  </td>
+                  <td class="px-4 py-3 font-mono text-slate-400" x-text="item.remoteSizeBytes ? formatBytes(item.remoteSizeBytes) : '-'"></td>
+                  <td class="px-4 py-3">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium border"
+                          :class="{
+                            'bg-emerald-950/60 text-emerald-300 border-emerald-500/40': item.status === 2 || item.status === 'UpToDate',
+                            'bg-amber-950/80 text-amber-300 border-amber-500/50 font-bold': item.status === 3 || item.status === 'UpdateAvailable',
+                            'bg-slate-800 text-slate-400 border-slate-700': item.status === 4 || item.status === 'NotBuiltYet',
+                            'bg-rose-950/60 text-rose-300 border-rose-500/40': item.status === 5 || item.status === 'CheckFailed',
+                            'bg-slate-800 text-slate-400 border-slate-700 animate-pulse': item.status === 1 || item.status === 'Checking'
+                          }">
+                      <span class="w-1.5 h-1.5 rounded-full"
+                            :class="{
+                              'bg-emerald-400': item.status === 2 || item.status === 'UpToDate',
+                              'bg-amber-400': item.status === 3 || item.status === 'UpdateAvailable',
+                              'bg-slate-400': item.status === 4 || item.status === 'NotBuiltYet',
+                              'bg-rose-400': item.status === 5 || item.status === 'CheckFailed',
+                              'bg-slate-400': item.status === 1 || item.status === 'Checking'
+                            }"></span>
+                      <span x-text="item.statusMessage"></span>
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-right">
+                    <button @click="openBuildForRegion(item.regionId)"
+                            :disabled="isBuildActive()"
+                            class="px-2.5 py-1.5 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 rounded text-xs font-semibold transition disabled:opacity-30 disabled:cursor-not-allowed">
+                      Compila
+                    </button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+          <div x-show="osmUpdateList.length === 0" class="text-center py-12 text-slate-500 text-xs">
+            Nessuna regione caricata. Clicca su "Verifica Ora" per consultare Geofabrik.
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: Percorsi & Storage (Workspace & Output Configuration) -->
+      <section x-show="activeTab === 'storage'" class="space-y-6">
+        <!-- Overview Banner -->
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+              <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+              Configurazione Percorsi File & Storage
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Definisci dove risiedono i file temporanei di calcolo (PBF, DEM, Planetiler) e dove archiviare i file finali compilati (.mbtiles, search.db, routing.tar).
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button @click="loadConfig()" :disabled="savingConfig" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-lg border border-slate-700 transition">
+              Ricarica / Verifica
+            </button>
+            <button @click="saveConfig()" :disabled="savingConfig" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow-sm shadow-emerald-950 flex items-center gap-2 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              <span x-text="savingConfig ? 'Salvataggio...' : 'Salva Configurazione'"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2 Main Cards: Workspace (Temp) & Output (Final Maps) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Card 1: Workspace (Temporary files) -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4 shadow-sm">
+            <div class="flex items-start justify-between">
+              <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-amber-950/40 border border-amber-500/30 px-2 py-0.5 rounded">File Temporanei</span>
+                <h3 class="text-sm font-bold text-white mt-1.5 flex items-center gap-2">
+                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                  Directory Workspace
+                </h3>
+              </div>
+              <template x-if="workspaceValidation.exists">
+                <span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium bg-emerald-950/60 text-emerald-300 border border-emerald-500/40">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Accessibile
+                </span>
+              </template>
+              <template x-if="!workspaceValidation.exists">
+                <span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium bg-rose-950/60 text-rose-300 border border-rose-500/40">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Non Trovata
+                </span>
+              </template>
+            </div>
+
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Cartella ad alto I/O dove vengono salvati i file di download grezzi da Geofabrik (<code class="text-slate-300">pbf/</code>), le celle DEM altimetriche (<code class="text-slate-300">elevation/</code>), il database temporaneo di Planetiler (<code class="text-slate-300">planetiler-tmp/feature.db</code>) e i tasselli Valhalla intermedi.
+            </p>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Percorso Assoluto o di Mount</label>
+              <input type="text" x-model="config.workspaceDirectory" placeholder="es. C:\narotta-workspace o /app/workspace"
+                     class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 font-mono focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <!-- Validation Info Strip -->
+            <div class="bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs space-y-1.5">
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Permesso di Scrittura:</span>
+                <span class="font-semibold font-mono" :class="workspaceValidation.isWritable ? 'text-emerald-400' : 'text-rose-400'"
+                      x-text="workspaceValidation.isWritable ? 'VERIFICATO (Scrittura OK)' : 'NON SCRIVIBILE'"></span>
+              </div>
+              <template x-if="workspaceValidation.availableFreeSpaceBytes">
+                <div class="flex justify-between items-center">
+                  <span class="text-slate-400">Spazio Libero su Disco:</span>
+                  <span class="font-semibold font-mono text-slate-200"
+                        x-text="formatBytes(workspaceValidation.availableFreeSpaceBytes) + ' liberi su ' + formatBytes(workspaceValidation.totalSpaceBytes)"></span>
+                </div>
+              </template>
+              <template x-if="workspaceValidation.errorMessage">
+                <div class="text-rose-400 text-[11px] pt-1" x-text="'Errore: ' + workspaceValidation.errorMessage"></div>
+              </template>
+            </div>
+
+            <div class="flex items-center gap-2 pt-1">
+              <button type="button" @click="config.workspaceDirectory = 'C:\\narotta-workspace'" class="text-[11px] text-emerald-400 underline hover:text-emerald-300">
+                Usa C:\narotta-workspace
+              </button>
+              <span class="text-slate-700">|</span>
+              <button type="button" @click="config.workspaceDirectory = '/app/workspace'" class="text-[11px] text-emerald-400 underline hover:text-emerald-300">
+                Usa /app/workspace (Coolify/Docker)
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 2: Output Directory (Final Maps) -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4 shadow-sm">
+            <div class="flex items-start justify-between">
+              <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2 py-0.5 rounded">Mappe Finali</span>
+                <h3 class="text-sm font-bold text-white mt-1.5 flex items-center gap-2">
+                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293h3.172a1 1 0 00.707-.293l2.414-2.414a1 1 0 01.707-.293H20"></path></svg>
+                  Directory Output
+                </h3>
+              </div>
+              <template x-if="outputValidation.exists">
+                <span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium bg-emerald-950/60 text-emerald-300 border border-emerald-500/40">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Accessibile
+                </span>
+              </template>
+              <template x-if="!outputValidation.exists">
+                <span class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium bg-rose-950/60 text-rose-300 border border-rose-500/40">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Non Trovata
+                </span>
+              </template>
+            </div>
+
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Cartella persistente e permanente dove vengono archiviati i file pronti per la distribuzione: i Vector Tiles multi-risoluzione (<code class="text-slate-300">.mbtiles</code>), i database FTS5 (<code class="text-slate-300">_search.db</code>), gli archivi Valhalla (<code class="text-slate-300">_routing.tar</code>) e il file <code class="text-slate-300">manifest.json</code>.
+            </p>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Percorso Assoluto o di Mount</label>
+              <input type="text" x-model="config.outputDirectory" placeholder="es. \\192.168.8.53\Miscuglio\Narotta\data\output o /app/output"
+                     class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 font-mono focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <!-- Validation Info Strip -->
+            <div class="bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs space-y-1.5">
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Permesso di Scrittura:</span>
+                <span class="font-semibold font-mono" :class="outputValidation.isWritable ? 'text-emerald-400' : 'text-rose-400'"
+                      x-text="outputValidation.isWritable ? 'VERIFICATO (Scrittura OK)' : 'NON SCRIVIBILE'"></span>
+              </div>
+              <template x-if="outputValidation.availableFreeSpaceBytes">
+                <div class="flex justify-between items-center">
+                  <span class="text-slate-400">Spazio Libero su Disco:</span>
+                  <span class="font-semibold font-mono text-slate-200"
+                        x-text="formatBytes(outputValidation.availableFreeSpaceBytes) + ' liberi su ' + formatBytes(outputValidation.totalSpaceBytes)"></span>
+                </div>
+              </template>
+              <template x-if="outputValidation.errorMessage">
+                <div class="text-rose-400 text-[11px] pt-1" x-text="'Errore: ' + outputValidation.errorMessage"></div>
+              </template>
+            </div>
+
+            <div class="flex items-center gap-2 pt-1">
+              <button type="button" @click="config.outputDirectory = '\\\\192.168.8.53\\Miscuglio\\Narotta\\data\\output'" class="text-[11px] text-emerald-400 underline hover:text-emerald-300">
+                Usa Share NAS (\\192.168.8.53\...)
+              </button>
+              <span class="text-slate-700">|</span>
+              <button type="button" @click="config.outputDirectory = '/app/output'" class="text-[11px] text-emerald-400 underline hover:text-emerald-300">
+                Usa /app/output (Coolify/Docker)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Parameters & Coolify Mapping Card -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Profiles & BaseUrl -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+              Parametri Aggiuntivi
+            </h3>
+
+            <div class="space-y-3 text-xs">
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">Directory Schemi Profili Planetiler</label>
+                <input type="text" x-model="config.profilesDirectory" placeholder="es. profiles o /app/profiles"
+                       class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-100 font-mono focus:outline-none focus:border-emerald-500">
+                <p class="text-[11px] text-slate-400 mt-1">Cartella contenente gli schemi Planetiler (driving-base-schema.yml, pedestrian-schema.yml, buildings-schema.yml, terrain-schema.yml, overview-schema.yml, valhalla-config.template.json). Il builder sincronizza automaticamente i file predefiniti se mancanti.</p>
+                <div class="flex items-center gap-2 pt-1">
+                  <button type="button" @click="config.profilesDirectory = 'C:\\Users\\Fabio\\source\\narotta\\map-builder\\profiles'" class="text-[11px] text-emerald-400 underline hover:text-emerald-300">
+                    Usa cartella profili repository
+                  </button>
+                  <span class="text-slate-700">|</span>
+                  <button type="button" @click="config.profilesDirectory = '/app/profiles'" class="text-[11px] text-emerald-400 underline hover:text-emerald-300">
+                    Usa /app/profiles (Coolify/Docker)
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">Base URL Download CDN Mappe (manifest.json)</label>
+                <input type="text" x-model="config.baseUrl" placeholder="https://storage.narotta.app/maps/"
+                       class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-100 font-mono focus:outline-none focus:border-emerald-500">
+                <p class="text-[11px] text-slate-400 mt-1">URL pubblico inserito nel manifest per il download da parte dell'applicazione mobile Walked/NaRotta.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coolify Setup Cheat Sheet -->
+          <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-xl p-5 space-y-3">
+            <div class="flex items-center gap-2">
+              <span class="text-base">🐳</span>
+              <h3 class="text-sm font-bold text-white">Guida Mappatura Volumi su Coolify</h3>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Quando crei l'istanza su Coolify, mappa due cartelle persistenti dell'host Linux verso i percorsi interni del container:
+            </p>
+
+            <div class="bg-slate-950 p-3.5 rounded-lg border border-slate-800 font-mono text-[11px] space-y-2 text-slate-300">
+              <div class="text-slate-400 font-bold"># Persistent Storage / Mount in Coolify UI:</div>
+              <div class="text-emerald-400">/mnt/storage/narotta/workspace <span class="text-slate-400">➔</span> /app/workspace</div>
+              <div class="text-emerald-400">/mnt/storage/narotta/output    <span class="text-slate-400">➔</span> /app/output</div>
+            </div>
+
+            <p class="text-[11px] text-slate-400">
+              In questo modo, i file temporanei PBF risiederanno sul disco veloce del server remoto, e tutte le mappe compilate rimarranno salvate su disco permanente anche se il container si riavvia o viene aggiornato.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: Manifest & Map Packages -->
+      <section x-show="activeTab === 'manifest'" class="space-y-4">
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-bold text-white flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+              Manifest Mappe Generate (manifest.json)
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5" x-text="manifest ? ('Schema v' + manifest.schema_version + ' generato il ' + formatDate(manifest.generated_at) + ' | ' + (manifest.regions ? manifest.regions.length : 0) + ' regioni compilate | Totale: ' + formatBytes(getTotalManifestBytes())) : 'Nessun manifest disponibile'"></p>
+          </div>
+          <button @click="loadManifest()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-lg border border-slate-700 transition">Ricarica</button>
+        </div>
+
+        <!-- Global Assets & World Overview Strip -->
+        <template x-if="manifest && (manifest.overview || manifest.assets)">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <template x-if="manifest.overview">
+              <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+                <div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-teal-400 bg-teal-950/40 border border-teal-500/30 px-2 py-0.5 rounded">Mappa Globale</span>
+                  <div class="font-bold text-slate-100 text-xs mt-1" x-text="manifest.overview.filename"></div>
+                  <div class="text-[11px] text-slate-400">Zoom Z0 - Z7 (Coste, confini, dorsali)</div>
+                </div>
+                <div class="font-mono text-xs font-bold text-slate-200" x-text="formatBytes(manifest.overview.size_bytes)"></div>
+              </div>
+            </template>
+            <template x-if="manifest.assets">
+              <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+                <div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-sky-400 bg-sky-950/40 border border-sky-500/30 px-2 py-0.5 rounded">Asset Condivisi</span>
+                  <div class="font-bold text-slate-100 text-xs mt-1" x-text="manifest.assets.filename"></div>
+                  <div class="text-[11px] text-slate-400">Font glifi PBF, sprite e stili day/night</div>
+                </div>
+                <div class="font-mono text-xs font-bold text-slate-200" x-text="formatBytes(manifest.assets.size_bytes)"></div>
+              </div>
+            </template>
+          </div>
+        </template>
+
+        <!-- Regions Grid -->
+        <template x-if="manifest && manifest.regions">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <template x-for="reg in manifest.regions" :key="reg.id">
+              <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 hover:border-slate-700 transition">
+                <div class="flex items-center justify-between">
+                  <h3 class="font-bold text-slate-100 text-sm" x-text="reg.name"></h3>
+                  <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-emerald-400" x-text="reg.id"></span>
+                </div>
+                <div class="text-xs text-slate-400 space-y-1">
+                  <div class="flex justify-between">
+                    <span>Dimensione Totale:</span>
+                    <span class="font-mono font-bold text-slate-100" x-text="formatBytes(getRegionTotalBytes(reg))"></span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Pacchetti Compilati:</span>
+                    <span class="font-mono text-slate-200" x-text="getRegionPackages(reg).length + ' file'"></span>
+                  </div>
+                </div>
+                <div class="border-t border-slate-800 pt-2 space-y-1 max-h-48 overflow-y-auto">
+                  <template x-for="pkg in getRegionPackages(reg)" :key="pkg.filename">
+                    <div class="text-[11px] flex justify-between font-mono text-slate-300 py-0.5">
+                      <span class="truncate pr-2 text-slate-300" :title="pkg.filename" x-text="pkg.label"></span>
+                      <span class="text-slate-400 shrink-0" x-text="formatBytes(pkg.size_bytes)"></span>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+          </div>
+        </template>
+      </section>
+
+      <!-- TAB 5: Diagnostics & Hardware ("Doctor") -->
+      <section x-show="activeTab === 'doctor'" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Hardware Profile -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+              Profilo Hardware Rilevato
+            </h3>
+            <div class="divide-y divide-slate-800 text-xs">
+              <div class="py-2.5 flex justify-between">
+                <span class="text-slate-400">Sistema Operativo</span>
+                <span class="font-mono font-semibold text-slate-200" x-text="hardware.operatingSystemName || 'Linux/Windows'"></span>
+              </div>
+              <div class="py-2.5 flex justify-between">
+                <span class="text-slate-400">Thread CPU Logici</span>
+                <span class="font-mono font-semibold text-slate-200" x-text="hardware.cpuThreadCount"></span>
+              </div>
+              <div class="py-2.5 flex justify-between">
+                <span class="text-slate-400">RAM Totale Rilevata</span>
+                <span class="font-mono font-semibold text-slate-200" x-text="formatMb(hardware.totalRamMegabytes)"></span>
+              </div>
+              <div class="py-2.5 flex justify-between">
+                <span class="text-slate-400">Spazio Disco Disponibile</span>
+                <span class="font-mono font-semibold text-slate-200" x-text="hardware.availableDiskGigabytes + ' GB'"></span>
+              </div>
+              <div class="py-2.5 flex justify-between">
+                <span class="text-slate-400">Heap JVM Calcolato (Planetiler)</span>
+                <span class="font-mono font-semibold text-emerald-400" x-text="'-Xmx' + hardware.recommendedJvmHeapGigabytes + 'g'"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tooling Readiness -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              Stato Componenti Pipeline
+            </h3>
+            <div class="divide-y divide-slate-800 text-xs">
+              <div class="py-2.5 flex justify-between items-center">
+                <span class="text-slate-400">Search DB SQLite FTS5</span>
+                <span class="text-emerald-400 font-semibold flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> PRONTO (OsmSharp C# Nativo)
+                </span>
+              </div>
+              <div class="py-2.5 flex justify-between items-center">
+                <span class="text-slate-400">Planetiler Tile Engine (Java)</span>
+                <span :class="hardware.isJavaAvailable ? 'text-emerald-400' : 'text-rose-400'" class="font-semibold flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full" :class="hardware.isJavaAvailable ? 'bg-emerald-400' : 'bg-rose-400'"></span>
+                  <span x-text="hardware.isJavaAvailable ? ('PRONTO (' + hardware.javaVersionText + ')') : 'NON TROVATO (Java 21+ richiesto)'"></span>
+                </span>
+              </div>
+              <div class="py-2.5 flex justify-between items-center">
+                <span class="text-slate-400">Valhalla Routing Compiler</span>
+                <span class="text-emerald-400 font-mono font-semibold" x-text="hardware.valhallaMode || 'Docker/Linux'"></span>
+              </div>
+              <div class="py-2.5 flex justify-between items-center">
+                <span class="text-slate-400">GeoCell 0.5° Grid Slicer</span>
+                <span class="text-emerald-400 font-semibold flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> PRONTO (C# Native)
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Start Build Modal -->
+  <div x-show="showStartModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4" x-cloak>
+    <div @click.away="showStartModal = false" class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          Configura & Avvia Nuova Build
+        </h3>
+        <button @click="showStartModal = false" class="text-slate-400 hover:text-slate-200">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <!-- Command Selection -->
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Tipo di Operazione</label>
+          <select x-model="buildForm.commandName" @change="onCommandChange()" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-emerald-500">
+            <option value="build">Build Completa Regione Singola (build)</option>
+            <option value="build-world">Build Mondiale Completa (build-world)</option>
+            <option value="build-tiles">Solo Vector Tiles .mbtiles (build-tiles)</option>
+            <option value="build-search">Solo Ricerca Offline SQLite FTS5 (build-search)</option>
+            <option value="build-routing">Solo Grafo Valhalla (build-routing)</option>
+            <option value="build-overview">Solo Overview Z0-Z7 (build-overview)</option>
+            <option value="build-assets">Solo Offline Assets/Font/Sprites (build-assets)</option>
+            <option value="doctor">Test Diagnostica (doctor)</option>
+          </select>
+        </div>
+
+        <!-- Target Region ID -->
+        <div x-show="buildForm.commandName !== 'build-world' && buildForm.commandName !== 'build-assets' && buildForm.commandName !== 'doctor'">
+          <label class="block font-semibold text-slate-300 mb-1">ID Regione Geofabrik</label>
+          <input type="text" x-model="buildForm.regionId" placeholder="es. europe/italy/trentino-alto-adige o europe/italy"
+                 class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-100 font-mono focus:outline-none focus:border-emerald-500">
+          <p class="text-[11px] text-slate-400 mt-1">Esempi: <button type="button" @click="buildForm.regionId = 'europe/italy/trentino-alto-adige'" class="text-emerald-400 underline">Trentino</button>, <button type="button" @click="buildForm.regionId = 'europe/italy'" class="text-emerald-400 underline">Italia</button>, <button type="button" @click="buildForm.regionId = 'europe/alps'" class="text-emerald-400 underline">Alpi</button></p>
+        </div>
+
+        <!-- Working Directories Section -->
+        <div class="bg-slate-950 p-3.5 rounded-lg border border-slate-800 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-slate-200">Destinazione File di Questa Build</span>
+            <span class="text-[10px] text-slate-400">Modificabili qui o nel tab "Storage"</span>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-medium text-amber-300 mb-0.5">Directory File Temporanei (Workspace)</label>
+            <input type="text" x-model="buildForm.customWorkspaceDirectory" :placeholder="config.workspaceDirectory"
+                   class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 font-mono text-xs focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-medium text-emerald-300 mb-0.5">Directory Output Mappe Finale</label>
+            <input type="text" x-model="buildForm.customOutputDirectory" :placeholder="config.outputDirectory"
+                   class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 font-mono text-xs focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <!-- Layer Checkboxes -->
+        <div x-show="buildForm.commandName === 'build' || buildForm.commandName === 'build-tiles'">
+          <label class="block font-semibold text-slate-300 mb-1.5">Layer Tiles da Compilare</label>
+          <div class="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-lg border border-slate-800">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" value="Base" x-model="buildForm.layerNameList" class="rounded text-emerald-500">
+              <span>Base (Z8-14)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" value="Pedestrian" x-model="buildForm.layerNameList" class="rounded text-emerald-500">
+              <span>Pedonale (Z13-15)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" value="Buildings" x-model="buildForm.layerNameList" class="rounded text-emerald-500">
+              <span>Edifici 3D (Z13-15)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" value="Terrain" x-model="buildForm.layerNameList" class="rounded text-emerald-500">
+              <span>Rilievo HD (Z9-14)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Optimization Flags -->
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1.5">Opzioni Avanzate</label>
+          <div class="space-y-2 bg-slate-950 p-3 rounded-lg border border-slate-800">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" x-model="buildForm.splitSubregions" class="rounded text-emerald-500">
+              <span>Dividi in sotto-regioni (Split Subregions)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" x-model="buildForm.sliceGeoCells" class="rounded text-emerald-500">
+              <span>Genera Geo-Celle 0.5°x0.5° (.cell.mbtiles per download granulare)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" x-model="buildForm.resumeBatch" class="rounded text-emerald-500">
+              <span>Resume batch (salta le regioni già presenti nel manifest.json)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" x-model="buildForm.cleanWorkspaceAfterBuild" class="rounded text-emerald-500">
+              <span>Pulisci workspace al termine (elimina PBF e temporanei Planetiler)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" x-model="buildForm.forceDownload" class="rounded text-emerald-500">
+              <span>Forza riscaricamento PBF anche se già presente in cache</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
+        <button @click="showStartModal = false" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium transition">Annulla</button>
+        <button @click="submitStartBuild()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow-sm shadow-emerald-950 transition">Avvia Operazione</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript App Logic -->
+  <script>
+    function mapServerApp() {
+      return {
+        activeTab: 'terminal',
+        showStartModal: false,
+        loadingUpdates: false,
+        savingConfig: false,
+        autoScroll: true,
+        logSearchQuery: '',
+        logLevelFilter: 'ALL',
+        progress: {
+          status: 0,
+          commandName: '',
+          activeRegionId: '',
+          percentCompleted: 0,
+          currentStageDescription: ''
+        },
+        hardware: {},
+        manifest: null,
+        logEntryList: [],
+        osmUpdateList: [],
+        updatesAvailableCount: 0,
+        config: {
+          workspaceDirectory: '',
+          outputDirectory: '',
+          profilesDirectory: '',
+          toolsDirectory: '',
+          baseUrl: 'https://storage.narotta.app/maps/'
+        },
+        workspaceValidation: { exists: false, isWritable: false },
+        outputValidation: { exists: false, isWritable: false },
+        eventSource: null,
+        buildForm: {
+          commandName: 'build',
+          regionId: 'europe/italy/trentino-alto-adige',
+          customWorkspaceDirectory: '',
+          customOutputDirectory: '',
+          splitSubregions: false,
+          sliceGeoCells: false,
+          resumeBatch: false,
+          cleanWorkspaceAfterBuild: false,
+          includeElevation: true,
+          skipRouting: false,
+          skipTiles: false,
+          skipSearch: false,
+          forceDownload: false,
+          layerNameList: ['Base', 'Pedestrian', 'Buildings', 'Terrain']
+        },
+
+        initApp() {
+          this.fetchStatus();
+          this.loadConfig();
+          this.fetchRecentLogs();
+          this.setupSseStream();
+          this.loadOsmUpdates(false);
+          this.loadManifest();
+
+          // Poll status every 4 seconds as a fallback
+          setInterval(() => {
+            this.fetchStatus();
+          }, 4000);
+        },
+
+        isBuildActive() {
+          return this.progress.status === 1 || this.progress.status === 'Running' ||
+                 this.progress.status === 2 || this.progress.status === 'Cancelling';
+        },
+
+        getStatusLabel(status) {
+          switch (status) {
+            case 0: case 'Idle': return 'PRONTO';
+            case 1: case 'Running': return 'BUILD IN CORSO';
+            case 2: case 'Cancelling': return 'ARRESTO IN CORSO...';
+            case 3: case 'Completed': return 'COMPLETATO';
+            case 4: case 'Failed': return 'FALLITO';
+            case 5: case 'Cancelled': return 'ANNULLATO';
+            default: return 'PRONTO';
+          }
+        },
+
+        async fetchStatus() {
+          try {
+            const res = await fetch('/api/status');
+            if (res.ok) {
+              const data = await res.json();
+              const rawProgress = data.progress;
+              if (rawProgress) {
+                this.progress = {
+                  jobId: rawProgress.jobId ?? rawProgress.JobId ?? '',
+                  status: (rawProgress.status !== undefined) ? rawProgress.status : ((rawProgress.Status !== undefined) ? rawProgress.Status : 0),
+                  commandName: rawProgress.commandName ?? rawProgress.CommandName ?? '',
+                  activeRegionId: rawProgress.activeRegionId ?? rawProgress.ActiveRegionId ?? '',
+                  activeRegionName: rawProgress.activeRegionName ?? rawProgress.ActiveRegionName ?? '',
+                  currentRegionIndex: rawProgress.currentRegionIndex ?? rawProgress.CurrentRegionIndex ?? 0,
+                  totalRegionCount: rawProgress.totalRegionCount ?? rawProgress.TotalRegionCount ?? 0,
+                  currentStage: rawProgress.currentStage ?? rawProgress.CurrentStage ?? 0,
+                  currentStageDescription: rawProgress.currentStageDescription ?? rawProgress.CurrentStageDescription ?? '',
+                  percentCompleted: (rawProgress.percentCompleted !== undefined) ? rawProgress.percentCompleted : ((rawProgress.PercentCompleted !== undefined) ? rawProgress.PercentCompleted : 0),
+                  startedAtUtc: rawProgress.startedAtUtc ?? rawProgress.StartedAtUtc,
+                  finishedAtUtc: rawProgress.finishedAtUtc ?? rawProgress.FinishedAtUtc,
+                  errorMessage: rawProgress.errorMessage ?? rawProgress.ErrorMessage,
+                  elapsedDuration: rawProgress.elapsedDuration ?? rawProgress.ElapsedDuration
+                };
+              }
+              this.hardware = data.hardware || this.hardware;
+            }
+          } catch (e) {
+            console.warn('Status poll error:', e);
+          }
+        },
+
+        async loadConfig() {
+          try {
+            const res = await fetch('/api/config');
+            if (res.ok) {
+              const data = await res.json();
+              this.config = data.settings || this.config;
+              this.workspaceValidation = data.workspaceValidation || this.workspaceValidation;
+              this.outputValidation = data.outputValidation || this.outputValidation;
+            }
+          } catch (e) {
+            console.warn('Failed to load storage config:', e);
+          }
+        },
+
+        async saveConfig() {
+          this.savingConfig = true;
+          try {
+            const res = await fetch('/api/config?persist=true', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.config)
+            });
+            const data = await res.json();
+            if (res.ok) {
+              this.config = data.settings || this.config;
+              this.workspaceValidation = data.workspaceValidation || this.workspaceValidation;
+              this.outputValidation = data.outputValidation || this.outputValidation;
+              alert('Configurazione salvata con successo!');
+            } else {
+              alert('Errore salvataggio: ' + (data.message || 'Errore sconosciuto'));
+            }
+          } catch (e) {
+            alert('Errore di connessione: ' + e.message);
+          } finally {
+            this.savingConfig = false;
+          }
+        },
+
+        setupSseStream() {
+          if (this.eventSource) {
+            this.eventSource.close();
+          }
+
+          this.eventSource = new EventSource('/api/build/logs/stream');
+
+          this.eventSource.addEventListener('progress', (e) => {
+            try {
+              const raw = JSON.parse(e.data);
+              this.progress = {
+                jobId: raw.jobId ?? raw.JobId ?? '',
+                status: (raw.status !== undefined) ? raw.status : ((raw.Status !== undefined) ? raw.Status : 0),
+                commandName: raw.commandName ?? raw.CommandName ?? '',
+                activeRegionId: raw.activeRegionId ?? raw.ActiveRegionId ?? '',
+                activeRegionName: raw.activeRegionName ?? raw.ActiveRegionName ?? '',
+                currentRegionIndex: raw.currentRegionIndex ?? raw.CurrentRegionIndex ?? 0,
+                totalRegionCount: raw.totalRegionCount ?? raw.TotalRegionCount ?? 0,
+                currentStage: raw.currentStage ?? raw.CurrentStage ?? 0,
+                currentStageDescription: raw.currentStageDescription ?? raw.CurrentStageDescription ?? '',
+                percentCompleted: (raw.percentCompleted !== undefined) ? raw.percentCompleted : ((raw.PercentCompleted !== undefined) ? raw.PercentCompleted : 0),
+                startedAtUtc: raw.startedAtUtc ?? raw.StartedAtUtc,
+                finishedAtUtc: raw.finishedAtUtc ?? raw.FinishedAtUtc,
+                errorMessage: raw.errorMessage ?? raw.ErrorMessage,
+                elapsedDuration: raw.elapsedDuration ?? raw.ElapsedDuration
+              };
+            } catch (err) {}
+          });
+
+          this.eventSource.addEventListener('log', (e) => {
+            try {
+              const raw = JSON.parse(e.data);
+              const entry = {
+                sequenceNumber: raw.sequenceNumber ?? raw.SequenceNumber ?? Date.now(),
+                timestampUtc: raw.timestampUtc ?? raw.TimestampUtc ?? new Date().toISOString(),
+                level: raw.level ?? raw.Level ?? 'INFO',
+                message: raw.message ?? raw.Message ?? '',
+                regionId: raw.regionId ?? raw.RegionId,
+                stageName: raw.stageName ?? raw.StageName
+              };
+              if (!this.logEntryList.some(item => item.sequenceNumber === entry.sequenceNumber)) {
+                this.logEntryList.push(entry);
+                if (this.logEntryList.length > 5000) {
+                  this.logEntryList.shift();
+                }
+                if (this.autoScroll) {
+                  this.$nextTick(() => {
+                    const el = document.getElementById('terminal-scroll-area');
+                    if (el) el.scrollTop = el.scrollHeight;
+                  });
+                }
+              }
+            } catch (err) {}
+          });
+
+          this.eventSource.onerror = () => {
+            // Reconnect automatically handled by EventSource; fetch buffer in the meantime
+            setTimeout(() => this.fetchRecentLogs(), 1500);
+          };
+        },
+
+        async fetchRecentLogs() {
+          try {
+            const res = await fetch('/api/build/logs?tail=300');
+            if (res.ok) {
+              const list = await res.json();
+              if (Array.isArray(list) && list.length > 0) {
+                const existingSet = new Set(this.logEntryList.map(item => item.sequenceNumber));
+                for (const raw of list) {
+                  const item = {
+                    sequenceNumber: raw.sequenceNumber ?? raw.SequenceNumber ?? Date.now(),
+                    timestampUtc: raw.timestampUtc ?? raw.TimestampUtc ?? new Date().toISOString(),
+                    level: raw.level ?? raw.Level ?? 'INFO',
+                    message: raw.message ?? raw.Message ?? '',
+                    regionId: raw.regionId ?? raw.RegionId,
+                    stageName: raw.stageName ?? raw.StageName
+                  };
+                  if (!existingSet.has(item.sequenceNumber)) {
+                    this.logEntryList.push(item);
+                    existingSet.add(item.sequenceNumber);
+                  }
+                }
+                this.logEntryList.sort((a, b) => a.sequenceNumber - b.sequenceNumber);
+                if (this.autoScroll) {
+                  this.$nextTick(() => {
+                    const el = document.getElementById('terminal-scroll-area');
+                    if (el) el.scrollTop = el.scrollHeight;
+                  });
+                }
+              }
+            }
+          } catch (e) {
+            console.warn('Failed to load recent logs:', e);
+          }
+        },
+
+        openStartBuildModal() {
+          this.buildForm.customWorkspaceDirectory = this.config.workspaceDirectory;
+          this.buildForm.customOutputDirectory = this.config.outputDirectory;
+          this.showStartModal = true;
+        },
+
+        async submitStartBuild() {
+          try {
+            const res = await fetch('/api/build/start', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.buildForm)
+            });
+            const data = await res.json();
+            if (res.ok) {
+              this.showStartModal = false;
+              this.activeTab = 'terminal';
+              this.fetchStatus();
+              this.fetchRecentLogs();
+            } else {
+              alert('Errore avvio build: ' + (data.message || 'Errore sconosciuto'));
+            }
+          } catch (e) {
+            alert('Errore di connessione al server: ' + e.message);
+          }
+        },
+
+        async confirmStopBuild() {
+          if (!confirm('Sei sicuro di voler interrompere la build corrente? I processi attivi verranno arrestati in modo sicuro.')) {
+            return;
+          }
+          try {
+            const res = await fetch('/api/build/stop', { method: 'POST' });
+            if (res.ok) {
+              this.fetchStatus();
+            }
+          } catch (e) {
+            alert('Errore durante lo stop: ' + e.message);
+          }
+        },
+
+        onCommandChange() {
+          if (this.buildForm.commandName === 'build-world') {
+            this.buildForm.splitSubregions = true;
+            this.buildForm.sliceGeoCells = true;
+            this.buildForm.cleanWorkspaceAfterBuild = true;
+            this.buildForm.resumeBatch = true;
+          } else if (this.buildForm.commandName === 'build') {
+            this.buildForm.splitSubregions = false;
+            this.buildForm.sliceGeoCells = false;
+            this.buildForm.cleanWorkspaceAfterBuild = false;
+            this.buildForm.resumeBatch = false;
+          }
+        },
+
+        openBuildForRegion(regionId) {
+          this.buildForm.commandName = 'build';
+          this.buildForm.regionId = regionId;
+          this.openStartBuildModal();
+        },
+
+        async loadOsmUpdates(force) {
+          this.loadingUpdates = true;
+          try {
+            const res = await fetch('/api/osm/updates?limit=30');
+            if (res.ok) {
+              const list = await res.json();
+              this.osmUpdateList = list;
+              this.updatesAvailableCount = list.filter(item => item.status === 3 || item.status === 'UpdateAvailable').length;
+            }
+          } catch (e) {
+            console.warn('Failed to load OSM updates:', e);
+          } finally {
+            this.loadingUpdates = false;
+          }
+        },
+
+        async loadManifest() {
+          try {
+            const res = await fetch('/api/manifest');
+            if (res.ok) {
+              this.manifest = await res.json();
+            }
+          } catch (e) {
+            console.warn('Failed to load manifest:', e);
+          }
+        },
+
+        filteredLogList() {
+          return this.logEntryList.filter(entry => {
+            if (this.logLevelFilter !== 'ALL' && entry.level !== this.logLevelFilter) {
+              return false;
+            }
+            if (this.logSearchQuery.trim()) {
+              const q = this.logSearchQuery.toLowerCase();
+              return entry.message.toLowerCase().includes(q) ||
+                     (entry.regionId && entry.regionId.toLowerCase().includes(q));
+            }
+            return true;
+          });
+        },
+
+        downloadLogs() {
+          const text = this.logEntryList.map(e => `[${e.timestampUtc}] [${e.level}] ${e.message}`).join('\n');
+          const blob = new Blob([text], { type: 'text/plain' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `narotta-build-${new Date().toISOString().replace(/[:.]/g, '-')}.log`;
+          a.click();
+          URL.revokeObjectURL(url);
+        },
+
+        getRegionTotalBytes(reg) {
+          if (!reg) return 0;
+          let total = 0;
+          if (reg.search && reg.search.size_bytes) {
+            total += reg.search.size_bytes;
+          }
+          if (reg.layers) {
+            for (const key in reg.layers) {
+              const layer = reg.layers[key];
+              if (layer.tiles_size_bytes) total += layer.tiles_size_bytes;
+              if (layer.routing_size_bytes) total += layer.routing_size_bytes;
+            }
+          }
+          return total;
+        },
+
+        getRegionPackages(reg) {
+          if (!reg) return [];
+          const list = [];
+          if (reg.search && reg.search.filename) {
+            list.push({
+              label: 'Ricerca SQLite (FTS5)',
+              filename: reg.search.filename,
+              size_bytes: reg.search.size_bytes || 0
+            });
+          }
+          if (reg.layers) {
+            for (const key in reg.layers) {
+              const layer = reg.layers[key];
+              if (layer.tiles) {
+                let name = key;
+                if (key === 'transit_and_driving') name = 'Rete Stradale / Guida (Z8-14)';
+                else if (key === 'pedestrian') name = 'Pedonale & Ciclabile (Z13-15)';
+                else if (key === 'buildings_3d') name = 'Edifici 3D (Z13-15)';
+                else if (key === 'terrain_hd') name = 'Rilievo Altimetrico (Z9-14)';
+                list.push({
+                  label: 'Tiles ' + name,
+                  filename: layer.tiles,
+                  size_bytes: layer.tiles_size_bytes || 0
+                });
+              }
+              if (layer.routing) {
+                let name = key;
+                if (key === 'transit_and_driving') name = 'Auto & Moto';
+                else if (key === 'pedestrian') name = 'A Piedi / Bici';
+                list.push({
+                  label: 'Routing ' + name,
+                  filename: layer.routing,
+                  size_bytes: layer.routing_size_bytes || 0
+                });
+              }
+            }
+          }
+          return list;
+        },
+
+        getTotalManifestBytes() {
+          if (!this.manifest || !this.manifest.regions) return 0;
+          let sum = 0;
+          if (this.manifest.overview && this.manifest.overview.size_bytes) sum += this.manifest.overview.size_bytes;
+          if (this.manifest.assets && this.manifest.assets.size_bytes) sum += this.manifest.assets.size_bytes;
+          for (const reg of this.manifest.regions) {
+            sum += this.getRegionTotalBytes(reg);
+          }
+          return sum;
+        },
+
+        formatBytes(bytes) {
+          if (!bytes || bytes <= 0) return '0 B';
+          const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+          const i = Math.floor(Math.log(bytes) / Math.log(1024));
+          return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + units[i];
+        },
+
+        formatMb(mb) {
+          if (!mb) return '0 MB';
+          if (mb >= 1024) return (mb / 1024).toFixed(1) + ' GB';
+          return mb.toFixed(0) + ' MB';
+        },
+
+        formatDate(isoString) {
+          if (!isoString) return '-';
+          const d = new Date(isoString);
+          return d.toLocaleDateString('it-IT') + ' ' + d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+        },
+
+        formatTime(isoString) {
+          if (!isoString) return '';
+          const d = new Date(isoString);
+          return d.toTimeString().split(' ')[0];
+        },
+
+        formatDuration(duration) {
+          if (!duration) return '0s';
+          if (typeof duration === 'string') {
+            return duration.split('.')[0];
+          }
+          return duration;
+        }
+      };
+    }
+  </script>
+</body>
+</html>

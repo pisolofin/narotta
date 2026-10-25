@@ -1,0 +1,43 @@
+schema_name: NaRotta 3D Buildings
+schema_description: High-resolution 2D and 3D extruded building footprints (Zoom 13 to 15).
+attribution: "<a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\">&copy; OpenStreetMap contributors</a>"
+args:
+  minzoom: 13
+  maxzoom: 15
+  osm_url:
+    description: OSM file path or download URL
+    default: data/sources/osm.pbf
+
+sources:
+  osm:
+    type: osm
+    url: "${args.osm_url}"
+
+layers:
+  - id: building
+    features:
+      - source: osm
+        geometry: polygon
+        min_zoom: 13
+        max_zoom: 15
+        include_when:
+          building: __any__
+        exclude_when:
+          building:
+            - "no"
+            - none
+        attributes:
+          - key: class
+            tag_value: building
+          - key: height
+            tag_value: height
+          - key: min_height
+            tag_value: min_height
+          - key: levels
+            tag_value: "building:levels"
+            type: integer
+          - key: min_level
+            tag_value: "building:min_level"
+            type: integer
+          - key: housenumber
+            tag_value: "addr:housenumber"

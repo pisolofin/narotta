@@ -1,13 +1,20 @@
-import 'package:flutter/widgets.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:nanna_platform/nanna_platform.dart';
+import 'dart:math' as math;
 
+import 'package:flutter/widgets.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:geolocator/geolocator.dart';
+
+import 'map-grid-painter.dart';
+import 'map-controls.widget.dart';
+import 'map-scale-bar.widget.dart';
+import 'map-status-badge.widget.dart';
+import 'map-telemetry-card.widget.dart';
 import '../../../constants/app-sizes.dart';
 import '../../../constants/app-colors.dart';
-import '../../../l10n/app_localizations.dart';
 import '../../../services/location-service.dart';
 
-/// Displays the main map viewport (currently in empty placeholder state with live GPS position panel).
+/// Displays the main interactive map viewport in the cartographic void.
 class MapView extends StatefulWidget {
   const MapView({ super.key });
 
@@ -15,304 +22,366 @@ class MapView extends StatefulWidget {
   State<MapView> createState() => _MapViewState();
 }
 
-/// State for [MapView].
-class _MapViewState extends State<MapView> {
-  static const int    _coordinateDecimalDigits = 6;
-  static const int    _metricDecimalDigits     = 1;
-  static const double _metersPerSecondToKmh    = 3.6;
+/// State for [MapView] managing camera position, zoom, gestures, smooth physics-damped scroll, and radar pulse.
+class _MapViewState extends State<MapView> with TickerProviderStateMixin {
+  static const double _minZoom = 0.1;
+  static const double _maxZoom = 8.0;
+  static const double _defaultZoom = 1.0;
+  static const double _zoomStepFactor = 1.35;
+  static const double _metersPerDegreeLat = 111320.0;
+  static const double _scrollWheelSensitivity = 0.0015;
+  static const double _dampingSpeed = 22.0;
+  static const int _pulseAnimationDurationSeconds = 2;
 
   final LocationService _locationService = LocationService();
+  late final AnimationController _pulseController;
+  late final Ticker _smoothZoomTicker;
+
+  Duration? _lastTickTime;
+  Offset _cameraWorldMeters = Offset.zero;
+  double _zoom = _defaultZoom;
+  double _targetZoom = _defaultZoom;
+  bool _isFollowingUser = true;
+
+  double? _referenceLat;
+  double? _referenceLon;
+
+  double _gestureStartZoom = _defaultZoom;
+  Offset? _focalScreenPos;
+  Size? _viewportSize;
 
   @override
   void initState() {
     super.initState();
+
+    _pulseController = AnimationController(
+      vsync   : this,
+      duration: const Duration(seconds: _pulseAnimationDurationSeconds),
+    )..repeat();
+
+    _smoothZoomTicker = createTicker(_onSmoothTick);
+
+    _locationService.addListener(_onLocationUpdated);
+
     if (_locationService.status == LocationStatus.idle) {
       _locationService.startTrackingAsync();
     }
   }
 
-  /// Builds the card displaying the empty cartographic state.
-  Widget _buildMapPlaceholderCard(BuildContext context, AppLocalizations l10n) {
-    return Container(
-      width     : double.infinity,
-      padding   : const EdgeInsets.all(AppSizes.p24),
-      decoration: BoxDecoration(
-        color       : AppColors.surface(context),
-        borderRadius: BorderRadius.circular(AppSizes.radius16),
-        border      : Border.all(
-          color: AppColors.border(context),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color     : AppColors.shadow(context),
-            blurRadius: AppSizes.shadowBlur10,
-            offset    : AppSizes.shadowOffset4,
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children    : [
-          // Map placeholder icon
-          NaIcon(
-            NaIcons.map,
-            size : AppSizes.icon64,
-            color: AppColors.primary(context),
-          ),
+  @override
+  void dispose() {
+    _locationService.removeListener(_onLocationUpdated);
+    _smoothZoomTicker.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
 
-          // Vertical spacing between icon and title
-          const SizedBox(height: AppSizes.p16),
+  /// Ticker callback executing per-frame critically damped exponential smoothing for zoom and camera.
+  void _onSmoothTick(Duration elapsed) {
+    if (_lastTickTime == null) {
+      _lastTickTime = elapsed;
+      return;
+    }
 
-          // Empty map state title
-          Text(
-            l10n.mapEmptyTitle,
-            textAlign: TextAlign.center,
-            style    : TextStyle(
-              fontSize  : AppSizes.font18,
-              fontWeight: FontWeight.bold,
-              color     : AppColors.textPrimary(context),
-            ),
-          ),
+    final double dt = ((elapsed - _lastTickTime!).inMicroseconds / 1000000.0).clamp(0.001, 0.05);
+    _lastTickTime = elapsed;
 
-          // Vertical spacing between title and description
-          const SizedBox(height: AppSizes.p8),
+    final double zoomDiff = _targetZoom - _zoom;
+    if (zoomDiff.abs() < 0.0001) {
+      _zoom = _targetZoom;
+      _smoothZoomTicker.stop();
+      _lastTickTime = null;
+      if (_isFollowingUser) {
+        final Position? pos = _locationService.currentPosition;
+        if (pos != null) {
+          _cameraWorldMeters = _positionToWorldMeters(pos);
+        }
+      }
+      setState(() {});
+      return;
+    }
 
-          // Empty map state description
-          Text(
-            l10n.mapEmptySubtitle,
-            textAlign: TextAlign.center,
-            style    : TextStyle(
-              fontSize: AppSizes.font14,
-              color   : AppColors.textSecondary(context),
-            ),
-          ),
-        ],
-      ),
+    // Frame-rate independent exponential smoothing
+    final double blend = 1.0 - math.exp(-dt * _dampingSpeed);
+    final double newZoom = _zoom + (zoomDiff * blend);
+
+    if ((!_isFollowingUser) && (_focalScreenPos != null) && (_viewportSize != null)) {
+      final Offset screenCenter = Offset(
+        _viewportSize!.width / 2.0,
+        _viewportSize!.height / 2.0,
+      );
+
+      final double cursorWorldX = _cameraWorldMeters.dx +
+        ((_focalScreenPos!.dx - screenCenter.dx) / _zoom);
+      final double cursorWorldY = _cameraWorldMeters.dy -
+        ((_focalScreenPos!.dy - screenCenter.dy) / _zoom);
+
+      _zoom = newZoom;
+
+      final double newCameraX = cursorWorldX -
+        ((_focalScreenPos!.dx - screenCenter.dx) / _zoom);
+      final double newCameraY = cursorWorldY +
+        ((_focalScreenPos!.dy - screenCenter.dy) / _zoom);
+
+      _cameraWorldMeters = Offset(newCameraX, newCameraY);
+    }else {
+      _zoom = newZoom;
+      if (_isFollowingUser) {
+        final Position? pos = _locationService.currentPosition;
+        if (pos != null) {
+          _cameraWorldMeters = _positionToWorldMeters(pos);
+        }
+      }
+    }
+
+    setState(() {});
+  }
+
+  /// Converts a GPS [Position] to local world coordinates in meters.
+  Offset _positionToWorldMeters(Position position) {
+    if ((_referenceLat == null) || (_referenceLon == null)) {
+      _referenceLat = position.latitude;
+      _referenceLon = position.longitude;
+      return Offset.zero;
+    }
+
+    final double latRadians = _referenceLat! * math.pi / 180.0;
+    final double metersPerDegreeLon = _metersPerDegreeLat * math.cos(latRadians);
+
+    final double deltaX = (position.longitude - _referenceLon!) * metersPerDegreeLon;
+    final double deltaY = (position.latitude - _referenceLat!) * _metersPerDegreeLat;
+    return Offset(deltaX, deltaY);
+  }
+
+  /// Listener invoked whenever the [LocationService] acquires or updates the GPS fix.
+  void _onLocationUpdated() {
+    final Position? position = _locationService.currentPosition;
+    if (position != null) {
+      final Offset userWorldPos = _positionToWorldMeters(position);
+      if (_isFollowingUser) {
+        setState(() {
+          _cameraWorldMeters = userWorldPos;
+        });
+      }
+    }
+  }
+
+  /// Handles touch gesture scaling and panning on the cartographic canvas.
+  void _handleScaleStart(ScaleStartDetails details) {
+    if (_smoothZoomTicker.isActive) {
+      _smoothZoomTicker.stop();
+      _lastTickTime = null;
+    }
+    _targetZoom = _zoom;
+    _gestureStartZoom = _zoom;
+  }
+
+  /// Updates camera world offset and zoom scale during multi-touch or pan gestures.
+  void _handleScaleUpdate(ScaleUpdateDetails details) {
+    setState(() {
+      _isFollowingUser = false;
+
+      // Handle pinch zoom scaling
+      if (details.scale != 1.0) {
+        _zoom = (_gestureStartZoom * details.scale).clamp(_minZoom, _maxZoom);
+        _targetZoom = _zoom;
+      }
+
+      // Handle pan offset translation in world meters
+      final double deltaWorldX = details.focalPointDelta.dx / _zoom;
+      final double deltaWorldY = -details.focalPointDelta.dy / _zoom;
+      _cameraWorldMeters = Offset(
+        _cameraWorldMeters.dx - deltaWorldX,
+        _cameraWorldMeters.dy - deltaWorldY,
+      );
+    });
+  }
+
+  /// Starts or retargets smooth damping toward [targetZoom].
+  void _startSmoothZoom({
+    required double targetZoom,
+    Offset? focalScreenPos,
+    Size? viewportSize,
+  }) {
+    _targetZoom = targetZoom.clamp(_minZoom, _maxZoom);
+    _focalScreenPos = focalScreenPos;
+    _viewportSize = viewportSize;
+
+    if (!_smoothZoomTicker.isActive) {
+      _lastTickTime = null;
+      _smoothZoomTicker.start();
+    }
+  }
+
+  /// Handles mouse scroll wheel signals to smoothly zoom in or out focusing on the cursor position.
+  void _handlePointerSignal(PointerSignalEvent event, Size viewportSize) {
+    if (event is PointerScrollEvent) {
+      if (event.scrollDelta.dy == 0.0) {
+        return;
+      }
+
+      final double zoomMultiplier = math.exp(-event.scrollDelta.dy * _scrollWheelSensitivity);
+      final double nextTarget = _targetZoom * zoomMultiplier;
+
+      _startSmoothZoom(
+        targetZoom    : nextTarget,
+        focalScreenPos: event.localPosition,
+        viewportSize  : viewportSize,
+      );
+    }
+  }
+
+  /// Zooms in by the standard step factor with smooth damping.
+  void _zoomIn() {
+    _startSmoothZoom(
+      targetZoom: _targetZoom * _zoomStepFactor,
     );
   }
 
-  /// Returns the localized status message when a GPS position is not available.
-  String _getStatusMessage(LocationStatus status, AppLocalizations l10n) {
-    if (status == LocationStatus.serviceDisabled) {
-      return l10n.locationServiceDisabled;
-    }
-    if (status == LocationStatus.permissionDenied) {
-      return l10n.locationPermissionDenied;
-    }
-    if (status == LocationStatus.error) {
-      return l10n.locationError;
-    }
-    return l10n.locationSearching;
-  }
-
-  /// Builds the coordinate and telemetry details for an active [Position].
-  Widget _buildPositionDetails(BuildContext context, Position position, AppLocalizations l10n) {
-    final String latitudeText  = position.latitude.toStringAsFixed(_coordinateDecimalDigits);
-    final String longitudeText = position.longitude.toStringAsFixed(_coordinateDecimalDigits);
-    final String accuracyText  = position.accuracy.toStringAsFixed(_metricDecimalDigits);
-    final String altitudeText  = position.altitude.toStringAsFixed(_metricDecimalDigits);
-    final double rawSpeedKmh   = (position.speed > 0) ? (position.speed * _metersPerSecondToKmh) : 0.0;
-    final String speedText     = rawSpeedKmh.toStringAsFixed(_metricDecimalDigits);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize      : MainAxisSize.min,
-      children          : [
-        // Coordinates text
-        Text(
-          l10n.locationCoordinates(latitudeText, longitudeText),
-          style: TextStyle(
-            fontSize  : AppSizes.font16,
-            fontWeight: FontWeight.bold,
-            color     : AppColors.textPrimary(context),
-          ),
-        ),
-
-        // Vertical spacing between coordinates and telemetry metrics
-        const SizedBox(height: AppSizes.p8),
-
-        // Accuracy, altitude, and speed telemetry row
-        Wrap(
-          spacing   : AppSizes.p16,
-          runSpacing: AppSizes.p8,
-          children  : [
-            // Accuracy label
-            Text(
-              l10n.locationAccuracyValue(accuracyText),
-              style: TextStyle(
-                fontSize: AppSizes.font12,
-                color   : AppColors.textSecondary(context),
-              ),
-            ),
-
-            // Altitude label
-            Text(
-              l10n.locationAltitudeValue(altitudeText),
-              style: TextStyle(
-                fontSize: AppSizes.font12,
-                color   : AppColors.textSecondary(context),
-              ),
-            ),
-
-            // Speed label
-            Text(
-              l10n.locationSpeedValue(speedText),
-              style: TextStyle(
-                fontSize: AppSizes.font12,
-                color   : AppColors.textSecondary(context),
-              ),
-            ),
-          ],
-        ),
-      ],
+  /// Zooms out by the standard step factor with smooth damping.
+  void _zoomOut() {
+    _startSmoothZoom(
+      targetZoom: _targetZoom / _zoomStepFactor,
     );
   }
 
-  /// Builds the card displaying the current GPS position or tracking status.
-  Widget _buildLocationCard(BuildContext context, AppLocalizations l10n) {
-    final LocationStatus status   = _locationService.status;
-    final Position?      position = _locationService.currentPosition;
-    final bool           isLoading = (status == LocationStatus.loading) && (position == null);
+  /// Recenter the camera directly on the user's current GPS position.
+  void _recenterOnUser() {
+    if (_smoothZoomTicker.isActive) {
+      _smoothZoomTicker.stop();
+      _lastTickTime = null;
+    }
+    _targetZoom = _zoom;
 
-    return Container(
-      width     : double.infinity,
-      padding   : const EdgeInsets.all(AppSizes.p16),
-      decoration: BoxDecoration(
-        color       : AppColors.surface(context),
-        borderRadius: BorderRadius.circular(AppSizes.radius16),
-        border      : Border.all(
-          color: AppColors.border(context),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color     : AppColors.shadow(context),
-            blurRadius: AppSizes.shadowBlur10,
-            offset    : AppSizes.shadowOffset4,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize      : MainAxisSize.min,
-        children          : [
-          // Header row with location icon, title, and refresh button
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children         : [
-              // Leading icon and title group
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children    : [
-                  // Location pin icon
-                  NaIcon(
-                    NaIcons.locationOn,
-                    size : AppSizes.icon24,
-                    color: AppColors.primary(context),
-                  ),
-
-                  // Horizontal spacing between icon and title
-                  const SizedBox(width: AppSizes.p8),
-
-                  // Current position card title
-                  Text(
-                    l10n.locationCurrentPositionTitle,
-                    style: TextStyle(
-                      fontSize  : AppSizes.font16,
-                      fontWeight: FontWeight.bold,
-                      color     : AppColors.textPrimary(context),
-                    ),
-                  ),
-                ],
-              ),
-
-              // Refresh location button
-              NaIconButton(
-                icon     : const NaIcon(NaIcons.refresh),
-                onPressed: () {
-                  _locationService.refreshPositionAsync();
-                },
-              ),
-            ],
-          ),
-
-          // Vertical spacing between header and content
-          const SizedBox(height: AppSizes.p12),
-
-          // Position telemetry when available
-          if (position != null) ...[
-            _buildPositionDetails(context, position, l10n),
-          ],
-
-          // Loading indicator when acquiring initial fix
-          if (isLoading) ...[
-            Row(
-              children: [
-                // Spinner indicator
-                const NaProgressIndicator(),
-
-                // Spacing between spinner and text
-                const SizedBox(width: AppSizes.p12),
-
-                // Acquiring GPS message
-                Expanded(
-                  child: Text(
-                    l10n.locationSearching,
-                    style: TextStyle(
-                      fontSize: AppSizes.font14,
-                      color   : AppColors.textSecondary(context),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-
-          // Status or error message when position is unavailable and not loading
-          if ((position == null) && (!isLoading)) ...[
-            Text(
-              _getStatusMessage(status, l10n),
-              style: TextStyle(
-                fontSize: AppSizes.font14,
-                color   : AppColors.textSecondary(context),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
+    final Position? position = _locationService.currentPosition;
+    setState(() {
+      _isFollowingUser = true;
+      if (position != null) {
+        _cameraWorldMeters = _positionToWorldMeters(position);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final AppLocalizations l10n = AppLocalizations.of(context)!;
-
     return ListenableBuilder(
       listenable: _locationService,
       builder   : (BuildContext context, Widget? child) {
-        return Container(
-          width : double.infinity,
-          height: double.infinity,
-          color : AppColors.background(context),
-          child : Padding(
-            padding: const EdgeInsets.all(AppSizes.p24),
-            child  : Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children         : [
-                // Centered map placeholder card
-                Expanded(
-                  child: Center(
-                    child: _buildMapPlaceholderCard(context, l10n),
+        final Position? position = _locationService.currentPosition;
+        final Offset? userWorldPos = (position != null)
+          ? _positionToWorldMeters(position)
+          : null
+        ;
+        final double? userAccuracy = position?.accuracy;
+        final double? userHeading = ((position != null) && (position.heading >= 0.0) && (position.speed > 0.3))
+          ? position.heading
+          : null
+        ;
+
+        final double gridMetersStep = MapGridPainter.calculateGridMetersStep(_zoom);
+
+        return LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final Size viewportSize = Size(
+              constraints.maxWidth,
+              constraints.maxHeight,
+            );
+
+            return Container(
+              width : double.infinity,
+              height: double.infinity,
+              color : AppColors.mapVoid(context),
+              child : Stack(
+                children: [
+                  // Interactive listener and gesture detector for mouse wheel zoom, pan, and pinch
+                  Positioned.fill(
+                    child: Listener(
+                      behavior       : HitTestBehavior.opaque,
+                      onPointerSignal: (PointerSignalEvent event) {
+                        _handlePointerSignal(event, viewportSize);
+                      },
+                      child: GestureDetector(
+                        behavior     : HitTestBehavior.opaque,
+                        onScaleStart : _handleScaleStart,
+                        onScaleUpdate: _handleScaleUpdate,
+                        child        : AnimatedBuilder(
+                          animation: _pulseController,
+                          builder  : (BuildContext context, Widget? child) {
+                            return CustomPaint(
+                              painter: MapGridPainter(
+                                cameraWorldMeters : _cameraWorldMeters,
+                                zoom              : _zoom,
+                                userWorldMeters   : userWorldPos,
+                                userAccuracy      : userAccuracy,
+                                userHeading       : userHeading,
+                                pulseProgress     : _pulseController.value,
+                                mapVoidColor      : AppColors.mapVoid(context),
+                                gridMajorColor    : AppColors.mapGridMajor(context),
+                                gridMinorColor    : AppColors.mapGridMinor(context),
+                                gridCrosshairColor: AppColors.mapGridCrosshair(context),
+                                userPulseColor    : AppColors.userPulse(context),
+                                userAccuracyColor : AppColors.userAccuracy(context),
+                                primaryColor      : AppColors.primary(context),
+                                whiteColor        : AppColors.white(context),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
                   ),
-                ),
 
-                // Spacing before bottom GPS status card
-                const SizedBox(height: AppSizes.p16),
+                  // Top status badge indicating the cartographic void waiting state
+                  const Positioned(
+                    top  : AppSizes.p16,
+                    left : AppSizes.p16,
+                    right: AppSizes.p16,
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child    : MapStatusBadge(),
+                    ),
+                  ),
 
-                // Current GPS position card at the bottom of the map viewport
-                _buildLocationCard(context, l10n),
-              ],
-            ),
-          ),
+                  // Floating action controls on the right (recenter, zoom in, zoom out)
+                  Positioned(
+                    right : AppSizes.p16,
+                    bottom: AppSizes.mapControlsBottomOffset,
+                    child : MapControls(
+                      isFollowingUser: _isFollowingUser,
+                      onZoomIn       : _zoomIn,
+                      onZoomOut      : _zoomOut,
+                      onRecenter     : _recenterOnUser,
+                    ),
+                  ),
+
+                  // Bottom left metric scale indicator
+                  Positioned(
+                    left  : AppSizes.p16,
+                    bottom: AppSizes.mapControlsBottomOffset,
+                    child : MapScaleBar(
+                      gridMetersStep: gridMetersStep,
+                      zoom          : _zoom,
+                    ),
+                  ),
+
+                  // Bottom floating GPS telemetry and status card
+                  Positioned(
+                    left  : AppSizes.p16,
+                    right : AppSizes.p16,
+                    bottom: AppSizes.p16,
+                    child : MapTelemetryCard(
+                      status         : _locationService.status,
+                      position       : position,
+                      isFollowingUser: _isFollowingUser,
+                      onRefresh      : () {
+                        _locationService.refreshPositionAsync();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
     );

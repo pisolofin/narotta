@@ -255,81 +255,166 @@ flowchart TD
 
 ---
 
-## 11. Impostazioni Utente e Modalità di Download
+## 11. Le 3 Modalità di Download nell'App NaRotta e la Griglia a Celle (`0.5° × 0.5°`)
 
-All'interno dell'app NaRotta l'utente ha la massima flessibilità:
+Per consentire all'utente di scaricare non solo interi stati o regioni, ma anche **aree libere disegnate con il dito sulla mappa globale** oppure **soltanto il corridoio dettagliato lungo la propria rotta**, NaRotta affianca ai pacchetti regionali una **Griglia Geografica Universale a Celle (`Geo-Cells` di `0.5° × 0.5°`, circa `50 km × 50 km`)**.
 
-### A. Opzione "Scarica sempre tutto al massimo dettaglio" (Full Always)
-Un toggle globale nelle impostazioni per gli utenti che hanno dispositivi capienti (es. 256 GB o 512 GB) e non vogliono micro-gestire i download:
-- Se abilitato, qualsiasi download regionale o nazionale scarica automaticamente l'intera suite di livelli (Transito + Auto + Pedonale + Edifici + HD).
+```mermaid
+flowchart TD
+    subgraph BaseDevice ["Sempre sul Dispositivo (~50 MB totali)"]
+        OV["world_overview.mbtiles (Zoom 0-7)<br/>Mappa base mondiale: confini, mari, città, autostrade"]
+        BB["Dorsale Stradale Primaria (Valhalla Livello 0 & 1)<br/>Autostrade e Strade Statali per calcolo rotte e deviazioni a lungo raggio"]
+    end
 
-### B. Modalità Personalizzata / Per Viaggio ("Smart Trip")
-Se il toggle globale è disattivato, l'utente può scegliere granularmente:
-- **Per singola area**: es. Livello *Transito / Auto* per le regioni di passaggio, e Livello *Edifici + Pedonale* solo per la città di destinazione.
-- **Preparazione Viaggio guidata**: calcolato un itinerario (es. Milano ➔ Napoli con sosta a Firenze), l'app suggerisce di scaricare il corridoio leggero per il tragitto e il massimo dettaglio per i centri urbani di arrivo.
+    subgraph Modes ["3 Modalità di Download Scelte dall'Utente"]
+        M1["1. Per Stato o Regione<br/>(es. 'Italia' o 'Trentino')"]
+        M2["2. Cerchia con il Dito sulla Mappa<br/>(Poligono a mano libera, es. Lago di Garda)"]
+        M3["3. Solo lungo la Rotta ('Smart Corridor')<br/>(Fascia ±15 km Base + Destinazione HD)"]
+    end
+
+    subgraph Grid ["Griglia Universale Geo-Cells (0.5° x 0.5° ~ 50x50 km)"]
+        CELL["Cella es. N45_50_E010_50<br/>- tiles_base.mbtiles (Z8-14)<br/>- tiles_buildings / pedestrian (Z13-15)<br/>- routing_auto.tar + search.db"]
+    end
+
+    BaseDevice --> Modes
+    M1 -->|"Seleziona tutte le celle della regione"| Grid
+    M2 -->|"Interseca il poligono disegnato col dito"| Grid
+    M3 -->|"Interseca il buffer ±15 km della rotta"| Grid
+    Grid -->|"Merge SQLite senza duplicati"| LocalDB["Database Locale Unificato sul Dispositivo"]
+```
+
+### Le 3 Modalità di Selezione Utente
+
+1. **Modalità 1 — Per Stato o Regione Amministrativa**:
+   - L'utente seleziona una nazione o una regione dal catalogo (con l'opzione *"Scarica sempre tutto al massimo dettaglio"* oppure scegliendo i singoli layer).
+   - Poiché ogni regione è mappata sulle celle `0.5° × 0.5°` che la compongono, **non si scaricano mai dati duplicati**: se l'utente aveva già scaricato alcune celle tramite un cerchio col dito o una rotta precedente, l'app scarica solo le celle mancanti.
+2. **Modalità 2 — "Cerchia con il Dito" sulla Mappa Globale (Lasso / Freehand Area)**:
+   - Ideale per zone di confine o mete turistiche a cavallo tra più regioni/stati (es. **Lago di Garda** diviso tra Lombardia, Veneto e Trentino, oppure **Dolomiti / Alpi di confine**).
+   - L'utente disegna col dito un cerchio o un poligono libero sopra la mappa base globale (`world_overview.mbtiles`).
+   - L'app calcola istantaneamente le celle `0.5° × 0.5°` intersecate dal disegno, mostra il peso esatto in MB e scarica solo quei quadrati.
+3. **Modalità 3 — "Dettaglio solo lungo la Rotta e Mappa Base per il resto" (Smart Route Corridor)**:
+   - Ideale per lunghi viaggi attraverso più nazioni (es. **Milano ➔ Parigi** o **Calabria ➔ Capo Nord**).
+   - Calcolata la rotta, l'utente sceglie *"Scarica solo per questa rotta"*:
+     - **Tutto il resto dei paesi attraversati**: resta coperto dalla **Mappa Base (`world_overview` Z0–7)** + **Dorsale Stradale (Valhalla Livello 0 Autostrade + Livello 1 Statali)** a costo di memoria quasi nullo.
+     - **Corridoio della Rotta (fascia di ±15 km a destra e sinistra del percorso)**: l'app scarica automaticamente le celle `0.5° × 0.5°` toccate dal corridoio in risoluzione **Base Guida (Z8–14 + viabilità locale Livello 2 + distributori/POI)**. Il margine di ±15 km (30 km totali) insieme alla rete statale garantisce il ricalcolo immediato anche in caso di chiusure autostradali e deviazioni impreviste.
+     - **Destinazione e Tappe (raggio ±10 km)**: l'app scarica automaticamente anche i layer **Alta Risoluzione HD (`buildings_3d` + `pedestrian` Z13–15)** solo sulle celle di arrivo/sosta per la navigazione urbana 3D e pedonale *"Park & Walk"*.
+4. **Evidenziazione Visiva sulla Mappa**:
+   - Facendo zoom-out sulla mappa base, l'app mostra un contorno semitrasparente sulle celle e sui corridoi attualmente installati in alta risoluzione, così l'utente distingue sempre a colpo d'occhio le aree ad alto dettaglio dalla mappa base.
 
 ---
 
-## 12. Specifiche del Pacchetto e Catalogo `manifest.json`
+## 12. Architettura Multi-Risoluzione e Catalogo `manifest.json`
 
-### Convenzione di Naming dei File
+### Strategia Combinata: Zoom Piramidale + Layer Funzionali
+Per garantire fluidità a ogni scala geografica (dal continente intero al singolo incrocio) senza sprechi di spazio, le mappe vettoriali sono suddivise combinando **risoluzione di zoom** e **layer funzionali**:
+
+1. **Risoluzione Panoramica Globale (`world_overview.mbtiles`, Zoom 0 – 7)**:
+   - Contiene confini nazionali, linee di costa, mari, grandi laghi, autostrade principali (`motorway`/`trunk`) e capitali/metropoli.
+   - Dimensione ultra-compatta (~15–40 MB), sempre presente sul dispositivo per evitare "buchi bianchi" durante lo zoom-out fuori dalle regioni o dai corridoi scaricati.
+2. **Risoluzione Regionale/Cella Base (`tiles_base.mbtiles`, Zoom 8 – 14)**:
+   - Contiene la rete stradale carrabile completa con semplificazione geometrica progressiva:
+     - **Zoom 8–9**: Autostrade, superstrade e capoluoghi.
+     - **Zoom 10–11**: Strade statali (`primary`), provinciali (`secondary`), fiumi e comuni.
+     - **Zoom 12–13**: Viabilità urbana (`tertiary`, `residential`), quartieri e aree verdi.
+     - **Zoom 14**: Dettaglio completo di navigazione (corsie, rotonde, svincoli, sensi unici, tutti i toponimi stradali), renderizzato con *overzoom* vettoriale nitido fino a Zoom 18–20.
+3. **Risoluzione Alta / Pacchetti HD Opzionali (Zoom 13 – 15)**:
+   - `tiles_pedestrian.mbtiles` (Zoom 13–15): Sentieri, marciapiedi, piste ciclabili e scalinate.
+   - `tiles_buildings.mbtiles` (Zoom 13–15): Poligoni ed altezze per l'estrusione 3D degli edifici.
+   - `tiles_terrain_hd.mbtiles` (Zoom 9–14): Rilievi altimetrici 3D (DEM / curve di livello) e idrografia minore.
+
+### Convenzione di Naming dei File (Regioni + Griglia `cells/`)
 ```text
 storage/
 ├── manifest.json
+├── assets/
+│   └── map_assets.zip                        # Font PBF offline (0-255.pbf), Sprites e style-day/night.json
+├── overview/
+│   └── world_overview.mbtiles                # Mappa panoramica globale/continentale (Zoom 0-7)
+├── cells/                                    # Celle modulari 0.5° x 0.5° per selezione col dito e corridoi rotta
+│   └── N45_50_E010_50/                       # Esempio: Cella Lago di Garda (Lat 45.50..46.00, Lon 10.50..11.00)
+│       ├── N45_50_E010_50_tiles_base.mbtiles
+│       ├── N45_50_E010_50_tiles_pedestrian.mbtiles
+│       ├── N45_50_E010_50_tiles_buildings.mbtiles
+│       └── N45_50_E010_50_tiles_terrain_hd.mbtiles
 └── regions/
     └── europe/
-        ├── italy/
-        │   ├── italy_search.db              # Ricerca & POI Full (Sempre completo)
-        │   ├── italy_routing_auto.tar       # Grafo di routing carrabile
-        │   ├── italy_routing_pedestrian.tar # Grafo di routing pedonale (opzionale)
-        │   ├── italy_tiles_base.mbtiles     # Grafica Transito + Auto
-        │   ├── italy_tiles_pedestrian.mbtiles # Layer marciapiedi e percorsi a piedi
-        │   ├── italy_tiles_buildings.mbtiles  # Layer edifici 3D
-        │   └── italy_tiles_terrain_hd.mbtiles # Layer rilievi altimetrici HD
+        └── italy/
+            ├── italy_search.db               # Ricerca & POI Full (SQLite FTS5 + R-Tree)
+            ├── italy_routing_auto.tar        # Grafo di routing carrabile (.gph + .manifest_files.txt)
+            ├── italy_routing_pedestrian.tar  # Grafo di routing pedonale (opzionale)
+            ├── italy_tiles_base.mbtiles      # Grafica Transito + Auto (Zoom 8-14)
+            ├── italy_tiles_pedestrian.mbtiles # Layer marciapiedi e sentieri (Zoom 13-15)
+            ├── italy_tiles_buildings.mbtiles  # Layer edifici 3D (Zoom 13-15)
+            └── italy_tiles_terrain_hd.mbtiles # Layer rilievi altimetrici HD (Zoom 9-14)
 ```
 
-### Struttura del Catalogo `manifest.json` Modulare
+### Struttura del Catalogo `manifest.json` Modulare (v2.2 con Geo-Cells)
 ```json
 {
-  "schema_version": "2.0",
-  "generated_at": "2026-10-11T02:00:00Z",
+  "schema_version": "2.2",
+  "generated_at": "2026-10-18T17:00:00Z",
   "base_url": "https://storage.narotta.app/maps/",
+  "cell_size_degrees": 0.5,
+  "overview": {
+    "filename": "overview/world_overview.mbtiles",
+    "min_zoom": 0,
+    "max_zoom": 7,
+    "size_bytes": 41943040,
+    "sha256": "a1b2c3...98f0"
+  },
+  "assets": {
+    "filename": "assets/map_assets.zip",
+    "version": "20261018",
+    "size_bytes": 6291456,
+    "sha256": "d4e5f6...11a2"
+  },
   "regions": [
     {
-      "id": "italy",
+      "id": "europe/italy",
+      "parent_id": "europe",
       "country_code": "IT",
       "name": "Italia",
-      "version": "20261011",
+      "version": "20261018",
       "bbox": [6.62, 35.49, 18.52, 47.09],
+      "cell_ids": ["N45_00_E009_00", "N45_50_E010_50", "..."],
       "search": {
-        "filename": "italy_search.db",
+        "filename": "regions/europe/italy/italy_search.db",
         "size_bytes": 262144000,
         "sha256": "f9a4b3...12c5"
       },
       "layers": {
         "transit_and_driving": {
-          "description": "Rete stradale completa e routing auto/moto",
-          "tiles": "italy_tiles_base.mbtiles",
+          "description": "Rete stradale completa (Z8-14) e routing auto/moto",
+          "min_zoom": 8,
+          "max_zoom": 14,
+          "tiles": "regions/europe/italy/italy_tiles_base.mbtiles",
           "tiles_size_bytes": 629145600,
-          "routing": "italy_routing_auto.tar",
-          "routing_size_bytes": 367001600
-        },
-        "pedestrian": {
-          "description": "Percorsi pedonali, marciapiedi e routing a piedi",
-          "tiles": "italy_tiles_pedestrian.mbtiles",
-          "tiles_size_bytes": 209715200,
-          "routing": "italy_routing_pedestrian.tar",
-          "routing_size_bytes": 104857600
+          "tiles_sha256": "7c8d9e...001a",
+          "routing": "regions/europe/italy/italy_routing_auto.tar",
+          "routing_size_bytes": 367001600,
+          "routing_sha256": "3b4c5d...882b"
+        }
+      }
+    }
+  ],
+  "cells": [
+    {
+      "cell_id": "N45_50_E010_50",
+      "bbox": [10.5, 45.5, 11.0, 46.0],
+      "layers": {
+        "transit_and_driving": {
+          "min_zoom": 8,
+          "max_zoom": 14,
+          "tiles": "cells/N45_50_E010_50/N45_50_E010_50_tiles_base.mbtiles",
+          "tiles_size_bytes": 12582912,
+          "tiles_sha256": "4f5e6d...110a"
         },
         "buildings_3d": {
-          "description": "Edifici e monumenti 3D estrusi",
-          "tiles": "italy_tiles_buildings.mbtiles",
-          "tiles_size_bytes": 734003200
-        },
-        "terrain_hd": {
-          "description": "Rilievi altimetrici 3D e micro-idrografia",
-          "tiles": "italy_tiles_terrain_hd.mbtiles",
-          "tiles_size_bytes": 314572800
+          "min_zoom": 13,
+          "max_zoom": 15,
+          "tiles": "cells/N45_50_E010_50/N45_50_E010_50_tiles_buildings.mbtiles",
+          "tiles_size_bytes": 8388608,
+          "tiles_sha256": "8a9b0c...221b"
         }
       }
     }
@@ -339,28 +424,45 @@ storage/
 
 ---
 
-## 13. Struttura del Container Docker per la Pipeline
+## 13. Gestione delle 7 Criticità Tecniche della Pipeline Offline
 
-L'intera pipeline viene isolata in un **ambiente Docker riproducibile**:
+Per garantire un funzionamento impeccabile nel mondo reale, la pipeline risolve nativamente sette problematiche critiche della cartografia offline:
+
+1. **Prevenzione dei "Bordi Tagliati" nei Vector Tiles (`.mbtiles`) ai Confini Regionali**:
+   - I tasselli Web Mercator (`z/x/y`) sono quadrati, mentre i confini amministrativi sono poligoni irregolari.
+   - Quando si compila una macro-area (es. `italy`) e si effettua lo split per sub-regioni (es. `lombardia`, `veneto`), i tasselli `z/x/y` che intersecano il confine vengono estratti già completi su entrambi i lati.
+   - Lato dispositivo, i file `.mbtiles` dello stesso layer possono essere uniti in un database SQLite locale (`INSERT OR REPLACE INTO tiles`) o serviti tramite un `TileProvider` unificato senza mai creare vuoti bianchi ai confini.
+2. **Continuità Trans-Nazionale del Routing (es. Brennero: Italia ➔ Austria)**:
+   - Per mantenere gli stessi `GraphId` sugli archi stradali transfrontalieri, la build di produzione di Valhalla viene eseguita sull'estratto continentale (`europe-latest.osm.pbf`) e successivamente affettata per nazione/regione tramite poligoni `.poly`/GeoJSON dal servizio `ValhallaTileSplitterService`.
+3. **Risoluzione Spaziale "Via ➔ Comune" (Point-in-Polygon) nel DB di Ricerca**:
+   - Circa l'80% degli archi stradali (`highway=*`) in OpenStreetMap non possiede il tag `addr:city`.
+   - Il costruttore C# di `search.db` esegue una pipeline a due passaggi con **NetTopologySuite (`STRtree`)**: nel primo passaggio indicizza in memoria i poligoni dei confini amministrativi comunali (`admin_level=8`) e i centri abitati; nel secondo passaggio assegna a ogni via e POI il comune di appartenenza tramite test *Point-in-Polygon* sul centroide e deduplica i segmenti contigui della stessa via.
+4. **Integrazione Dati Altimetrici DEM (`.hgt` SRTM / Copernicus)**:
+   - Poiché i file `.osm.pbf` non contengono né curve di livello né modelli digitali di elevazione, il servizio `DemElevationService` scarica le celle altimetriche `.hgt` per la bounding box della regione, alimentando sia `valhalla_build_elevation` (pendenze stradali) sia la generazione del layer `terrain_hd`.
+5. **Font PBF (Glyphs) e Icone (Sprites) Offline per MapLibre**:
+   - Per evitare che MapLibre tenti connessioni di rete per scaricare i caratteri tipografici, il comando `build-assets` produce il pacchetto `map_assets.zip` con i font convertiti in range `.pbf` (`0-255.pbf`), gli sprites degli scudetti autostradali e gli stili `style-day.json` / `style-night.json` con URI locali.
+6. **Hardware Profiler Automatico (RAM vs Memory-Mapped SSD)**:
+   - Prima di lanciare Planetiler o Valhalla, la CLI C# rileva la RAM fisica libera della macchina (Windows o Linux). Se la memoria disponibile è inferiore alla soglia richiesta dal `.osm.pbf`, imposta automaticamente `--nodemap-type=sparsearray` e `--storage=mmap` su disco NVMe/SSD per prevenire errori di `OutOfMemory`.
+7. **Aggiornamento e Rimozione Atomica dei Tasselli di Routing (`.manifest_files.txt`)**:
+   - Ogni archivio `<region>_routing_auto.tar` include un indice `.manifest_files.txt` con l'elenco esatto dei file `.gph` contenuti. Quando l'utente aggiorna o rimuove una regione, l'app mobile elimina i tasselli obsoleti prima di scompattare la nuova versione nella cartella condivisa `/valhalla_tiles/`.
+
+---
+
+## 14. Applicazione CLI Cross-Platform in C# (.NET 10): `NaRotta.MapBuilder`
+
+La pipeline di scaricamento e conversione è implementata come applicazione CLI multipiattaforma in **C# (.NET 10)** situata nella directory `map-builder/` (documentata nel dettaglio in [`02_architettura_map_builder.md`](02_architettura_map_builder.md)):
 
 ```text
-tools/map-pipeline/
-├── Dockerfile                  # Ambiente con Valhalla C++, Planetiler, Osmium, Python
-├── config/
-│   ├── valhalla.json           # Template di configurazione Valhalla (Livelli 0, 1, 2)
-│   └── planetiler-profile.yml  # Profilo di estrazione layer OpenMapTiles per navigazione
-├── scripts/
-│   ├── 01_download.py          # Download pbf da Geofabrik con ripresa e controllo MD5
-│   ├── 02_build_tiles.sh       # Esecuzione Planetiler -> .mbtiles
-│   ├── 03_build_routing.sh     # Esecuzione Valhalla build -> tasselli .gph / tiles.tar
-│   ├── 04_build_search.py      # Estrazione indirizzi/POI -> SQLite FTS5 & R-Tree
-│   └── 05_generate_manifest.py # Calcolo SHA256 e generazione manifest.json
-└── run_pipeline.py             # CLI orchestratore principale
+map-builder/
+├── NaRotta.MapBuilder.sln
+├── profiles/                         # Schemi YAML Planetiler per le varie risoluzioni e template Valhalla
+└── src/
+    └── NaRotta.MapBuilder.Cli/       # Applicazione CLI C# (.NET 10) per Windows e Linux/Unix
 ```
 
 ---
 
-## 14. Flusso di Utilizzo lato App Mobile (NaRotta)
+## 15. Flusso di Utilizzo lato App Mobile (NaRotta)
 
 ```mermaid
 sequenceDiagram
@@ -372,30 +474,22 @@ sequenceDiagram
 
     Utente->>App: Apre schermata "Gestione Mappe"
     App->>Remote: Richiede manifest.json
-    Remote-->>App: Restituisce catalogo nazioni/regioni e versioni
-    App->>Utente: Mostra mappe disponibili e stato memoria
-    Utente->>App: Seleziona "Scarica Italia"
+    Remote-->>App: Restituisce catalogo nazioni/regioni, risoluzioni e versioni
+    App->>Utente: Mostra mappe disponibili, risoluzioni e stato memoria
+    Utente->>App: Seleziona "Scarica Italia" (Base + Edifici 3D)
     
     rect rgb(240, 248, 255)
-        App->>Remote: Download italy.mbtiles (con progress bar)
-        App->>Remote: Download italy_routing.tar
+        App->>Remote: Download italy_tiles_base.mbtiles (Z8-14)
+        App->>Remote: Download italy_tiles_buildings.mbtiles (Z13-15)
+        App->>Remote: Download italy_routing_auto.tar
         App->>Remote: Download italy_search.db
     end
 
     App->>Storage: Verifica checksum SHA256 dei file
-    App->>Storage: Scompatta i tasselli di routing in /valhalla_tiles/
-    App->>Storage: Registra il file italy.mbtiles in MapLibre
+    App->>Storage: Aggiorna atomicamente i tasselli in /valhalla_tiles/ usando .manifest_files.txt
+    App->>Storage: Registra i layer .mbtiles in MapLibre (uniti a world_overview.mbtiles Z0-7)
     App->>Storage: Registra italy_search.db nel motore di ricerca
     App->>App: Ricarica indici spaziali
     App-->>Utente: Mappa pronta! Navigazione offline abilitata.
 ```
 
----
-
-## 15. Prossimi Passi di Sviluppo
-1. Creare la directory `tools/map-pipeline/` con il relativo `Dockerfile` e gli script operativi.
-2. Eseguire un test di generazione pilota su una regione italiana leggera (es. Valle d'Aosta o Trentino-Alto Adige).
-3. Verificare i file generati:
-   - Ispezione visuale del file `.mbtiles`.
-   - Query di test di routing locale con Valhalla CLI (incluso test `"use_highways": 0`).
-   - Query di test di ricerca FTS5 nel database SQLite.

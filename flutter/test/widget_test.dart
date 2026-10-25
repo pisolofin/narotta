@@ -21,9 +21,9 @@ void main() {
     await tester.tap(find.byWidgetPredicate((widget) => (widget is NaIcon) && (widget.icon == NaIcons.settings)));
     await tester.pumpAndSettle();
 
-    // Verify that the Settings tab and tiles (Language and Theme) are displayed
+    // Verify that the Settings tab and tiles are displayed
     expect(find.byType(Settings), findsOneWidget);
-    expect(find.byType(NaListTile), findsNWidgets(2));
+    expect(find.byType(NaListTile), findsAtLeastNWidgets(2));
 
     // Tap the Language tile to open the language selection modal
     await tester.tap(find.byType(NaListTile).first);

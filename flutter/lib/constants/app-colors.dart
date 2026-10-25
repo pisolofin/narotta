@@ -83,4 +83,40 @@ class AppColors {
   static Color white(BuildContext context, { Brightness? brightness }) {
     return const Color(0xFFFFFFFF);
   }
+
+  /// Retrieves the map void / canvas background color.
+  static Color mapVoid(BuildContext context, { Brightness? brightness }) {
+    final Brightness effectiveBrightness = _getBrightness(context, brightness);
+    return effectiveBrightness == Brightness.dark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
+  }
+
+  /// Retrieves the map grid major line color.
+  static Color mapGridMajor(BuildContext context, { Brightness? brightness }) {
+    final Brightness effectiveBrightness = _getBrightness(context, brightness);
+    return effectiveBrightness == Brightness.dark ? const Color(0x3338BDF8) : const Color(0x330284C7);
+  }
+
+  /// Retrieves the map grid minor line color.
+  static Color mapGridMinor(BuildContext context, { Brightness? brightness }) {
+    final Brightness effectiveBrightness = _getBrightness(context, brightness);
+    return effectiveBrightness == Brightness.dark ? const Color(0x1A64748B) : const Color(0x1994A3B8);
+  }
+
+  /// Retrieves the map grid intersection crosshair color.
+  static Color mapGridCrosshair(BuildContext context, { Brightness? brightness }) {
+    final Brightness effectiveBrightness = _getBrightness(context, brightness);
+    return effectiveBrightness == Brightness.dark ? const Color(0x6638BDF8) : const Color(0x660284C7);
+  }
+
+  /// Retrieves the user location pulse / radar color.
+  static Color userPulse(BuildContext context, { Brightness? brightness }) {
+    final Brightness effectiveBrightness = _getBrightness(context, brightness);
+    return effectiveBrightness == Brightness.dark ? const Color(0x4D38BDF8) : const Color(0x4D2563EB);
+  }
+
+  /// Retrieves the user location accuracy circle color.
+  static Color userAccuracy(BuildContext context, { Brightness? brightness }) {
+    final Brightness effectiveBrightness = _getBrightness(context, brightness);
+    return effectiveBrightness == Brightness.dark ? const Color(0x2638BDF8) : const Color(0x262563EB);
+  }
 }

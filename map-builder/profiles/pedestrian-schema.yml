@@ -1,0 +1,46 @@
+schema_name: NaRotta Pedestrian & Soft Mobility
+schema_description: High-resolution pedestrian, hiking, and cycling paths layer (Zoom 13 to 15) for Park & Walk navigation.
+attribution: "<a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\">&copy; OpenStreetMap contributors</a>"
+args:
+  minzoom: 13
+  maxzoom: 15
+  osm_url:
+    description: OSM file path or download URL
+    default: data/sources/osm.pbf
+
+sources:
+  osm:
+    type: osm
+    url: "${args.osm_url}"
+
+layers:
+  - id: pedestrian_paths
+    features:
+      - source: osm
+        geometry: line
+        min_zoom: 13
+        max_zoom: 15
+        include_when:
+          highway:
+            - footway
+            - pedestrian
+            - path
+            - cycleway
+            - steps
+            - track
+            - bridleway
+        attributes:
+          - key: class
+            tag_value: highway
+          - key: name
+            tag_value: name
+          - key: surface
+            tag_value: surface
+          - key: sac_scale
+            tag_value: sac_scale
+          - key: bicycle
+            tag_value: bicycle
+          - key: foot
+            tag_value: foot
+          - key: lit
+            tag_value: lit

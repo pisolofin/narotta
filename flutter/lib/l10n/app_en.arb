@@ -48,6 +48,37 @@
       }
     }
   },
+  "mapVoidGridBadge": "Cartographic grid • Waiting for offline map",
+  "mapZoomIn": "Zoom in",
+  "mapZoomOut": "Zoom out",
+  "mapRecenter": "Recenter on position",
+  "mapFollowingUser": "Centered",
+  "mapFreeExploration": "Free exploration",
+  "mapScaleMeters": "{meters} m",
+  "@mapScaleMeters": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "mapScaleKilometers": "{kilometers} km",
+  "@mapScaleKilometers": {
+    "placeholders": {
+      "kilometers": {
+        "type": "String"
+      }
+    }
+  },
+  "mapHeadingValue": "Heading: {degrees}°",
+  "@mapHeadingValue": {
+    "placeholders": {
+      "degrees": {
+        "type": "String"
+      }
+    }
+  },
+  "mapTelemetryToggle": "Telemetry details",
   "settingsTitle": "Settings",
   "settingsGeneralSection": "General",
   "settingsLanguage": "Language",
@@ -57,5 +88,77 @@
   "settingsTheme": "Theme",
   "settingsThemeSelect": "Select theme",
   "settingsLightTheme": "Light",
-  "settingsDarkTheme": "Dark"
+  "settingsDarkTheme": "Dark",
+  "settingsMapsSection": "Maps & Offline Download",
+  "settingsMapDownloadMode": "Download mode",
+  "settingsMapDownloadModeSelect": "Select download mode",
+  "settingsMapModeByRegionTitle": "By Country or Region",
+  "settingsMapModeByRegionDesc": "Download entire countries or administrative regions from catalog",
+  "settingsMapModeCircleAreaTitle": "Circle with finger",
+  "settingsMapModeCircleAreaDesc": "Draw freehand on the map and download only the desired area",
+  "settingsMapModeRouteCorridorTitle": "Route corridor only",
+  "settingsMapModeRouteCorridorDesc": "Detail within ±15 km corridor and HD destination, base map elsewhere",
+  "settingsMapCircleDownloadAction": "Circle & download",
+  "settingsMapCircleDownloadDesc": "Select and download 0.5° × 0.5° cells with finger",
+  "settingsMapWifiOnlyTitle": "Download via Wi-Fi only",
+  "settingsMapWifiOnlyDesc": "Avoid cellular mobile data consumption",
+  "settingsMapLayersSection": "Additional detail layers",
+  "settingsMapLayerBuildingsTitle": "3D Buildings (Z13–15)",
+  "settingsMapLayerBuildingsDesc": "Volumetric building extrusions in urban areas",
+  "settingsMapLayerPedestrianTitle": "Pedestrian & Soft Mobility (Z13–15)",
+  "settingsMapLayerPedestrianDesc": "Footpaths, sidewalks and Park & Walk navigation",
+  "settingsMapLayerTerrainTitle": "High-definition terrain",
+  "settingsMapLayerTerrainDesc": "DEM elevation models and mountain contour lines",
+  "settingsMapServerUrlTitle": "Map Server Web API",
+  "settingsMapServerUrlDesc": "Address of the map distribution service",
+  "settingsMapServerUrlDialogTitle": "Configure Map Server",
+  "settingsMapServerLocalhost": "Local Server (localhost:5001)",
+  "settingsMapServerLocalhostDesc": "For local development on Windows or Mac",
+  "settingsMapServerAndroidEmulator": "Android Emulator (10.0.2.2:5001)",
+  "settingsMapServerAndroidEmulatorDesc": "Standard host alias for Android emulator",
+  "settingsMapServerLan": "Local LAN (192.168.8.53:5001)",
+  "settingsMapServerLanDesc": "MapBuilder storage server on local LAN",
+  "settingsMapServerProduction": "Production (maps.narotta.app)",
+  "settingsMapServerProductionDesc": "Official cloud map distribution server",
+  "settingsMapServerCustom": "Custom URL...",
+  "settingsMapServerCustomDesc": "Manually enter IP address and port",
+  "settingsMapServerCustomHint": "http://192.168.x.x:5001",
+  "commonSave": "Save",
+  "circleDownloadTitle": "Circle & Download",
+  "circleDownloadDrawInstruction": "Draw a circle or polygon with your finger to select the area",
+  "circleDownloadModeDraw": "Draw",
+  "circleDownloadModePan": "Pan",
+  "circleDownloadActionClear": "Clear",
+  "circleDownloadActionRecenter": "Center",
+  "circleDownloadSelectedCellsCount": "{count, plural, =1{1 cell (0.5° × 0.5°)} other{{count} cells (0.5° × 0.5°)}}",
+  "@circleDownloadSelectedCellsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "circleDownloadEstimatedSize": "Estimated size: {size} MB",
+  "@circleDownloadEstimatedSize": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "circleDownloadActionDownload": "Download selected area",
+  "circleDownloadProgressPercent": "Downloading: {percent}%",
+  "@circleDownloadProgressPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "circleDownloadCompleted": "Download successfully completed!",
+  "circleDownloadNoSelectionHint": "No area selected. Tap 'Draw' and trace with your finger on the map.",
+  "circleDownloadLayerBase": "Base Driving",
+  "circleDownloadLayerBuildings": "3D Buildings",
+  "circleDownloadLayerPedestrian": "Pedestrian"
 }
+
