@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NaRotta.MapBuilder.Core\NaRotta.MapBuilder.Core.csproj" />
+    <ProjectReference Include="..\..\..\map-builder\src\NaRotta.MapBuilder.Core\NaRotta.MapBuilder.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

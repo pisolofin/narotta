@@ -4,12 +4,14 @@ import 'package:flutter/foundation.dart';
 
 import 'app.dart';
 import 'services/settings-service.dart';
+import 'services/map-download-service.dart';
 
 /// Application entry point.
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NaPreferences.initAsync();
   await SettingsService().initAsync();
+  await MapDownloadService().initAsync();
 
   const String envUiStyle = String.fromEnvironment('UI_STYLE');
   if ((envUiStyle == 'cupertino') || (envUiStyle == 'ios')) {

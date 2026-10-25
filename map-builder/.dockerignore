@@ -1,0 +1,11 @@
+**/.git
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/appsettings.Local.json
+**/mapbuilder.settings.json
+**/*.user
+**/*.suo
+**/*.log
+tests/

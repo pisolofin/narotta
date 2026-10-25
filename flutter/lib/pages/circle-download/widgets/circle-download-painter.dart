@@ -2,10 +2,12 @@ import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 
+import 'world-continents-data.dart';
 import '../../../constants/app-sizes.dart';
 import '../../../services/geo-cell-service.dart';
+import '../../../services/map-download-service.dart';
 
-/// Painter rendering the map canvas, 0.5° × 0.5° cell grid, user drawn lasso, and selected cell highlights.
+/// Painter rendering the world continent landmasses, 0.5° × 0.5° cell grid, already downloaded cells with detail colors, user drawn lasso, and selected cell highlights.
 class CircleDownloadPainter extends CustomPainter {
   final Offset cameraWorldMeters;
   final double zoom;
@@ -13,13 +15,19 @@ class CircleDownloadPainter extends CustomPainter {
   final double referenceLon;
   final List<Offset> currentLassoScreenPointList;
   final List<GeoCellModel> selectedCellList;
+  final Map<String, MapDetailLevel> downloadedCellLevelMap;
   final bool isDrawing;
   final Color backgroundColor;
+  final Color continentFillColor;
+  final Color continentBorderColor;
   final Color gridLineColor;
   final Color lassoStrokeColor;
   final Color lassoFillColor;
   final Color cellSelectedFillColor;
   final Color cellSelectedBorderColor;
+  final Color detailBaseColor;
+  final Color detailDetailedColor;
+  final Color detailCompleteColor;
   final Color textColor;
 
   const CircleDownloadPainter({
@@ -29,13 +37,19 @@ class CircleDownloadPainter extends CustomPainter {
     required this.referenceLon,
     required this.currentLassoScreenPointList,
     required this.selectedCellList,
+    required this.downloadedCellLevelMap,
     required this.isDrawing,
     required this.backgroundColor,
+    required this.continentFillColor,
+    required this.continentBorderColor,
     required this.gridLineColor,
     required this.lassoStrokeColor,
     required this.lassoFillColor,
     required this.cellSelectedFillColor,
     required this.cellSelectedBorderColor,
+    required this.detailBaseColor,
+    required this.detailDetailedColor,
+    required this.detailCompleteColor,
     required this.textColor,
   });
 
@@ -43,7 +57,7 @@ class CircleDownloadPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 1. Background
+    // 1. Fill ocean/canvas void background
     final Paint bgPaint = Paint()
       ..color = this.backgroundColor
       ..style = PaintingStyle.fill
@@ -63,7 +77,36 @@ class CircleDownloadPainter extends CustomPainter {
       return Offset(screenX, screenY);
     }
 
-    // 2. Visible 0.5° grid lines
+    // 2. Draw world continent landmasses
+    final Paint continentFillPaint = Paint()
+      ..color = this.continentFillColor
+      ..style = PaintingStyle.fill
+    ;
+
+    final Paint continentBorderPaint = Paint()
+      ..color       = this.continentBorderColor
+      ..strokeWidth = AppSizes.mapStrokeRegular
+      ..style       = PaintingStyle.stroke
+    ;
+
+    final List<List<math.Point<double>>> polygonList = WorldContinentsData.getContinentPolygonList();
+    for (final List<math.Point<double>> points in polygonList) {
+      if (points.length < 3) {
+        continue;
+      }
+      final Path path = Path();
+      final Offset first = geoToScreen(points.first.x, points.first.y);
+      path.moveTo(first.dx, first.dy);
+      for (int i = 1; i < points.length; i++) {
+        final Offset pt = geoToScreen(points[i].x, points[i].y);
+        path.lineTo(pt.dx, pt.dy);
+      }
+      path.close();
+      canvas.drawPath(path, continentFillPaint);
+      canvas.drawPath(path, continentBorderPaint);
+    }
+
+    // 3. Visible 0.5° grid lines
     final double halfViewWidthMeters = (size.width / 2.0) / this.zoom;
     final double halfViewHeightMeters = (size.height / 2.0) / this.zoom;
 
@@ -99,13 +142,48 @@ class CircleDownloadPainter extends CustomPainter {
       canvas.drawLine(lftPt, rgtPt, gridPaint);
     }
 
-    // 3. Highlight selected cells
-    final Paint cellFillPaint = Paint()
+    // 4. Draw already downloaded cells with their respective detail level colors
+    for (final MapEntry<String, MapDetailLevel> entry in this.downloadedCellLevelMap.entries) {
+      final String cellId = entry.key;
+      final MapDetailLevel level = entry.value;
+
+      Color levelColor;
+      if (level == MapDetailLevel.base) {
+        levelColor = this.detailBaseColor;
+      }else if (level == MapDetailLevel.detailed) {
+        levelColor = this.detailDetailedColor;
+      }else {
+        levelColor = this.detailCompleteColor;
+      }
+
+      // Try to parse cell bounding box
+      final GeoCellModel cell = _parseCellIdToModel(cellId);
+      final Offset topLeft = geoToScreen(cell.minLongitude, cell.maxLatitude);
+      final Offset btmRight = geoToScreen(cell.maxLongitude, cell.minLatitude);
+      final Rect cellRect = Rect.fromPoints(topLeft, btmRight);
+
+      final Paint cellFillPaint = Paint()
+        ..color = levelColor.withValues(alpha: 0.38)
+        ..style = PaintingStyle.fill
+      ;
+
+      final Paint cellBorderPaint = Paint()
+        ..color       = levelColor
+        ..strokeWidth = AppSizes.mapStrokeThick
+        ..style       = PaintingStyle.stroke
+      ;
+
+      canvas.drawRect(cellRect, cellFillPaint);
+      canvas.drawRect(cellRect, cellBorderPaint);
+    }
+
+    // 5. Highlight selected cells (currently circled by lasso)
+    final Paint cellSelectedFillPaint = Paint()
       ..color = this.cellSelectedFillColor
       ..style = PaintingStyle.fill
     ;
 
-    final Paint cellBorderPaint = Paint()
+    final Paint cellSelectedBorderPaint = Paint()
       ..color       = this.cellSelectedBorderColor
       ..strokeWidth = AppSizes.mapStrokeThick
       ..style       = PaintingStyle.stroke
@@ -120,8 +198,8 @@ class CircleDownloadPainter extends CustomPainter {
       final Offset btmRight = geoToScreen(cell.maxLongitude, cell.minLatitude);
 
       final Rect cellRect = Rect.fromPoints(topLeft, btmRight);
-      canvas.drawRect(cellRect, cellFillPaint);
-      canvas.drawRect(cellRect, cellBorderPaint);
+      canvas.drawRect(cellRect, cellSelectedFillPaint);
+      canvas.drawRect(cellRect, cellSelectedBorderPaint);
 
       // Draw cell identifier label if cell rect is large enough
       if (cellRect.width > 60.0) {
@@ -141,7 +219,7 @@ class CircleDownloadPainter extends CustomPainter {
       }
     }
 
-    // 4. Draw active finger lasso
+    // 6. Draw active finger lasso
     if (this.currentLassoScreenPointList.length >= 2) {
       final Path lassoPath = Path();
       lassoPath.moveTo(
@@ -172,6 +250,36 @@ class CircleDownloadPainter extends CustomPainter {
       ;
       canvas.drawPath(lassoPath, strokePaint);
     }
+  }
+
+  /// Helper to convert a cellId string into a [GeoCellModel] with bounds.
+  GeoCellModel _parseCellIdToModel(String cellId) {
+    try {
+      final RegExp regExp = RegExp(r'^([NS])(\d{ 2 })_(\d{ 2 })_([EW])(\d{ 3 })_(\d{ 2 })$');
+      final RegExpMatch? match = regExp.firstMatch(cellId);
+      if (match != null) {
+        final double latDeg = double.parse(match.group(2)!) + (double.parse(match.group(3)!) / 100.0);
+        final double lonDeg = double.parse(match.group(5)!) + (double.parse(match.group(6)!) / 100.0);
+        final double minLat = (match.group(1) == 'N') ? latDeg : -latDeg;
+        final double minLon = (match.group(4) == 'E') ? lonDeg : -lonDeg;
+        return GeoCellModel(
+          cellId      : cellId,
+          minLongitude: minLon,
+          minLatitude : minLat,
+          maxLongitude: minLon + GeoCellService.cellSizeDegrees,
+          maxLatitude : minLat + GeoCellService.cellSizeDegrees,
+        );
+      }
+    }catch (_) {
+      // Fallback
+    }
+    return GeoCellModel(
+      cellId      : cellId,
+      minLongitude: 0.0,
+      minLatitude : 0.0,
+      maxLongitude: 0.5,
+      maxLatitude : 0.5,
+    );
   }
 
   @override

@@ -2,16 +2,16 @@
   "@@locale": "en",
   "commonAppTitle": "NaRotta",
   "commonCancel": "Cancel",
-  "commonSystemDefault": "System default",
+  "commonSystemDefault": "System Default",
   "mapTab": "Map",
   "settingsTab": "Settings",
-  "mapEmptyTitle": "No map data",
+  "mapEmptyTitle": "No cartographic data",
   "mapEmptySubtitle": "Offline map data has not been loaded yet.",
   "locationCurrentPositionTitle": "Current position",
-  "locationSearching": "Acquiring GPS position...",
-  "locationServiceDisabled": "Location services are disabled on this device.",
+  "locationSearching": "Detecting GPS position...",
+  "locationServiceDisabled": "Location services disabled on device.",
   "locationPermissionDenied": "Location permission denied.",
-  "locationError": "Unable to read current position.",
+  "locationError": "Unable to detect current position.",
   "locationRefresh": "Refresh position",
   "locationCoordinates": "{latitude}, {longitude}",
   "@locationCoordinates": {
@@ -24,7 +24,7 @@
       }
     }
   },
-  "locationAccuracyValue": "Accuracy: ±{meters} m",
+  "locationAccuracyValue": "Accuracy: +/-{meters} m",
   "@locationAccuracyValue": {
     "placeholders": {
       "meters": {
@@ -48,9 +48,9 @@
       }
     }
   },
-  "mapVoidGridBadge": "Cartographic grid • Waiting for offline map",
-  "mapZoomIn": "Zoom in",
-  "mapZoomOut": "Zoom out",
+  "mapVoidGridBadge": "Cartographic Grid - Awaiting map data",
+  "mapZoomIn": "Zoom In",
+  "mapZoomOut": "Zoom Out",
   "mapRecenter": "Recenter on position",
   "mapFollowingUser": "Centered",
   "mapFreeExploration": "Free exploration",
@@ -70,7 +70,7 @@
       }
     }
   },
-  "mapHeadingValue": "Heading: {degrees}°",
+  "mapHeadingValue": "Heading: {degrees} deg",
   "@mapHeadingValue": {
     "placeholders": {
       "degrees": {
@@ -89,34 +89,34 @@
   "settingsThemeSelect": "Select theme",
   "settingsLightTheme": "Light",
   "settingsDarkTheme": "Dark",
-  "settingsMapsSection": "Maps & Offline Download",
+  "settingsMapsSection": "Maps & Offline Downloads",
   "settingsMapDownloadMode": "Download mode",
   "settingsMapDownloadModeSelect": "Select download mode",
   "settingsMapModeByRegionTitle": "By Country or Region",
-  "settingsMapModeByRegionDesc": "Download entire countries or administrative regions from catalog",
+  "settingsMapModeByRegionDesc": "Download full countries or administrative regions from catalog",
   "settingsMapModeCircleAreaTitle": "Circle with finger",
-  "settingsMapModeCircleAreaDesc": "Draw freehand on the map and download only the desired area",
-  "settingsMapModeRouteCorridorTitle": "Route corridor only",
-  "settingsMapModeRouteCorridorDesc": "Detail within ±15 km corridor and HD destination, base map elsewhere",
-  "settingsMapCircleDownloadAction": "Circle & download",
-  "settingsMapCircleDownloadDesc": "Select and download 0.5° × 0.5° cells with finger",
+  "settingsMapModeCircleAreaDesc": "Draw freehand on the map to download only the desired area",
+  "settingsMapModeRouteCorridorTitle": "Along route only",
+  "settingsMapModeRouteCorridorDesc": "Detail in +/-15 km corridor and HD destination, base map elsewhere",
+  "settingsMapCircleDownloadAction": "Circle and download",
+  "settingsMapCircleDownloadDesc": "Select and download 0.5 x 0.5 cells with your finger",
   "settingsMapWifiOnlyTitle": "Download via Wi-Fi only",
-  "settingsMapWifiOnlyDesc": "Avoid cellular mobile data consumption",
-  "settingsMapLayersSection": "Additional detail layers",
-  "settingsMapLayerBuildingsTitle": "3D Buildings (Z13–15)",
-  "settingsMapLayerBuildingsDesc": "Volumetric building extrusions in urban areas",
-  "settingsMapLayerPedestrianTitle": "Pedestrian & Soft Mobility (Z13–15)",
-  "settingsMapLayerPedestrianDesc": "Footpaths, sidewalks and Park & Walk navigation",
-  "settingsMapLayerTerrainTitle": "High-definition terrain",
+  "settingsMapWifiOnlyDesc": "Prevent cellular data usage during map downloads",
+  "settingsMapLayersSection": "Additional Detail Layers",
+  "settingsMapLayerBuildingsTitle": "3D Buildings (Z13-15)",
+  "settingsMapLayerBuildingsDesc": "Volumetric extrusions of urban blocks",
+  "settingsMapLayerPedestrianTitle": "Pedestrian & Soft Mobility (Z13-15)",
+  "settingsMapLayerPedestrianDesc": "Walking paths, hiking trails and Park & Walk",
+  "settingsMapLayerTerrainTitle": "HD Elevation Contours",
   "settingsMapLayerTerrainDesc": "DEM elevation models and mountain contour lines",
   "settingsMapServerUrlTitle": "Map Server Web API",
-  "settingsMapServerUrlDesc": "Address of the map distribution service",
+  "settingsMapServerUrlDesc": "Map distribution service address",
   "settingsMapServerUrlDialogTitle": "Configure Map Server",
   "settingsMapServerLocalhost": "Local Server (localhost:5001)",
-  "settingsMapServerLocalhostDesc": "For local development on Windows or Mac",
+  "settingsMapServerLocalhostDesc": "For local development and testing on Windows or Mac",
   "settingsMapServerAndroidEmulator": "Android Emulator (10.0.2.2:5001)",
-  "settingsMapServerAndroidEmulatorDesc": "Standard host alias for Android emulator",
-  "settingsMapServerLan": "Local LAN (192.168.8.53:5001)",
+  "settingsMapServerAndroidEmulatorDesc": "Default network alias for Android emulator",
+  "settingsMapServerLan": "Local Network (192.168.8.53:5001)",
   "settingsMapServerLanDesc": "MapBuilder storage server on local LAN",
   "settingsMapServerProduction": "Production (maps.narotta.app)",
   "settingsMapServerProductionDesc": "Official cloud map distribution server",
@@ -124,13 +124,15 @@
   "settingsMapServerCustomDesc": "Manually enter IP address and port",
   "settingsMapServerCustomHint": "http://192.168.x.x:5001",
   "commonSave": "Save",
+  "commonDelete": "Delete",
+  "commonClose": "Close",
   "circleDownloadTitle": "Circle & Download",
-  "circleDownloadDrawInstruction": "Draw a circle or polygon with your finger to select the area",
+  "circleDownloadDrawInstruction": "Draw a circle or polygon with your finger to select an area",
   "circleDownloadModeDraw": "Draw",
   "circleDownloadModePan": "Pan",
   "circleDownloadActionClear": "Clear",
-  "circleDownloadActionRecenter": "Center",
-  "circleDownloadSelectedCellsCount": "{count, plural, =1{1 cell (0.5° × 0.5°)} other{{count} cells (0.5° × 0.5°)}}",
+  "circleDownloadActionRecenter": "Recenter",
+  "circleDownloadSelectedCellsCount": "{count, plural, =1{1 cell (0.5 x 0.5)} other{{count} cells (0.5 x 0.5)}}",
   "@circleDownloadSelectedCellsCount": {
     "placeholders": {
       "count": {
@@ -159,6 +161,133 @@
   "circleDownloadNoSelectionHint": "No area selected. Tap 'Draw' and trace with your finger on the map.",
   "circleDownloadLayerBase": "Base Driving",
   "circleDownloadLayerBuildings": "3D Buildings",
-  "circleDownloadLayerPedestrian": "Pedestrian"
+  "circleDownloadLayerPedestrian": "Pedestrian",
+  "settingsMapDownloadManagerTitle": "Download offline maps",
+  "settingsMapDownloadManagerDesc": "World map, countries and regions with detail selection",
+  "mapDownloadTitle": "Offline Maps Download",
+  "mapDownloadWorldSection": "World Base Map",
+  "mapDownloadWorldDesc": "Global overview (Zoom 0-7) - Essential for offline orientation across countries and continents",
+  "mapDownloadWorldDownloadBtn": "Download World Base Map ({size} MB)",
+  "@mapDownloadWorldDownloadBtn": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDownloadWorldDownloaded": "World Map downloaded",
+  "mapDownloadRegionsSection": "Countries and Regions",
+  "mapDownloadRegionsDesc": "Select a country or region to choose detail level and download",
+  "mapDownloadRegionsSearchHint": "Search country or region...",
+  "mapDownloadDetailLevelTitle": "Detail level",
+  "mapDownloadDetailSelectFor": "Select detail for {name}",
+  "@mapDownloadDetailSelectFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDownloadDetailBaseTitle": "Base (Roads & Navigation)",
+  "mapDownloadDetailBaseDesc": "Full road network, cities and vehicle routing (Z8-14)",
+  "mapDownloadDetailDetailedTitle": "Detailed (+ Pedestrian & Trails)",
+  "mapDownloadDetailDetailedDesc": "Roads + hiking trails, walking paths and cycle tracks (Z8-16)",
+  "mapDownloadDetailCompleteTitle": "Complete (+ 3D & HD Terrain)",
+  "mapDownloadDetailCompleteDesc": "Roads + trails + 3D building extrusions and DEM contours (Z8-16)",
+  "mapDownloadDetailBaseBadge": "Base",
+  "mapDownloadDetailDetailedBadge": "Detailed",
+  "mapDownloadDetailCompleteBadge": "Complete",
+  "mapDownloadStatusDownloaded": "Downloaded",
+  "mapDownloadStatusNotDownloaded": "Not downloaded",
+  "mapDownloadStatusDownloading": "Downloading ({percent}%)",
+  "@mapDownloadStatusDownloading": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "mapDownloadActionDownload": "Download ({size} MB)",
+  "@mapDownloadActionDownload": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDownloadActionUpdate": "Update detail level",
+  "mapDownloadActionDelete": "Delete downloaded map",
+  "mapDownloadActionDeleteConfirmTitle": "Delete map",
+  "mapDownloadActionDeleteConfirmMsg": "Are you sure you want to delete offline data for {name}?",
+  "@mapDownloadActionDeleteConfirmMsg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDownloadCircleActionTitle": "Circle and download on map",
+  "mapDownloadCircleActionDesc": "Draw freehand on the world map to download only desired cells",
+  "circleDownloadDetailModalTitle": "Download detail for selected area",
+  "circleDownloadLegendTitle": "Downloaded levels:",
+  "circleDownloadLegendBase": "Base",
+  "circleDownloadLegendDetailed": "Detailed",
+  "circleDownloadLegendComplete": "Complete",
+  "circleDownloadCellsSelectedCount": "{count, plural, =1{1 cell selected} other{{count} cells selected}}",
+  "@circleDownloadCellsSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "circleDownloadActionChooseDetail": "Choose detail and download",
+  "mapDownloadServerOnline": "Map Server online ({url})",
+  "@mapDownloadServerOnline": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDownloadServerOffline": "Map Server unreachable ({url})",
+  "@mapDownloadServerOffline": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDownloadServerOfflineError": "Unable to download: Map Server ({url}) is unreachable. Please verify it is running.",
+  "@mapDownloadServerOfflineError": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "commonMegabytesValue": "{size} MB",
+  "@commonMegabytesValue": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "commonApproximateMegabytesValue": "~{size} MB",
+  "@commonApproximateMegabytesValue": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPercentValue": "{percent}%",
+  "@commonPercentValue": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  }
 }
-

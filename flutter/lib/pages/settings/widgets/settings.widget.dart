@@ -5,6 +5,7 @@ import '../../../constants/app-sizes.dart';
 import '../../../constants/app-colors.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../services/settings-service.dart';
+import '../../map-download/map-download.page.dart';
 import '../../circle-download/circle-download.page.dart';
 
 /// Displays the application settings view with language, theme, and map download configuration.
@@ -180,6 +181,23 @@ class Settings extends StatelessWidget {
 
     if (selectedMode != null) {
       await SettingsService().updateMapDownloadModeAsync(selectedMode);
+      if (context.mounted) {
+        if (selectedMode == MapDownloadMode.byRegion) {
+          Navigator.of(context).push(
+            NaPageRoute.create(
+              context,
+              builder: (BuildContext pageContext) => const MapDownloadPage(),
+            ),
+          );
+        }else if (selectedMode == MapDownloadMode.circleArea) {
+          Navigator.of(context).push(
+            NaPageRoute.create(
+              context,
+              builder: (BuildContext pageContext) => const CircleDownloadPage(),
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -420,9 +438,31 @@ class Settings extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children    : [
-                    // Download mode selector tile
+                    // Offline Maps Download Hub navigation tile
                     NaListTile(
                       leading : const NaIcon(NaIcons.cloudDownload),
+                      title   : Text(l10n.settingsMapDownloadManagerTitle),
+                      subtitle: Text(
+                        l10n.settingsMapDownloadManagerDesc,
+                        style: TextStyle(
+                          fontSize: AppSizes.font12,
+                          color   : AppColors.textSecondary(context),
+                        ),
+                      ),
+                      hasChevron: true,
+                      onTap     : () {
+                        Navigator.of(context).push(
+                          NaPageRoute.create(
+                            context,
+                            builder: (BuildContext pageContext) => const MapDownloadPage(),
+                          ),
+                        );
+                      },
+                    ),
+
+                    // Download mode selector tile
+                    NaListTile(
+                      leading : const NaIcon(NaIcons.tune),
                       title   : Text(l10n.settingsMapDownloadMode),
                       trailing: Text(
                         _getMapDownloadModeTitle(currentDownloadMode, l10n),

@@ -16,7 +16,7 @@ class MapServerService {
 
   MapServerService._internal();
 
-  /// Checks the connectivity and health status of the configured Map Server.
+  /// Checks the connectivity and health status of the configured Map Server, with smart local port detection.
   Future<bool> checkHealthAsync() async {
     final String serverUrl = SettingsService().mapServerUrl.replaceAll(RegExp(r'/+$'), '');
     final HttpClient client = HttpClient();
@@ -26,7 +26,77 @@ class MapServerService {
       final Uri uri = Uri.parse('$serverUrl/health');
       final HttpClientRequest request = await client.getUrl(uri);
       final HttpClientResponse response = await request.close();
-      return response.statusCode == HttpStatus.ok;
+      if (response.statusCode == HttpStatus.ok) {
+        return true;
+      }
+    }catch (_) {
+      // Primary attempt failed, try fallback loop below
+    }finally {
+      client.close();
+    }
+
+    // If local test server is configured, check alternative ports/IPv4 mappings
+    if (serverUrl.contains('localhost') || serverUrl.contains('127.0.0.1')) {
+      final List<String> candidateUrlList = [
+        'http://127.0.0.1:5001',
+        'http://localhost:5001',
+        'http://localhost:58229',
+        'http://127.0.0.1:58229',
+      ];
+
+      for (final String candidateUrl in candidateUrlList) {
+        if (candidateUrl == serverUrl) {
+          continue;
+        }
+        final HttpClient fallbackClient = HttpClient();
+        fallbackClient.connectionTimeout = const Duration(seconds: 2);
+        try {
+          final Uri altUri = Uri.parse('$candidateUrl/health');
+          final HttpClientRequest altReq = await fallbackClient.getUrl(altUri);
+          final HttpClientResponse altResp = await altReq.close();
+          if (altResp.statusCode == HttpStatus.ok) {
+            await SettingsService().updateMapServerUrlAsync(candidateUrl);
+            return true;
+          }
+        }catch (_) {
+          // Continue checking next candidate
+        }finally {
+          fallbackClient.close();
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /// Downloads a file stream from the server with progress notification.
+  Future<bool> downloadFileStreamAsync(
+    String relativePath, {
+    void Function(double progress)? onProgress,
+  }) async {
+    final String serverUrl = SettingsService().mapServerUrl.replaceAll(RegExp(r'/+$'), '');
+    final HttpClient client = HttpClient();
+    client.connectionTimeout = const Duration(seconds: 8);
+
+    try {
+      final String cleanPath = relativePath.replaceAll(RegExp(r'^/+'), '');
+      final Uri uri = Uri.parse('$serverUrl/api/v1/download/$cleanPath');
+      final HttpClientRequest request = await client.getUrl(uri);
+      final HttpClientResponse response = await request.close();
+
+      if (response.statusCode == HttpStatus.ok) {
+        final int totalLength = response.contentLength;
+        int receivedBytes = 0;
+
+        await for (final List<int> chunk in response) {
+          receivedBytes += chunk.length;
+          if ((totalLength > 0) && (onProgress != null)) {
+            onProgress((receivedBytes / totalLength).clamp(0.0, 1.0));
+          }
+        }
+        return true;
+      }
+      return false;
     }catch (_) {
       return false;
     }finally {

@@ -24,7 +24,7 @@
       }
     }
   },
-  "locationAccuracyValue": "Precisione: ±{meters} m",
+  "locationAccuracyValue": "Precisione: +/-{meters} m",
   "@locationAccuracyValue": {
     "placeholders": {
       "meters": {
@@ -40,7 +40,7 @@
       }
     }
   },
-  "locationSpeedValue": "Velocità: {kmh} km/h",
+  "locationSpeedValue": "Velocita': {kmh} km/h",
   "@locationSpeedValue": {
     "placeholders": {
       "kmh": {
@@ -48,7 +48,7 @@
       }
     }
   },
-  "mapVoidGridBadge": "Reticolo cartografico • In attesa della mappa",
+  "mapVoidGridBadge": "Reticolo cartografico - In attesa della mappa",
   "mapZoomIn": "Ingrandisci",
   "mapZoomOut": "Rimpicciolisci",
   "mapRecenter": "Ricentra sulla posizione",
@@ -70,7 +70,7 @@
       }
     }
   },
-  "mapHeadingValue": "Direzione: {degrees}°",
+  "mapHeadingValue": "Direzione: {degrees} gradi",
   "@mapHeadingValue": {
     "placeholders": {
       "degrees": {
@@ -90,22 +90,22 @@
   "settingsLightTheme": "Chiaro",
   "settingsDarkTheme": "Scuro",
   "settingsMapsSection": "Mappe e Download Offline",
-  "settingsMapDownloadMode": "Modalità di download",
-  "settingsMapDownloadModeSelect": "Seleziona modalità di download",
+  "settingsMapDownloadMode": "Modalita' di download",
+  "settingsMapDownloadModeSelect": "Seleziona modalita' di download",
   "settingsMapModeByRegionTitle": "Per Stato o Regione",
   "settingsMapModeByRegionDesc": "Scarica intere nazioni o regioni amministrative dal catalogo",
   "settingsMapModeCircleAreaTitle": "Cerchia con il dito",
   "settingsMapModeCircleAreaDesc": "Disegna a mano libera sulla mappa e scarica solo l'area desiderata",
   "settingsMapModeRouteCorridorTitle": "Solo lungo la rotta",
-  "settingsMapModeRouteCorridorDesc": "Dettaglio nel corridoio ±15 km e destinazione HD, mappa base altrove",
+  "settingsMapModeRouteCorridorDesc": "Dettaglio nel corridoio +/-15 km e destinazione HD, mappa base altrove",
   "settingsMapCircleDownloadAction": "Cerchia e scarica",
-  "settingsMapCircleDownloadDesc": "Seleziona e scarica celle 0.5° × 0.5° col dito",
+  "settingsMapCircleDownloadDesc": "Seleziona e scarica celle 0.5 x 0.5 col dito",
   "settingsMapWifiOnlyTitle": "Scarica solo con Wi-Fi",
   "settingsMapWifiOnlyDesc": "Evita il consumo della connessione dati cellulare",
   "settingsMapLayersSection": "Livelli di dettaglio aggiuntivi",
-  "settingsMapLayerBuildingsTitle": "Edifici 3D (Z13–15)",
+  "settingsMapLayerBuildingsTitle": "Edifici 3D (Z13-15)",
   "settingsMapLayerBuildingsDesc": "Estrusioni volumetriche degli isolati urbani",
-  "settingsMapLayerPedestrianTitle": "Pedonale e Mobilità Dolce (Z13–15)",
+  "settingsMapLayerPedestrianTitle": "Pedonale e Mobilita' Dolce (Z13-15)",
   "settingsMapLayerPedestrianDesc": "Sentieri, marciapiedi e percorsi a piedi Park & Walk",
   "settingsMapLayerTerrainTitle": "Rilievi altimetrici HD",
   "settingsMapLayerTerrainDesc": "Modelli DEM e curve di livello montane",
@@ -124,13 +124,15 @@
   "settingsMapServerCustomDesc": "Inserisci manualmente l'indirizzo IP e la porta",
   "settingsMapServerCustomHint": "http://192.168.x.x:5001",
   "commonSave": "Salva",
+  "commonDelete": "Elimina",
+  "commonClose": "Chiudi",
   "circleDownloadTitle": "Cerchia e Scarica",
   "circleDownloadDrawInstruction": "Disegna un cerchio o poligono col dito per delimitare l'area",
   "circleDownloadModeDraw": "Disegna",
   "circleDownloadModePan": "Sposta",
   "circleDownloadActionClear": "Cancella",
   "circleDownloadActionRecenter": "Centra",
-  "circleDownloadSelectedCellsCount": "{count, plural, =1{1 cella (0.5° × 0.5°)} other{{count} celle (0.5° × 0.5°)}}",
+  "circleDownloadSelectedCellsCount": "{count, plural, =1{1 cella (0.5 x 0.5)} other{{count} celle (0.5 x 0.5)}}",
   "@circleDownloadSelectedCellsCount": {
     "placeholders": {
       "count": {
@@ -159,6 +161,133 @@
   "circleDownloadNoSelectionHint": "Nessuna area selezionata. Tocca 'Disegna' e traccia col dito sulla mappa.",
   "circleDownloadLayerBase": "Base Guida",
   "circleDownloadLayerBuildings": "Edifici 3D",
-  "circleDownloadLayerPedestrian": "Pedonale"
+  "circleDownloadLayerPedestrian": "Pedonale",
+  "settingsMapDownloadManagerTitle": "Scarica mappe offline",
+  "settingsMapDownloadManagerDesc": "Mappa del mondo, stati e regioni con selezione dettaglio",
+  "mapDownloadTitle": "Download Mappe Offline",
+  "mapDownloadWorldSection": "Mappa del Mondo (Base)",
+  "mapDownloadWorldDesc": "Panoramica globale (Zoom 0-7) - Indispensabile per navigare e orientarsi offline tra nazioni e continenti",
+  "mapDownloadWorldDownloadBtn": "Scarica Mappa Base ({size} MB)",
+  "@mapDownloadWorldDownloadBtn": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDownloadWorldDownloaded": "Mappa del Mondo scaricata",
+  "mapDownloadRegionsSection": "Stati e Regioni",
+  "mapDownloadRegionsDesc": "Seleziona uno stato o una regione per scegliere il livello di dettaglio da scaricare",
+  "mapDownloadRegionsSearchHint": "Cerca stato o regione...",
+  "mapDownloadDetailLevelTitle": "Livello di dettaglio",
+  "mapDownloadDetailSelectFor": "Seleziona dettaglio per {name}",
+  "@mapDownloadDetailSelectFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDownloadDetailBaseTitle": "Base (Stradale & Navigazione)",
+  "mapDownloadDetailBaseDesc": "Rete stradale completa, citta' e routing (Z8-14)",
+  "mapDownloadDetailDetailedTitle": "Dettagliato (+ Sentieri & Pedonale)",
+  "mapDownloadDetailDetailedDesc": "Stradale + sentieri escursionistici, percorsi a piedi e piste ciclabili (Z8-16)",
+  "mapDownloadDetailCompleteTitle": "Completo (+ 3D e Terreno HD)",
+  "mapDownloadDetailCompleteDesc": "Stradale + sentieri + edifici volumetrici 3D e curve di livello DEM (Z8-16)",
+  "mapDownloadDetailBaseBadge": "Base",
+  "mapDownloadDetailDetailedBadge": "Dettagliato",
+  "mapDownloadDetailCompleteBadge": "Completo",
+  "mapDownloadStatusDownloaded": "Scaricata",
+  "mapDownloadStatusNotDownloaded": "Non scaricata",
+  "mapDownloadStatusDownloading": "Download in corso ({percent}%)",
+  "@mapDownloadStatusDownloading": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "mapDownloadActionDownload": "Scarica ({size} MB)",
+  "@mapDownloadActionDownload": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDownloadActionUpdate": "Aggiorna livello di dettaglio",
+  "mapDownloadActionDelete": "Elimina mappa scaricata",
+  "mapDownloadActionDeleteConfirmTitle": "Elimina mappa",
+  "mapDownloadActionDeleteConfirmMsg": "Sei sicuro di voler eliminare i dati offline per {name}?",
+  "@mapDownloadActionDeleteConfirmMsg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDownloadCircleActionTitle": "Cerchia e scarica su mappa",
+  "mapDownloadCircleActionDesc": "Disegna a mano libera sulla mappa mondiale per scaricare solo le celle desiderate",
+  "circleDownloadDetailModalTitle": "Dettaglio download per l'area selezionata",
+  "circleDownloadLegendTitle": "Livelli scaricati:",
+  "circleDownloadLegendBase": "Base",
+  "circleDownloadLegendDetailed": "Dettagliato",
+  "circleDownloadLegendComplete": "Completo",
+  "circleDownloadCellsSelectedCount": "{count, plural, =1{1 cella selezionata} other{{count} celle selezionate}}",
+  "@circleDownloadCellsSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "circleDownloadActionChooseDetail": "Scegli dettaglio e scarica",
+  "mapDownloadServerOnline": "Server Mappe online ({url})",
+  "@mapDownloadServerOnline": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDownloadServerOffline": "Server Mappe non raggiungibile ({url})",
+  "@mapDownloadServerOffline": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDownloadServerOfflineError": "Impossibile scaricare: il Server Mappe ({url}) non e' raggiungibile. Verifica che sia avviato.",
+  "@mapDownloadServerOfflineError": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "commonMegabytesValue": "{size} MB",
+  "@commonMegabytesValue": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "commonApproximateMegabytesValue": "~{size} MB",
+  "@commonApproximateMegabytesValue": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPercentValue": "{percent}%",
+  "@commonPercentValue": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  }
 }
-

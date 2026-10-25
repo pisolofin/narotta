@@ -57,7 +57,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String locationAccuracyValue(String meters) {
-    return 'Precisione: ±$meters m';
+    return 'Precisione: +/-$meters m';
   }
 
   @override
@@ -67,12 +67,12 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String locationSpeedValue(String kmh) {
-    return 'Velocità: $kmh km/h';
+    return 'Velocita\': $kmh km/h';
   }
 
   @override
   String get mapVoidGridBadge =>
-      'Reticolo cartografico • In attesa della mappa';
+      'Reticolo cartografico - In attesa della mappa';
 
   @override
   String get mapZoomIn => 'Ingrandisci';
@@ -101,7 +101,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String mapHeadingValue(String degrees) {
-    return 'Direzione: $degrees°';
+    return 'Direzione: $degrees gradi';
   }
 
   @override
@@ -141,10 +141,11 @@ class AppLocalizationsIt extends AppLocalizations {
   String get settingsMapsSection => 'Mappe e Download Offline';
 
   @override
-  String get settingsMapDownloadMode => 'Modalità di download';
+  String get settingsMapDownloadMode => 'Modalita\' di download';
 
   @override
-  String get settingsMapDownloadModeSelect => 'Seleziona modalità di download';
+  String get settingsMapDownloadModeSelect =>
+      'Seleziona modalita\' di download';
 
   @override
   String get settingsMapModeByRegionTitle => 'Per Stato o Regione';
@@ -165,14 +166,14 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get settingsMapModeRouteCorridorDesc =>
-      'Dettaglio nel corridoio ±15 km e destinazione HD, mappa base altrove';
+      'Dettaglio nel corridoio +/-15 km e destinazione HD, mappa base altrove';
 
   @override
   String get settingsMapCircleDownloadAction => 'Cerchia e scarica';
 
   @override
   String get settingsMapCircleDownloadDesc =>
-      'Seleziona e scarica celle 0.5° × 0.5° col dito';
+      'Seleziona e scarica celle 0.5 x 0.5 col dito';
 
   @override
   String get settingsMapWifiOnlyTitle => 'Scarica solo con Wi-Fi';
@@ -185,7 +186,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get settingsMapLayersSection => 'Livelli di dettaglio aggiuntivi';
 
   @override
-  String get settingsMapLayerBuildingsTitle => 'Edifici 3D (Z13–15)';
+  String get settingsMapLayerBuildingsTitle => 'Edifici 3D (Z13-15)';
 
   @override
   String get settingsMapLayerBuildingsDesc =>
@@ -193,7 +194,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get settingsMapLayerPedestrianTitle =>
-      'Pedonale e Mobilità Dolce (Z13–15)';
+      'Pedonale e Mobilita\' Dolce (Z13-15)';
 
   @override
   String get settingsMapLayerPedestrianDesc =>
@@ -259,6 +260,12 @@ class AppLocalizationsIt extends AppLocalizations {
   String get commonSave => 'Salva';
 
   @override
+  String get commonDelete => 'Elimina';
+
+  @override
+  String get commonClose => 'Chiudi';
+
+  @override
   String get circleDownloadTitle => 'Cerchia e Scarica';
 
   @override
@@ -282,8 +289,8 @@ class AppLocalizationsIt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other : '$count celle (0.5° × 0.5°)',
-      one   : '1 cella (0.5° × 0.5°)',
+      other: '$count celle (0.5 x 0.5)',
+      one: '1 cella (0.5 x 0.5)',
     );
     return '$_temp0';
   }
@@ -316,4 +323,175 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get circleDownloadLayerPedestrian => 'Pedonale';
+
+  @override
+  String get settingsMapDownloadManagerTitle => 'Scarica mappe offline';
+
+  @override
+  String get settingsMapDownloadManagerDesc =>
+      'Mappa del mondo, stati e regioni con selezione dettaglio';
+
+  @override
+  String get mapDownloadTitle => 'Download Mappe Offline';
+
+  @override
+  String get mapDownloadWorldSection => 'Mappa del Mondo (Base)';
+
+  @override
+  String get mapDownloadWorldDesc =>
+      'Panoramica globale (Zoom 0-7) - Indispensabile per navigare e orientarsi offline tra nazioni e continenti';
+
+  @override
+  String mapDownloadWorldDownloadBtn(String size) {
+    return 'Scarica Mappa Base ($size MB)';
+  }
+
+  @override
+  String get mapDownloadWorldDownloaded => 'Mappa del Mondo scaricata';
+
+  @override
+  String get mapDownloadRegionsSection => 'Stati e Regioni';
+
+  @override
+  String get mapDownloadRegionsDesc =>
+      'Seleziona uno stato o una regione per scegliere il livello di dettaglio da scaricare';
+
+  @override
+  String get mapDownloadRegionsSearchHint => 'Cerca stato o regione...';
+
+  @override
+  String get mapDownloadDetailLevelTitle => 'Livello di dettaglio';
+
+  @override
+  String mapDownloadDetailSelectFor(String name) {
+    return 'Seleziona dettaglio per $name';
+  }
+
+  @override
+  String get mapDownloadDetailBaseTitle => 'Base (Stradale & Navigazione)';
+
+  @override
+  String get mapDownloadDetailBaseDesc =>
+      'Rete stradale completa, citta\' e routing (Z8-14)';
+
+  @override
+  String get mapDownloadDetailDetailedTitle =>
+      'Dettagliato (+ Sentieri & Pedonale)';
+
+  @override
+  String get mapDownloadDetailDetailedDesc =>
+      'Stradale + sentieri escursionistici, percorsi a piedi e piste ciclabili (Z8-16)';
+
+  @override
+  String get mapDownloadDetailCompleteTitle => 'Completo (+ 3D e Terreno HD)';
+
+  @override
+  String get mapDownloadDetailCompleteDesc =>
+      'Stradale + sentieri + edifici volumetrici 3D e curve di livello DEM (Z8-16)';
+
+  @override
+  String get mapDownloadDetailBaseBadge => 'Base';
+
+  @override
+  String get mapDownloadDetailDetailedBadge => 'Dettagliato';
+
+  @override
+  String get mapDownloadDetailCompleteBadge => 'Completo';
+
+  @override
+  String get mapDownloadStatusDownloaded => 'Scaricata';
+
+  @override
+  String get mapDownloadStatusNotDownloaded => 'Non scaricata';
+
+  @override
+  String mapDownloadStatusDownloading(int percent) {
+    return 'Download in corso ($percent%)';
+  }
+
+  @override
+  String mapDownloadActionDownload(String size) {
+    return 'Scarica ($size MB)';
+  }
+
+  @override
+  String get mapDownloadActionUpdate => 'Aggiorna livello di dettaglio';
+
+  @override
+  String get mapDownloadActionDelete => 'Elimina mappa scaricata';
+
+  @override
+  String get mapDownloadActionDeleteConfirmTitle => 'Elimina mappa';
+
+  @override
+  String mapDownloadActionDeleteConfirmMsg(String name) {
+    return 'Sei sicuro di voler eliminare i dati offline per $name?';
+  }
+
+  @override
+  String get mapDownloadCircleActionTitle => 'Cerchia e scarica su mappa';
+
+  @override
+  String get mapDownloadCircleActionDesc =>
+      'Disegna a mano libera sulla mappa mondiale per scaricare solo le celle desiderate';
+
+  @override
+  String get circleDownloadDetailModalTitle =>
+      'Dettaglio download per l\'area selezionata';
+
+  @override
+  String get circleDownloadLegendTitle => 'Livelli scaricati:';
+
+  @override
+  String get circleDownloadLegendBase => 'Base';
+
+  @override
+  String get circleDownloadLegendDetailed => 'Dettagliato';
+
+  @override
+  String get circleDownloadLegendComplete => 'Completo';
+
+  @override
+  String circleDownloadCellsSelectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count celle selezionate',
+      one: '1 cella selezionata',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get circleDownloadActionChooseDetail => 'Scegli dettaglio e scarica';
+
+  @override
+  String mapDownloadServerOnline(String url) {
+    return 'Server Mappe online ($url)';
+  }
+
+  @override
+  String mapDownloadServerOffline(String url) {
+    return 'Server Mappe non raggiungibile ($url)';
+  }
+
+  @override
+  String mapDownloadServerOfflineError(String url) {
+    return 'Impossibile scaricare: il Server Mappe ($url) non e\' raggiungibile. Verifica che sia avviato.';
+  }
+
+  @override
+  String commonMegabytesValue(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String commonApproximateMegabytesValue(String size) {
+    return '~$size MB';
+  }
+
+  @override
+  String commonPercentValue(int percent) {
+    return '$percent%';
+  }
 }

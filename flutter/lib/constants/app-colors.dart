@@ -119,4 +119,34 @@ class AppColors {
     final Brightness effectiveBrightness = _getBrightness(context, brightness);
     return effectiveBrightness == Brightness.dark ? const Color(0x2638BDF8) : const Color(0x262563EB);
   }
+
+  /// Retrieves the color for Level 1 Base download (Roads and navigation).
+  static Color detailBase(BuildContext context, { Brightness? brightness }) {
+    final Brightness effectiveBrightness = _getBrightness(context, brightness);
+    return effectiveBrightness == Brightness.dark ? const Color(0xFF3B82F6) : const Color(0xFF2563EB);
+  }
+
+  /// Retrieves the color for Level 2 Detailed download (Roads and pedestrian/trails).
+  static Color detailDetailed(BuildContext context, { Brightness? brightness }) {
+    final Brightness effectiveBrightness = _getBrightness(context, brightness);
+    return effectiveBrightness == Brightness.dark ? const Color(0xFFF59E0B) : const Color(0xFFD97706);
+  }
+
+  /// Retrieves the color for Level 3 Complete download (Roads, trails, 3D buildings, HD terrain).
+  static Color detailComplete(BuildContext context, { Brightness? brightness }) {
+    final Brightness effectiveBrightness = _getBrightness(context, brightness);
+    return effectiveBrightness == Brightness.dark ? const Color(0xFF10B981) : const Color(0xFF059669);
+  }
+
+  /// Retrieves the landmass continent fill color on the world map.
+  static Color mapContinent(BuildContext context, { Brightness? brightness }) {
+    final Brightness effectiveBrightness = _getBrightness(context, brightness);
+    return effectiveBrightness == Brightness.dark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0);
+  }
+
+  /// Retrieves the landmass continent outline border color on the world map.
+  static Color mapContinentBorder(BuildContext context, { Brightness? brightness }) {
+    final Brightness effectiveBrightness = _getBrightness(context, brightness);
+    return effectiveBrightness == Brightness.dark ? const Color(0xFF334155) : const Color(0xFFCBD5E1);
+  }
 }

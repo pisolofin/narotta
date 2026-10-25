@@ -7,15 +7,21 @@ class AppSizes {
   static const double p4 = 4.0;
   static const double p6 = 6.0;
   static const double p8 = 8.0;
+  static const double p10 = 10.0;
   static const double p12 = 12.0;
+  static const double p14 = 14.0;
   static const double p16 = 16.0;
   static const double p20 = 20.0;
   static const double p24 = 24.0;
   static const double p32 = 32.0;
+  static const double p48 = 48.0;
   static const double p64 = 64.0;
 
   // Border Radii
+  static const double radius4 = 4.0;
+  static const double radius6 = 6.0;
   static const double radius8 = 8.0;
+  static const double radius10 = 10.0;
   static const double radius12 = 12.0;
   static const double radius16 = 16.0;
   static const double radius20 = 20.0;
@@ -34,15 +40,20 @@ class AppSizes {
   static const double icon16 = 16.0;
   static const double icon20 = 20.0;
   static const double icon24 = 24.0;
+  static const double icon28 = 28.0;
+  static const double icon32 = 32.0;
   static const double icon48 = 48.0;
   static const double icon64 = 64.0;
 
   // Font Sizes
   static const double font10 = 10.0;
   static const double font12 = 12.0;
+  static const double font13 = 13.0;
   static const double font14 = 14.0;
+  static const double font15 = 15.0;
   static const double font16 = 16.0;
   static const double font18 = 18.0;
+  static const double font20 = 20.0;
   static const double font22 = 22.0;
   static const double font32 = 32.0;
 

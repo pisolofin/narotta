@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
-import 'package:intl/intl.dart' as intl;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
 import 'app_localizations_it.dart';
@@ -179,31 +179,31 @@ abstract class AppLocalizations {
   /// No description provided for @locationCoordinates.
   ///
   /// In it, this message translates to:
-  /// **'{ latitude }, { longitude }'**
+  /// **'{latitude}, {longitude}'**
   String locationCoordinates(String latitude, String longitude);
 
   /// No description provided for @locationAccuracyValue.
   ///
   /// In it, this message translates to:
-  /// **'Precisione: ±{ meters } m'**
+  /// **'Precisione: +/-{meters} m'**
   String locationAccuracyValue(String meters);
 
   /// No description provided for @locationAltitudeValue.
   ///
   /// In it, this message translates to:
-  /// **'Altitudine: { meters } m'**
+  /// **'Altitudine: {meters} m'**
   String locationAltitudeValue(String meters);
 
   /// No description provided for @locationSpeedValue.
   ///
   /// In it, this message translates to:
-  /// **'Velocità: { kmh } km/h'**
+  /// **'Velocita\': {kmh} km/h'**
   String locationSpeedValue(String kmh);
 
   /// No description provided for @mapVoidGridBadge.
   ///
   /// In it, this message translates to:
-  /// **'Reticolo cartografico • In attesa della mappa'**
+  /// **'Reticolo cartografico - In attesa della mappa'**
   String get mapVoidGridBadge;
 
   /// No description provided for @mapZoomIn.
@@ -239,19 +239,19 @@ abstract class AppLocalizations {
   /// No description provided for @mapScaleMeters.
   ///
   /// In it, this message translates to:
-  /// **'{ meters } m'**
+  /// **'{meters} m'**
   String mapScaleMeters(String meters);
 
   /// No description provided for @mapScaleKilometers.
   ///
   /// In it, this message translates to:
-  /// **'{ kilometers } km'**
+  /// **'{kilometers} km'**
   String mapScaleKilometers(String kilometers);
 
   /// No description provided for @mapHeadingValue.
   ///
   /// In it, this message translates to:
-  /// **'Direzione: { degrees }°'**
+  /// **'Direzione: {degrees} gradi'**
   String mapHeadingValue(String degrees);
 
   /// No description provided for @mapTelemetryToggle.
@@ -329,13 +329,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsMapDownloadMode.
   ///
   /// In it, this message translates to:
-  /// **'Modalità di download'**
+  /// **'Modalita\' di download'**
   String get settingsMapDownloadMode;
 
   /// No description provided for @settingsMapDownloadModeSelect.
   ///
   /// In it, this message translates to:
-  /// **'Seleziona modalità di download'**
+  /// **'Seleziona modalita\' di download'**
   String get settingsMapDownloadModeSelect;
 
   /// No description provided for @settingsMapModeByRegionTitle.
@@ -371,7 +371,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsMapModeRouteCorridorDesc.
   ///
   /// In it, this message translates to:
-  /// **'Dettaglio nel corridoio ±15 km e destinazione HD, mappa base altrove'**
+  /// **'Dettaglio nel corridoio +/-15 km e destinazione HD, mappa base altrove'**
   String get settingsMapModeRouteCorridorDesc;
 
   /// No description provided for @settingsMapCircleDownloadAction.
@@ -383,7 +383,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsMapCircleDownloadDesc.
   ///
   /// In it, this message translates to:
-  /// **'Seleziona e scarica celle 0.5° × 0.5° col dito'**
+  /// **'Seleziona e scarica celle 0.5 x 0.5 col dito'**
   String get settingsMapCircleDownloadDesc;
 
   /// No description provided for @settingsMapWifiOnlyTitle.
@@ -407,7 +407,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsMapLayerBuildingsTitle.
   ///
   /// In it, this message translates to:
-  /// **'Edifici 3D (Z13–15)'**
+  /// **'Edifici 3D (Z13-15)'**
   String get settingsMapLayerBuildingsTitle;
 
   /// No description provided for @settingsMapLayerBuildingsDesc.
@@ -419,7 +419,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsMapLayerPedestrianTitle.
   ///
   /// In it, this message translates to:
-  /// **'Pedonale e Mobilità Dolce (Z13–15)'**
+  /// **'Pedonale e Mobilita\' Dolce (Z13-15)'**
   String get settingsMapLayerPedestrianTitle;
 
   /// No description provided for @settingsMapLayerPedestrianDesc.
@@ -530,6 +530,18 @@ abstract class AppLocalizations {
   /// **'Salva'**
   String get commonSave;
 
+  /// No description provided for @commonDelete.
+  ///
+  /// In it, this message translates to:
+  /// **'Elimina'**
+  String get commonDelete;
+
+  /// No description provided for @commonClose.
+  ///
+  /// In it, this message translates to:
+  /// **'Chiudi'**
+  String get commonClose;
+
   /// No description provided for @circleDownloadTitle.
   ///
   /// In it, this message translates to:
@@ -569,13 +581,13 @@ abstract class AppLocalizations {
   /// No description provided for @circleDownloadSelectedCellsCount.
   ///
   /// In it, this message translates to:
-  /// **'{count, plural, =1{ 1 cella (0.5° × 0.5°) } other{{ count } celle (0.5° × 0.5°)}}'**
+  /// **'{count, plural, =1{1 cella (0.5 x 0.5)} other{{count} celle (0.5 x 0.5)}}'**
   String circleDownloadSelectedCellsCount(int count);
 
   /// No description provided for @circleDownloadEstimatedSize.
   ///
   /// In it, this message translates to:
-  /// **'Dimensione stimata: { size } MB'**
+  /// **'Dimensione stimata: {size} MB'**
   String circleDownloadEstimatedSize(String size);
 
   /// No description provided for @circleDownloadActionDownload.
@@ -587,7 +599,7 @@ abstract class AppLocalizations {
   /// No description provided for @circleDownloadProgressPercent.
   ///
   /// In it, this message translates to:
-  /// **'Download in corso: { percent }%'**
+  /// **'Download in corso: {percent}%'**
   String circleDownloadProgressPercent(int percent);
 
   /// No description provided for @circleDownloadCompleted.
@@ -619,6 +631,270 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Pedonale'**
   String get circleDownloadLayerPedestrian;
+
+  /// No description provided for @settingsMapDownloadManagerTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Scarica mappe offline'**
+  String get settingsMapDownloadManagerTitle;
+
+  /// No description provided for @settingsMapDownloadManagerDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Mappa del mondo, stati e regioni con selezione dettaglio'**
+  String get settingsMapDownloadManagerDesc;
+
+  /// No description provided for @mapDownloadTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Download Mappe Offline'**
+  String get mapDownloadTitle;
+
+  /// No description provided for @mapDownloadWorldSection.
+  ///
+  /// In it, this message translates to:
+  /// **'Mappa del Mondo (Base)'**
+  String get mapDownloadWorldSection;
+
+  /// No description provided for @mapDownloadWorldDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Panoramica globale (Zoom 0-7) - Indispensabile per navigare e orientarsi offline tra nazioni e continenti'**
+  String get mapDownloadWorldDesc;
+
+  /// No description provided for @mapDownloadWorldDownloadBtn.
+  ///
+  /// In it, this message translates to:
+  /// **'Scarica Mappa Base ({size} MB)'**
+  String mapDownloadWorldDownloadBtn(String size);
+
+  /// No description provided for @mapDownloadWorldDownloaded.
+  ///
+  /// In it, this message translates to:
+  /// **'Mappa del Mondo scaricata'**
+  String get mapDownloadWorldDownloaded;
+
+  /// No description provided for @mapDownloadRegionsSection.
+  ///
+  /// In it, this message translates to:
+  /// **'Stati e Regioni'**
+  String get mapDownloadRegionsSection;
+
+  /// No description provided for @mapDownloadRegionsDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Seleziona uno stato o una regione per scegliere il livello di dettaglio da scaricare'**
+  String get mapDownloadRegionsDesc;
+
+  /// No description provided for @mapDownloadRegionsSearchHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Cerca stato o regione...'**
+  String get mapDownloadRegionsSearchHint;
+
+  /// No description provided for @mapDownloadDetailLevelTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Livello di dettaglio'**
+  String get mapDownloadDetailLevelTitle;
+
+  /// No description provided for @mapDownloadDetailSelectFor.
+  ///
+  /// In it, this message translates to:
+  /// **'Seleziona dettaglio per {name}'**
+  String mapDownloadDetailSelectFor(String name);
+
+  /// No description provided for @mapDownloadDetailBaseTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Base (Stradale & Navigazione)'**
+  String get mapDownloadDetailBaseTitle;
+
+  /// No description provided for @mapDownloadDetailBaseDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Rete stradale completa, citta\' e routing (Z8-14)'**
+  String get mapDownloadDetailBaseDesc;
+
+  /// No description provided for @mapDownloadDetailDetailedTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Dettagliato (+ Sentieri & Pedonale)'**
+  String get mapDownloadDetailDetailedTitle;
+
+  /// No description provided for @mapDownloadDetailDetailedDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Stradale + sentieri escursionistici, percorsi a piedi e piste ciclabili (Z8-16)'**
+  String get mapDownloadDetailDetailedDesc;
+
+  /// No description provided for @mapDownloadDetailCompleteTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Completo (+ 3D e Terreno HD)'**
+  String get mapDownloadDetailCompleteTitle;
+
+  /// No description provided for @mapDownloadDetailCompleteDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Stradale + sentieri + edifici volumetrici 3D e curve di livello DEM (Z8-16)'**
+  String get mapDownloadDetailCompleteDesc;
+
+  /// No description provided for @mapDownloadDetailBaseBadge.
+  ///
+  /// In it, this message translates to:
+  /// **'Base'**
+  String get mapDownloadDetailBaseBadge;
+
+  /// No description provided for @mapDownloadDetailDetailedBadge.
+  ///
+  /// In it, this message translates to:
+  /// **'Dettagliato'**
+  String get mapDownloadDetailDetailedBadge;
+
+  /// No description provided for @mapDownloadDetailCompleteBadge.
+  ///
+  /// In it, this message translates to:
+  /// **'Completo'**
+  String get mapDownloadDetailCompleteBadge;
+
+  /// No description provided for @mapDownloadStatusDownloaded.
+  ///
+  /// In it, this message translates to:
+  /// **'Scaricata'**
+  String get mapDownloadStatusDownloaded;
+
+  /// No description provided for @mapDownloadStatusNotDownloaded.
+  ///
+  /// In it, this message translates to:
+  /// **'Non scaricata'**
+  String get mapDownloadStatusNotDownloaded;
+
+  /// No description provided for @mapDownloadStatusDownloading.
+  ///
+  /// In it, this message translates to:
+  /// **'Download in corso ({percent}%)'**
+  String mapDownloadStatusDownloading(int percent);
+
+  /// No description provided for @mapDownloadActionDownload.
+  ///
+  /// In it, this message translates to:
+  /// **'Scarica ({size} MB)'**
+  String mapDownloadActionDownload(String size);
+
+  /// No description provided for @mapDownloadActionUpdate.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiorna livello di dettaglio'**
+  String get mapDownloadActionUpdate;
+
+  /// No description provided for @mapDownloadActionDelete.
+  ///
+  /// In it, this message translates to:
+  /// **'Elimina mappa scaricata'**
+  String get mapDownloadActionDelete;
+
+  /// No description provided for @mapDownloadActionDeleteConfirmTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Elimina mappa'**
+  String get mapDownloadActionDeleteConfirmTitle;
+
+  /// No description provided for @mapDownloadActionDeleteConfirmMsg.
+  ///
+  /// In it, this message translates to:
+  /// **'Sei sicuro di voler eliminare i dati offline per {name}?'**
+  String mapDownloadActionDeleteConfirmMsg(String name);
+
+  /// No description provided for @mapDownloadCircleActionTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Cerchia e scarica su mappa'**
+  String get mapDownloadCircleActionTitle;
+
+  /// No description provided for @mapDownloadCircleActionDesc.
+  ///
+  /// In it, this message translates to:
+  /// **'Disegna a mano libera sulla mappa mondiale per scaricare solo le celle desiderate'**
+  String get mapDownloadCircleActionDesc;
+
+  /// No description provided for @circleDownloadDetailModalTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Dettaglio download per l\'area selezionata'**
+  String get circleDownloadDetailModalTitle;
+
+  /// No description provided for @circleDownloadLegendTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Livelli scaricati:'**
+  String get circleDownloadLegendTitle;
+
+  /// No description provided for @circleDownloadLegendBase.
+  ///
+  /// In it, this message translates to:
+  /// **'Base'**
+  String get circleDownloadLegendBase;
+
+  /// No description provided for @circleDownloadLegendDetailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Dettagliato'**
+  String get circleDownloadLegendDetailed;
+
+  /// No description provided for @circleDownloadLegendComplete.
+  ///
+  /// In it, this message translates to:
+  /// **'Completo'**
+  String get circleDownloadLegendComplete;
+
+  /// No description provided for @circleDownloadCellsSelectedCount.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 cella selezionata} other{{count} celle selezionate}}'**
+  String circleDownloadCellsSelectedCount(int count);
+
+  /// No description provided for @circleDownloadActionChooseDetail.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli dettaglio e scarica'**
+  String get circleDownloadActionChooseDetail;
+
+  /// No description provided for @mapDownloadServerOnline.
+  ///
+  /// In it, this message translates to:
+  /// **'Server Mappe online ({url})'**
+  String mapDownloadServerOnline(String url);
+
+  /// No description provided for @mapDownloadServerOffline.
+  ///
+  /// In it, this message translates to:
+  /// **'Server Mappe non raggiungibile ({url})'**
+  String mapDownloadServerOffline(String url);
+
+  /// No description provided for @mapDownloadServerOfflineError.
+  ///
+  /// In it, this message translates to:
+  /// **'Impossibile scaricare: il Server Mappe ({url}) non e\' raggiungibile. Verifica che sia avviato.'**
+  String mapDownloadServerOfflineError(String url);
+
+  /// No description provided for @commonMegabytesValue.
+  ///
+  /// In it, this message translates to:
+  /// **'{size} MB'**
+  String commonMegabytesValue(String size);
+
+  /// No description provided for @commonApproximateMegabytesValue.
+  ///
+  /// In it, this message translates to:
+  /// **'~{size} MB'**
+  String commonApproximateMegabytesValue(String size);
+
+  /// No description provided for @commonPercentValue.
+  ///
+  /// In it, this message translates to:
+  /// **'{percent}%'**
+  String commonPercentValue(int percent);
 }
 
 class _AppLocalizationsDelegate
