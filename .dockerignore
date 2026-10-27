@@ -11,3 +11,6 @@
 flutter/
 .agents/
 .doc/
+.env
+data/
+output/

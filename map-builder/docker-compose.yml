@@ -16,10 +16,8 @@ services:
     volumes:
       # Persistent storage for workspace cache (PBF, elevation) and compiled map packages
       - narotta_workspace:/app/workspace
-      - narotta_output:/app/output
+      - ${SHARED_STORAGE_PATH:-/var/data/shared-storage}:/app/output
 
 volumes:
   narotta_workspace:
-    driver: local
-  narotta_output:
     driver: local

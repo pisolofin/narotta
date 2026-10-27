@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:flutter/foundation.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'app_localizations_en.dart';
 import 'app_localizations_it.dart';
@@ -179,25 +179,25 @@ abstract class AppLocalizations {
   /// No description provided for @locationCoordinates.
   ///
   /// In it, this message translates to:
-  /// **'{latitude}, {longitude}'**
+  /// **'{ latitude }, { longitude }'**
   String locationCoordinates(String latitude, String longitude);
 
   /// No description provided for @locationAccuracyValue.
   ///
   /// In it, this message translates to:
-  /// **'Precisione: +/-{meters} m'**
+  /// **'Precisione: +/-{ meters } m'**
   String locationAccuracyValue(String meters);
 
   /// No description provided for @locationAltitudeValue.
   ///
   /// In it, this message translates to:
-  /// **'Altitudine: {meters} m'**
+  /// **'Altitudine: { meters } m'**
   String locationAltitudeValue(String meters);
 
   /// No description provided for @locationSpeedValue.
   ///
   /// In it, this message translates to:
-  /// **'Velocita\': {kmh} km/h'**
+  /// **'Velocita\': { kmh } km/h'**
   String locationSpeedValue(String kmh);
 
   /// No description provided for @mapVoidGridBadge.
@@ -239,19 +239,19 @@ abstract class AppLocalizations {
   /// No description provided for @mapScaleMeters.
   ///
   /// In it, this message translates to:
-  /// **'{meters} m'**
+  /// **'{ meters } m'**
   String mapScaleMeters(String meters);
 
   /// No description provided for @mapScaleKilometers.
   ///
   /// In it, this message translates to:
-  /// **'{kilometers} km'**
+  /// **'{ kilometers } km'**
   String mapScaleKilometers(String kilometers);
 
   /// No description provided for @mapHeadingValue.
   ///
   /// In it, this message translates to:
-  /// **'Direzione: {degrees} gradi'**
+  /// **'Direzione: { degrees } gradi'**
   String mapHeadingValue(String degrees);
 
   /// No description provided for @mapTelemetryToggle.
@@ -581,13 +581,13 @@ abstract class AppLocalizations {
   /// No description provided for @circleDownloadSelectedCellsCount.
   ///
   /// In it, this message translates to:
-  /// **'{count, plural, =1{1 cella (0.5 x 0.5)} other{{count} celle (0.5 x 0.5)}}'**
+  /// **'{count, plural, =1{ 1 cella (0.5 x 0.5) } other{{ count } celle (0.5 x 0.5)}}'**
   String circleDownloadSelectedCellsCount(int count);
 
   /// No description provided for @circleDownloadEstimatedSize.
   ///
   /// In it, this message translates to:
-  /// **'Dimensione stimata: {size} MB'**
+  /// **'Dimensione stimata: { size } MB'**
   String circleDownloadEstimatedSize(String size);
 
   /// No description provided for @circleDownloadActionDownload.
@@ -599,7 +599,7 @@ abstract class AppLocalizations {
   /// No description provided for @circleDownloadProgressPercent.
   ///
   /// In it, this message translates to:
-  /// **'Download in corso: {percent}%'**
+  /// **'Download in corso: { percent }%'**
   String circleDownloadProgressPercent(int percent);
 
   /// No description provided for @circleDownloadCompleted.
@@ -665,7 +665,7 @@ abstract class AppLocalizations {
   /// No description provided for @mapDownloadWorldDownloadBtn.
   ///
   /// In it, this message translates to:
-  /// **'Scarica Mappa Base ({size} MB)'**
+  /// **'Scarica Mappa Base ({ size } MB)'**
   String mapDownloadWorldDownloadBtn(String size);
 
   /// No description provided for @mapDownloadWorldDownloaded.
@@ -701,7 +701,7 @@ abstract class AppLocalizations {
   /// No description provided for @mapDownloadDetailSelectFor.
   ///
   /// In it, this message translates to:
-  /// **'Seleziona dettaglio per {name}'**
+  /// **'Seleziona dettaglio per { name }'**
   String mapDownloadDetailSelectFor(String name);
 
   /// No description provided for @mapDownloadDetailBaseTitle.
@@ -773,13 +773,13 @@ abstract class AppLocalizations {
   /// No description provided for @mapDownloadStatusDownloading.
   ///
   /// In it, this message translates to:
-  /// **'Download in corso ({percent}%)'**
+  /// **'Download in corso ({ percent }%)'**
   String mapDownloadStatusDownloading(int percent);
 
   /// No description provided for @mapDownloadActionDownload.
   ///
   /// In it, this message translates to:
-  /// **'Scarica ({size} MB)'**
+  /// **'Scarica ({ size } MB)'**
   String mapDownloadActionDownload(String size);
 
   /// No description provided for @mapDownloadActionUpdate.
@@ -803,7 +803,7 @@ abstract class AppLocalizations {
   /// No description provided for @mapDownloadActionDeleteConfirmMsg.
   ///
   /// In it, this message translates to:
-  /// **'Sei sicuro di voler eliminare i dati offline per {name}?'**
+  /// **'Sei sicuro di voler eliminare i dati offline per { name }?'**
   String mapDownloadActionDeleteConfirmMsg(String name);
 
   /// No description provided for @mapDownloadCircleActionTitle.
@@ -851,7 +851,7 @@ abstract class AppLocalizations {
   /// No description provided for @circleDownloadCellsSelectedCount.
   ///
   /// In it, this message translates to:
-  /// **'{count, plural, =1{1 cella selezionata} other{{count} celle selezionate}}'**
+  /// **'{count, plural, =1{ 1 cella selezionata } other{{ count } celle selezionate}}'**
   String circleDownloadCellsSelectedCount(int count);
 
   /// No description provided for @circleDownloadActionChooseDetail.
@@ -863,37 +863,37 @@ abstract class AppLocalizations {
   /// No description provided for @mapDownloadServerOnline.
   ///
   /// In it, this message translates to:
-  /// **'Server Mappe online ({url})'**
+  /// **'Server Mappe online ({ url })'**
   String mapDownloadServerOnline(String url);
 
   /// No description provided for @mapDownloadServerOffline.
   ///
   /// In it, this message translates to:
-  /// **'Server Mappe non raggiungibile ({url})'**
+  /// **'Server Mappe non raggiungibile ({ url })'**
   String mapDownloadServerOffline(String url);
 
   /// No description provided for @mapDownloadServerOfflineError.
   ///
   /// In it, this message translates to:
-  /// **'Impossibile scaricare: il Server Mappe ({url}) non e\' raggiungibile. Verifica che sia avviato.'**
+  /// **'Impossibile scaricare: il Server Mappe ({ url }) non e\' raggiungibile. Verifica che sia avviato.'**
   String mapDownloadServerOfflineError(String url);
 
   /// No description provided for @commonMegabytesValue.
   ///
   /// In it, this message translates to:
-  /// **'{size} MB'**
+  /// **'{ size } MB'**
   String commonMegabytesValue(String size);
 
   /// No description provided for @commonApproximateMegabytesValue.
   ///
   /// In it, this message translates to:
-  /// **'~{size} MB'**
+  /// **'~{ size } MB'**
   String commonApproximateMegabytesValue(String size);
 
   /// No description provided for @commonPercentValue.
   ///
   /// In it, this message translates to:
-  /// **'{percent}%'**
+  /// **'{ percent }%'**
   String commonPercentValue(int percent);
 }
 

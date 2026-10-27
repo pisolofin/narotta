@@ -124,9 +124,9 @@ Dalla dashboard è possibile fare clic su **"Compila"** direttamente dalla riga 
    ```text
    8080:8080
    ```
-5. In **Persistent Storage / Volumes**, aggiungi due volumi persistenti:
-   - Destinazione 1: `/app/workspace` (directory temporanea di lavoro e cache PBF).
-   - Destinazione 2: `/app/output` (directory finale dove risiedono i `.mbtiles`, `.db`, `.tar` e `manifest.json`).
+5. In **Persistent Storage / Volumes**, configura i volumi persistenti:
+   - Volume temporaneo: `/app/workspace` (directory temporanea di lavoro e cache PBF).
+   - Volume condiviso host: `/var/data/shared-storage` montato su `/app/output` (cartella condivisa tra Map Builder e Map API dove risiedono i `.mbtiles`, `.db`, `.tar` e `manifest.json`). I file `docker-compose.yml` usano `${SHARED_STORAGE_PATH:-/var/data/shared-storage}:/app/output`, consentendo in locale l'uso di un file `.env` per mappare una cartella su Windows (es. `./data/output`).
 6. In **Environment Variables**, imposta:
    ```env
    PORT=8080

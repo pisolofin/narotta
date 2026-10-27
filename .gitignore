@@ -42,3 +42,10 @@ map-builder/tools/*.jar
 **/appsettings.Local.json
 **/appsettings.*.Local.json
 **/mapbuilder.settings.json
+
+# Environment files & Local storage data
+.env
+.env.*
+!.env.example
+data/
+output/

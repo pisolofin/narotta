@@ -13,8 +13,4 @@ services:
       - OUTPUT_DIR=/app/output
       - PUBLIC_BASE_URL=https://maps.narotta.app
     volumes:
-      - narotta_output:/app/output:ro
-
-volumes:
-  narotta_output:
-    external: true
+      - ${SHARED_STORAGE_PATH:-/var/data/shared-storage}:/app/output:ro

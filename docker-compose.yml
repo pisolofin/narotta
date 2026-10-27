@@ -15,7 +15,7 @@ services:
       - BASE_URL=https://storage.narotta.app/maps/
     volumes:
       - narotta_workspace:/app/workspace
-      - narotta_output:/app/output
+      - ${SHARED_STORAGE_PATH:-/var/data/shared-storage}:/app/output
 
   narotta-map-api:
     build:
@@ -31,12 +31,10 @@ services:
       - OUTPUT_DIR=/app/output
       - PUBLIC_BASE_URL=https://maps.narotta.app
     volumes:
-      - narotta_output:/app/output:ro
+      - ${SHARED_STORAGE_PATH:-/var/data/shared-storage}:/app/output:ro
     depends_on:
       - narotta-map-builder
 
 volumes:
   narotta_workspace:
-    driver: local
-  narotta_output:
     driver: local

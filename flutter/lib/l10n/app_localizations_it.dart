@@ -289,8 +289,8 @@ class AppLocalizationsIt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count celle (0.5 x 0.5)',
-      one: '1 cella (0.5 x 0.5)',
+      other : '$count celle (0.5 x 0.5)',
+      one   : '1 cella (0.5 x 0.5)',
     );
     return '$_temp0';
   }
@@ -456,8 +456,8 @@ class AppLocalizationsIt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count celle selezionate',
-      one: '1 cella selezionata',
+      other : '$count celle selezionate',
+      one   : '1 cella selezionata',
     );
     return '$_temp0';
   }
