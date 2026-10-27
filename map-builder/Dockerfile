@@ -38,7 +38,7 @@ COPY profiles/ /app/profiles/
 RUN mkdir -p /app/workspace /app/output /app/tools /app/profiles
 
 # Configure environment variables
-ENV ASPNETCORE_URLS=http://+:8080 \
+ENV ASPNETCORE_URLS=http://+:8080;http://+:80 \
     PORT=8080 \
     WORKSPACE_DIR=/app/workspace \
     OUTPUT_DIR=/app/output \
@@ -46,11 +46,11 @@ ENV ASPNETCORE_URLS=http://+:8080 \
     TOOLS_DIR=/app/tools \
     BASE_URL=https://storage.narotta.app/maps/
 
-# Coolify exposes port 8080
-EXPOSE 8080
+# Coolify exposes port 8080 and standard HTTP port 80
+EXPOSE 8080 80
 
 # Healthcheck probe
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:8080/api/status || exit 1
+  CMD curl -f http://localhost:8080/health || exit 1
 
 ENTRYPOINT ["dotnet", "NaRotta.MapBuilder.Web.dll"]

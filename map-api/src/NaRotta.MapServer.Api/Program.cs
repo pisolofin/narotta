@@ -19,12 +19,16 @@ namespace NaRotta.MapServer {
         public static async Task Main(string[] argumentList) {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(argumentList);
 
-            // Configure HTTP port from environment variable (standard in Docker / Coolify) or fallback to 5001
+            // Configure HTTP port: listen on configured port (e.g. 5001) and port 80 (default for Coolify proxy)
             string? portEnvironment = Environment.GetEnvironmentVariable("PORT");
             if (!string.IsNullOrEmpty(portEnvironment)) {
-                builder.WebHost.UseUrls("http://0.0.0.0:" + portEnvironment);
+                if (portEnvironment == "5001") {
+                    builder.WebHost.UseUrls("http://0.0.0.0:5001;http://0.0.0.0:80");
+                }else {
+                    builder.WebHost.UseUrls("http://0.0.0.0:" + portEnvironment + ";http://0.0.0.0:80");
+                }
             }else {
-                builder.WebHost.UseUrls("http://0.0.0.0:5001;http://localhost:5001");
+                builder.WebHost.UseUrls("http://0.0.0.0:5001;http://0.0.0.0:80;http://localhost:5001");
             }
 
             // Configure options

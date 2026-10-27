@@ -36,14 +36,14 @@ COPY --from=build /app/publish .
 RUN mkdir -p /app/output
 
 # Configure environment variables
-ENV ASPNETCORE_URLS=http://+:5001 \
+ENV ASPNETCORE_URLS=http://+:5001;http://+:80 \
     PORT=5001 \
     ASPNETCORE_ENVIRONMENT=Production \
     OUTPUT_DIR=/app/output \
     PUBLIC_BASE_URL=https://maps.narotta.app
 
-# Coolify exposes port 5001
-EXPOSE 5001
+# Coolify exposes port 5001 and standard HTTP port 80
+EXPOSE 5001 80
 
 # Healthcheck probe
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

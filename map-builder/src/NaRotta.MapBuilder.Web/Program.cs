@@ -42,10 +42,16 @@ namespace NaRotta.MapBuilder.Web {
             // Environment variables have the highest precedence (Coolify / Docker overrides)
             builder.Configuration.AddEnvironmentVariables();
 
-            // Configure HTTP port from environment variable (standard in Docker / Coolify)
+            // Configure HTTP port: listen on configured port (e.g. 8080) and port 80 (default for Coolify proxy)
             string? portEnvironment = Environment.GetEnvironmentVariable("PORT");
             if (!string.IsNullOrEmpty(portEnvironment)) {
-                builder.WebHost.UseUrls("http://0.0.0.0:" + portEnvironment);
+                if (portEnvironment == "8080") {
+                    builder.WebHost.UseUrls("http://0.0.0.0:8080;http://0.0.0.0:80");
+                }else {
+                    builder.WebHost.UseUrls("http://0.0.0.0:" + portEnvironment + ";http://0.0.0.0:80");
+                }
+            }else {
+                builder.WebHost.UseUrls("http://0.0.0.0:8080;http://0.0.0.0:80");
             }
 
             // Register configuration manager singleton
@@ -103,6 +109,13 @@ namespace NaRotta.MapBuilder.Web {
             // -------------------------------------------------------------
             // API Endpoints
             // -------------------------------------------------------------
+
+            // GET /health - Lightweight service health check
+            app.MapGet("/health", () => Results.Ok(new {
+                status = "Healthy",
+                service = "NaRotta.MapBuilder.Web",
+                timestamp = DateTime.UtcNow
+            }));
 
             // GET /api/status - Current build progress, machine telemetry, and active directories
             app.MapGet("/api/status", async (
