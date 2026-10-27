@@ -1,0 +1,42 @@
+services:
+  narotta-map-builder:
+    build:
+      context: ./map-builder
+      dockerfile: Dockerfile
+    container_name: narotta-map-builder
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - ASPNETCORE_ENVIRONMENT=Production
+      - WORKSPACE_DIR=/app/workspace
+      - OUTPUT_DIR=/app/output
+      - BASE_URL=https://storage.narotta.app/maps/
+    volumes:
+      - narotta_workspace:/app/workspace
+      - narotta_output:/app/output
+
+  narotta-map-api:
+    build:
+      context: .
+      dockerfile: map-api/Dockerfile
+    container_name: narotta-map-api
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - ASPNETCORE_ENVIRONMENT=Production
+      - OUTPUT_DIR=/app/output
+      - PUBLIC_BASE_URL=https://maps.narotta.app
+    volumes:
+      - narotta_output:/app/output:ro
+    depends_on:
+      - narotta-map-builder
+
+volumes:
+  narotta_workspace:
+    driver: local
+  narotta_output:
+    driver: local

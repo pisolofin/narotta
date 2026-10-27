@@ -1,0 +1,20 @@
+services:
+  narotta-map-api:
+    build:
+      context: ..
+      dockerfile: map-api/Dockerfile
+    container_name: narotta-map-api
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - ASPNETCORE_ENVIRONMENT=Production
+      - OUTPUT_DIR=/app/output
+      - PUBLIC_BASE_URL=https://maps.narotta.app
+    volumes:
+      - narotta_output:/app/output:ro
+
+volumes:
+  narotta_output:
+    external: true
