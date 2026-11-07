@@ -3,10 +3,12 @@ import 'package:flutter/widgets.dart';
 /// Defines standard padding and sizing constants used throughout the UI.
 class AppSizes {
   // Padding and Margins
-  static const double p2 = 2.0;
-  static const double p4 = 4.0;
-  static const double p6 = 6.0;
-  static const double p8 = 8.0;
+  static const double p0  = 0.0;
+  static const double p2  = 2.0;
+  static const double p3  = 3.0;
+  static const double p4  = 4.0;
+  static const double p6  = 6.0;
+  static const double p8  = 8.0;
   static const double p10 = 10.0;
   static const double p12 = 12.0;
   static const double p14 = 14.0;
@@ -18,26 +20,31 @@ class AppSizes {
   static const double p64 = 64.0;
 
   // Border Radii
-  static const double radius4 = 4.0;
-  static const double radius6 = 6.0;
-  static const double radius8 = 8.0;
-  static const double radius10 = 10.0;
-  static const double radius12 = 12.0;
-  static const double radius16 = 16.0;
-  static const double radius20 = 20.0;
-  static const double radius24 = 24.0;
+  static const double radius4      = 4.0;
+  static const double radius6      = 6.0;
+  static const double radius8      = 8.0;
+  static const double radius10     = 10.0;
+  static const double radius12     = 12.0;
+  static const double radius16     = 16.0;
+  static const double radius20     = 20.0;
+  static const double radius24     = 24.0;
   static const double radiusCircle = 999.0;
 
   // Borders
+  static const double borderWidthThin    = 0.5;
   static const double borderWidthRegular = 1.0;
-  static const double borderWidthThick = 2.0;
+  static const double borderWidthThick   = 2.0;
 
   // Box Shadows
-  static const double shadowBlur10 = 10.0;
+  static const double shadowBlur6   = 6.0;
+  static const double shadowBlur10  = 10.0;
+  static const Offset shadowOffset2 = Offset(0, 2);
   static const Offset shadowOffset4 = Offset(0, 4);
 
   // Icon Sizes
+  static const double icon14 = 14.0;
   static const double icon16 = 16.0;
+  static const double icon18 = 18.0;
   static const double icon20 = 20.0;
   static const double icon24 = 24.0;
   static const double icon28 = 28.0;
@@ -47,6 +54,7 @@ class AppSizes {
 
   // Font Sizes
   static const double font10 = 10.0;
+  static const double font11 = 11.0;
   static const double font12 = 12.0;
   static const double font13 = 13.0;
   static const double font14 = 14.0;
@@ -58,14 +66,26 @@ class AppSizes {
   static const double font32 = 32.0;
 
   // Map & Radar Geometry
-  static const double mapStrokeThin = 1.0;
-  static const double mapStrokeRegular = 1.5;
-  static const double mapStrokeThick = 2.5;
-  static const double mapCrosshairLength = 6.0;
-  static const double mapUserMarkerRadius = 8.0;
-  static const double mapUserMarkerBorder = 2.5;
-  static const double mapUserPulseMaxRadius = 45.0;
-  static const double mapControlWidth = 44.0;
-  static const double mapControlHeight = 44.0;
+  static const double mapStrokeThin           = 1.0;
+  static const double mapStrokeRegular        = 1.5;
+  static const double mapStrokeThick          = 2.5;
+  static const double mapCrosshairLength      = 6.0;
+  static const double mapUserMarkerRadius     = 8.0;
+  static const double mapUserMarkerBorder     = 2.5;
+  static const double mapUserPulseMaxRadius   = 45.0;
+  static const double mapControlWidth         = 44.0;
+  static const double mapControlHeight        = 44.0;
+  static const double mapControlSmallSize     = 38.0;
   static const double mapControlsBottomOffset = 180.0;
+
+  // Map Download & Selection Layout
+  static const double mapToolButtonSize           = 34.0;
+  static const double mapSearchBarHeight          = 38.0;
+  static const double mapRightDockBottomInset     = 98.0;
+  static const double mapSelectionMinHeight       = 380.0;
+  static const double mapDownloadCompactThreshold = 520.0;
+  static const double searchDropdownMaxHeight     = 220.0;
+  static const double zoneModalMaxHeight          = 520.0;
+  static const double zoneModalMaxWidth           = 560.0;
+  static const double checkboxSize                = 20.0;
 }

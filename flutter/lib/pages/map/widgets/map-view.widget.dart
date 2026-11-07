@@ -5,14 +5,17 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:geolocator/geolocator.dart';
 
+import '../../../constants/app-sizes.dart';
+import '../../../constants/app-colors.dart';
+import '../../../services/geo-cell-service.dart';
+import '../../../services/location-service.dart';
+import '../../../services/map-download-service.dart';
+
 import 'map-grid-painter.dart';
 import 'map-controls.widget.dart';
 import 'map-scale-bar.widget.dart';
 import 'map-status-badge.widget.dart';
 import 'map-telemetry-card.widget.dart';
-import '../../../constants/app-sizes.dart';
-import '../../../constants/app-colors.dart';
-import '../../../services/location-service.dart';
 
 /// Displays the main interactive map viewport in the cartographic void.
 class MapView extends StatefulWidget {
@@ -24,24 +27,25 @@ class MapView extends StatefulWidget {
 
 /// State for [MapView] managing camera position, zoom, gestures, smooth physics-damped scroll, and radar pulse.
 class _MapViewState extends State<MapView> with TickerProviderStateMixin {
-  static const double _minZoom = 0.1;
-  static const double _maxZoom = 8.0;
-  static const double _defaultZoom = 1.0;
-  static const double _zoomStepFactor = 1.35;
-  static const double _metersPerDegreeLat = 111320.0;
-  static const double _scrollWheelSensitivity = 0.0015;
-  static const double _dampingSpeed = 22.0;
+  static const double _minZoom                    = 0.00002;
+  static const double _maxZoom                    = 8.0;
+  static const double _defaultZoom                = 0.5;
+  static const double _zoomStepFactor             = 1.35;
+  static const double _metersPerDegreeLat         = 111320.0;
+  static const double _scrollWheelSensitivity     = 0.0015;
+  static const double _dampingSpeed               = 22.0;
   static const int _pulseAnimationDurationSeconds = 2;
 
-  final LocationService _locationService = LocationService();
+  final LocationService _locationService       = LocationService();
+  final MapDownloadService _mapDownloadService = MapDownloadService();
   late final AnimationController _pulseController;
   late final Ticker _smoothZoomTicker;
 
   Duration? _lastTickTime;
   Offset _cameraWorldMeters = Offset.zero;
-  double _zoom = _defaultZoom;
-  double _targetZoom = _defaultZoom;
-  bool _isFollowingUser = true;
+  double _zoom              = _defaultZoom;
+  double _targetZoom        = _defaultZoom;
+  bool _isFollowingUser     = true;
 
   double? _referenceLat;
   double? _referenceLon;
@@ -49,6 +53,9 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   double _gestureStartZoom = _defaultZoom;
   Offset? _focalScreenPos;
   Size? _viewportSize;
+
+  double get _effectiveReferenceLat => _referenceLat ?? _locationService.currentPosition?.latitude ?? 41.9028;
+  double get _effectiveReferenceLon => _referenceLon ?? _locationService.currentPosition?.longitude ?? 12.4964;
 
   @override
   void initState() {
@@ -62,6 +69,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     _smoothZoomTicker = createTicker(_onSmoothTick);
 
     _locationService.addListener(_onLocationUpdated);
+    _mapDownloadService.addListener(_onDownloadUpdated);
 
     if (_locationService.status == LocationStatus.idle) {
       _locationService.startTrackingAsync();
@@ -71,9 +79,17 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   @override
   void dispose() {
     _locationService.removeListener(_onLocationUpdated);
+    _mapDownloadService.removeListener(_onDownloadUpdated);
     _smoothZoomTicker.dispose();
     _pulseController.dispose();
     super.dispose();
+  }
+
+  /// Listener triggered when the download registry or download progress changes.
+  void _onDownloadUpdated() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   /// Ticker callback executing per-frame critically damped exponential smoothing for zoom and camera.
@@ -84,7 +100,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     }
 
     final double dt = ((elapsed - _lastTickTime!).inMicroseconds / 1000000.0).clamp(0.001, 0.05);
-    _lastTickTime = elapsed;
+    _lastTickTime   = elapsed;
 
     final double zoomDiff = _targetZoom - _zoom;
     if (zoomDiff.abs() < 0.0001) {
@@ -102,7 +118,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     }
 
     // Frame-rate independent exponential smoothing
-    final double blend = 1.0 - math.exp(-dt * _dampingSpeed);
+    final double blend   = 1.0 - math.exp(-dt * _dampingSpeed);
     final double newZoom = _zoom + (zoomDiff * blend);
 
     if ((!_isFollowingUser) && (_focalScreenPos != null) && (_viewportSize != null)) {
@@ -139,17 +155,14 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
 
   /// Converts a GPS [Position] to local world coordinates in meters.
   Offset _positionToWorldMeters(Position position) {
-    if ((_referenceLat == null) || (_referenceLon == null)) {
-      _referenceLat = position.latitude;
-      _referenceLon = position.longitude;
-      return Offset.zero;
-    }
+    _referenceLat ??= position.latitude;
+    _referenceLon ??= position.longitude;
 
-    final double latRadians = _referenceLat! * math.pi / 180.0;
+    final double latRadians         = _effectiveReferenceLat * math.pi / 180.0;
     final double metersPerDegreeLon = _metersPerDegreeLat * math.cos(latRadians);
 
-    final double deltaX = (position.longitude - _referenceLon!) * metersPerDegreeLon;
-    final double deltaY = (position.latitude - _referenceLat!) * _metersPerDegreeLat;
+    final double deltaX = (position.longitude - _effectiveReferenceLon) * metersPerDegreeLon;
+    final double deltaY = (position.latitude - _effectiveReferenceLat) * _metersPerDegreeLat;
     return Offset(deltaX, deltaY);
   }
 
@@ -172,7 +185,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
       _smoothZoomTicker.stop();
       _lastTickTime = null;
     }
-    _targetZoom = _zoom;
+    _targetZoom       = _zoom;
     _gestureStartZoom = _zoom;
   }
 
@@ -183,14 +196,14 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
 
       // Handle pinch zoom scaling
       if (details.scale != 1.0) {
-        _zoom = (_gestureStartZoom * details.scale).clamp(_minZoom, _maxZoom);
+        _zoom       = (_gestureStartZoom * details.scale).clamp(_minZoom, _maxZoom);
         _targetZoom = _zoom;
       }
 
       // Handle pan offset translation in world meters
       final double deltaWorldX = details.focalPointDelta.dx / _zoom;
       final double deltaWorldY = -details.focalPointDelta.dy / _zoom;
-      _cameraWorldMeters = Offset(
+      _cameraWorldMeters       = Offset(
         _cameraWorldMeters.dx - deltaWorldX,
         _cameraWorldMeters.dy - deltaWorldY,
       );
@@ -203,9 +216,9 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     Offset? focalScreenPos,
     Size? viewportSize,
   }) {
-    _targetZoom = targetZoom.clamp(_minZoom, _maxZoom);
+    _targetZoom     = targetZoom.clamp(_minZoom, _maxZoom);
     _focalScreenPos = focalScreenPos;
-    _viewportSize = viewportSize;
+    _viewportSize   = viewportSize;
 
     if (!_smoothZoomTicker.isActive) {
       _lastTickTime = null;
@@ -221,7 +234,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
       }
 
       final double zoomMultiplier = math.exp(-event.scrollDelta.dy * _scrollWheelSensitivity);
-      final double nextTarget = _targetZoom * zoomMultiplier;
+      final double nextTarget     = _targetZoom * zoomMultiplier;
 
       _startSmoothZoom(
         targetZoom    : nextTarget,
@@ -262,18 +275,57 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     });
   }
 
+  /// Determines the active cartographic coverage state for the top status badge.
+  MapCoverageStatus _resolveCoverageStatus(Size viewportSize) {
+    final Map<String, MapDetailLevel> cellMap = _mapDownloadService.getDownloadedCellLevelMap();
+    if (cellMap.isNotEmpty) {
+      final double latRad          = _effectiveReferenceLat * math.pi / 180.0;
+      final double metersPerDegLon = _metersPerDegreeLat * math.cos(latRad);
+
+      final double halfWidthMeters  = (viewportSize.width / 2.0) / _zoom;
+      final double halfHeightMeters = (viewportSize.height / 2.0) / _zoom;
+
+      final double minX = _cameraWorldMeters.dx - halfWidthMeters;
+      final double maxX = _cameraWorldMeters.dx + halfWidthMeters;
+      final double minY = _cameraWorldMeters.dy - halfHeightMeters;
+      final double maxY = _cameraWorldMeters.dy + halfHeightMeters;
+
+      for (final String cellId in cellMap.keys) {
+        final GeoCellModel? cell = GeoCellService.tryParseCellId(cellId);
+        if (cell == null) {
+          continue;
+        }
+        final double cellMinX = (cell.minLongitude - _effectiveReferenceLon) * metersPerDegLon;
+        final double cellMaxX = (cell.maxLongitude - _effectiveReferenceLon) * metersPerDegLon;
+        final double cellMinY = (cell.minLatitude - _effectiveReferenceLat) * _metersPerDegreeLat;
+        final double cellMaxY = (cell.maxLatitude - _effectiveReferenceLat) * _metersPerDegreeLat;
+
+        final bool intersects = (cellMaxX >= minX) && (cellMinX <= maxX) && (cellMaxY >= minY) && (cellMinY <= maxY);
+        if (intersects) {
+          return MapCoverageStatus.offlineData;
+        }
+      }
+    }
+
+    if (_mapDownloadService.isWorldMapDownloaded) {
+      return MapCoverageStatus.worldBase;
+    }
+
+    return MapCoverageStatus.voidGrid;
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: _locationService,
       builder   : (BuildContext context, Widget? child) {
-        final Position? position = _locationService.currentPosition;
+        final Position? position   = _locationService.currentPosition;
         final Offset? userWorldPos = (position != null)
           ? _positionToWorldMeters(position)
           : null
         ;
         final double? userAccuracy = position?.accuracy;
-        final double? userHeading = ((position != null) && (position.heading >= 0.0) && (position.speed > 0.3))
+        final double? userHeading  = ((position != null) && (position.heading >= 0.0) && (position.speed > 0.3))
           ? position.heading
           : null
         ;
@@ -286,6 +338,8 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
               constraints.maxWidth,
               constraints.maxHeight,
             );
+
+            final MapCoverageStatus coverageStatus = _resolveCoverageStatus(viewportSize);
 
             return Container(
               width : double.infinity,
@@ -309,20 +363,32 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                           builder  : (BuildContext context, Widget? child) {
                             return CustomPaint(
                               painter: MapGridPainter(
-                                cameraWorldMeters : _cameraWorldMeters,
-                                zoom              : _zoom,
-                                userWorldMeters   : userWorldPos,
-                                userAccuracy      : userAccuracy,
-                                userHeading       : userHeading,
-                                pulseProgress     : _pulseController.value,
-                                mapVoidColor      : AppColors.mapVoid(context),
-                                gridMajorColor    : AppColors.mapGridMajor(context),
-                                gridMinorColor    : AppColors.mapGridMinor(context),
-                                gridCrosshairColor: AppColors.mapGridCrosshair(context),
-                                userPulseColor    : AppColors.userPulse(context),
-                                userAccuracyColor : AppColors.userAccuracy(context),
-                                primaryColor      : AppColors.primary(context),
-                                whiteColor        : AppColors.white(context),
+                                cameraWorldMeters      : _cameraWorldMeters,
+                                zoom                   : _zoom,
+                                userWorldMeters        : userWorldPos,
+                                userAccuracy           : userAccuracy,
+                                userHeading            : userHeading,
+                                pulseProgress          : _pulseController.value,
+                                isWorldMapDownloaded   : _mapDownloadService.isWorldMapDownloaded,
+                                downloadedCellLevelMap : _mapDownloadService.getDownloadedCellLevelMap(),
+                                referenceLat           : _effectiveReferenceLat,
+                                referenceLon           : _effectiveReferenceLon,
+                                mapVoidColor           : AppColors.mapVoid(context),
+                                mapContinentColor      : AppColors.mapContinent(context),
+                                mapContinentBorderColor: AppColors.mapContinentBorder(context),
+                                gridMajorColor         : AppColors.mapGridMajor(context),
+                                gridMinorColor         : AppColors.mapGridMinor(context),
+                                gridCrosshairColor     : AppColors.mapGridCrosshair(context),
+                                userPulseColor         : AppColors.userPulse(context),
+                                userAccuracyColor      : AppColors.userAccuracy(context),
+                                primaryColor           : AppColors.primary(context),
+                                whiteColor             : AppColors.white(context),
+                                detailBaseColor        : AppColors.detailBase(context),
+                                detailDetailedColor    : AppColors.detailDetailed(context),
+                                detailCompleteColor    : AppColors.detailComplete(context),
+                                mapHighwayColor        : AppColors.mapHighway(context),
+                                mapCityMarkerColor     : AppColors.mapCityMarker(context),
+                                mapCityLabelColor      : AppColors.mapCityLabel(context),
                               ),
                             );
                           },
@@ -331,14 +397,16 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                     ),
                   ),
 
-                  // Top status badge indicating the cartographic void waiting state
-                  const Positioned(
+                  // Top status badge indicating the cartographic void, world base, or offline ready state
+                  Positioned(
                     top  : AppSizes.p16,
                     left : AppSizes.p16,
                     right: AppSizes.p16,
                     child: Align(
                       alignment: Alignment.topCenter,
-                      child    : MapStatusBadge(),
+                      child    : MapStatusBadge(
+                        coverageStatus: coverageStatus,
+                      ),
                     ),
                   ),
 

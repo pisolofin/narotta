@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
-/// Precomputed simplified world continent boundary polygons in geographic coordinates (longitude, latitude).
+/// Precomputed simplified world continent and major island boundary polygons in geographic coordinates (longitude, latitude).
 class WorldContinentsData {
-  /// Returns the list of closed continent polygons for world map rendering.
+  /// Returns the list of closed landmass polygons for world map rendering.
   static List<List<math.Point<double>>> getContinentPolygonList() {
     return _continentPolygonList;
   }
@@ -17,11 +17,11 @@ class WorldContinentsData {
       const math.Point(1.8, 51.0),
       const math.Point(4.8, 53.0),
       const math.Point(8.2, 57.0),
-      const math.Point(12.6, 56.0),
-      const math.Point(14.5, 54.0),
-      const math.Point(19.0, 54.5),
-      const math.Point(24.0, 59.5),
-      const math.Point(28.0, 60.0),
+      const math.Point(10.5, 57.7),
+      const math.Point(5.2, 60.0),
+      const math.Point(10.0, 64.0),
+      const math.Point(18.0, 69.5),
+      const math.Point(28.0, 71.0),
       const math.Point(32.0, 65.0),
       const math.Point(40.0, 67.5),
       const math.Point(60.0, 70.0),
@@ -102,6 +102,16 @@ class WorldContinentsData {
       const math.Point(-5.6, 36.0),
     ],
 
+    // Madagascar
+    [
+      const math.Point(49.2, -12.0),
+      const math.Point(50.4, -15.5),
+      const math.Point(47.0, -25.0),
+      const math.Point(44.0, -24.5),
+      const math.Point(44.2, -16.0),
+      const math.Point(49.2, -12.0),
+    ],
+
     // North America
     [
       const math.Point(-168.0, 65.5),
@@ -136,6 +146,17 @@ class WorldContinentsData {
       const math.Point(-160.0, 56.0),
       const math.Point(-165.0, 60.0),
       const math.Point(-168.0, 65.5),
+    ],
+
+    // Greenland
+    [
+      const math.Point(-44.0, 60.0),
+      const math.Point(-22.0, 70.0),
+      const math.Point(-18.0, 81.0),
+      const math.Point(-50.0, 82.0),
+      const math.Point(-70.0, 76.0),
+      const math.Point(-53.0, 68.0),
+      const math.Point(-44.0, 60.0),
     ],
 
     // South America
@@ -180,7 +201,18 @@ class WorldContinentsData {
       const math.Point(114.0, -22.0),
     ],
 
-    // Great Britain & Ireland
+    // New Zealand
+    [
+      const math.Point(173.0, -35.0),
+      const math.Point(178.0, -38.0),
+      const math.Point(174.0, -41.5),
+      const math.Point(168.0, -46.5),
+      const math.Point(166.5, -45.5),
+      const math.Point(172.0, -40.5),
+      const math.Point(173.0, -35.0),
+    ],
+
+    // Great Britain
     [
       const math.Point(-5.5, 50.0),
       const math.Point(1.5, 51.2),
@@ -195,7 +227,17 @@ class WorldContinentsData {
       const math.Point(-5.5, 50.0),
     ],
 
-    // Italy Detailed Boot & Islands
+    // Ireland
+    [
+      const math.Point(-9.8, 51.6),
+      const math.Point(-6.1, 52.2),
+      const math.Point(-5.6, 54.6),
+      const math.Point(-8.4, 55.3),
+      const math.Point(-10.2, 53.5),
+      const math.Point(-9.8, 51.6),
+    ],
+
+    // Italy Peninsula
     [
       const math.Point(7.5, 44.2),
       const math.Point(9.0, 44.4),
@@ -238,6 +280,29 @@ class WorldContinentsData {
       const math.Point(9.0, 38.9),
       const math.Point(8.4, 39.2),
       const math.Point(8.2, 40.8),
+    ],
+
+    // Corsica
+    [
+      const math.Point(8.6, 42.6),
+      const math.Point(9.5, 43.0),
+      const math.Point(9.5, 41.4),
+      const math.Point(8.8, 41.5),
+      const math.Point(8.6, 42.6),
+    ],
+
+    // Japan
+    [
+      const math.Point(130.5, 31.5),
+      const math.Point(135.5, 34.5),
+      const math.Point(140.5, 35.5),
+      const math.Point(141.5, 41.0),
+      const math.Point(145.0, 43.5),
+      const math.Point(141.5, 45.2),
+      const math.Point(139.5, 39.0),
+      const math.Point(136.0, 36.5),
+      const math.Point(131.0, 34.0),
+      const math.Point(130.5, 31.5),
     ],
   ];
 }

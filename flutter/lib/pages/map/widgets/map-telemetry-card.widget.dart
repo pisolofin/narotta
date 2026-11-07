@@ -28,7 +28,7 @@ class MapTelemetryCard extends StatefulWidget {
 
 class _MapTelemetryCardState extends State<MapTelemetryCard> {
   static const int _coordinateDecimalDigits = 6;
-  static const int _metricDecimalDigits = 1;
+  static const int _metricDecimalDigits     = 1;
   static const double _metersPerSecondToKmh = 3.6;
 
   bool _isExpanded = false;
@@ -49,7 +49,7 @@ class _MapTelemetryCardState extends State<MapTelemetryCard> {
 
   /// Builds the coordinate text and metric chips row for active GPS position.
   Widget _buildCoordinatesHeader(BuildContext context, Position position, AppLocalizations l10n) {
-    final String latitudeText = position.latitude.toStringAsFixed(_coordinateDecimalDigits);
+    final String latitudeText  = position.latitude.toStringAsFixed(_coordinateDecimalDigits);
     final String longitudeText = position.longitude.toStringAsFixed(_coordinateDecimalDigits);
 
     return Text(
@@ -66,9 +66,9 @@ class _MapTelemetryCardState extends State<MapTelemetryCard> {
   Widget _buildExpandedTelemetry(BuildContext context, Position position, AppLocalizations l10n) {
     final String accuracyText = position.accuracy.toStringAsFixed(_metricDecimalDigits);
     final String altitudeText = position.altitude.toStringAsFixed(_metricDecimalDigits);
-    final double rawSpeedKmh = (position.speed > 0.0) ? (position.speed * _metersPerSecondToKmh) : 0.0;
-    final String speedText = rawSpeedKmh.toStringAsFixed(_metricDecimalDigits);
-    final String headingText = (position.heading >= 0.0)
+    final double rawSpeedKmh  = (position.speed > 0.0) ? (position.speed * _metersPerSecondToKmh) : 0.0;
+    final String speedText    = rawSpeedKmh.toStringAsFixed(_metricDecimalDigits);
+    final String headingText  = (position.heading >= 0.0)
       ? position.heading.toStringAsFixed(0)
       : 0.0.toStringAsFixed(0)
     ;
@@ -119,9 +119,9 @@ class _MapTelemetryCardState extends State<MapTelemetryCard> {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
-    final Position? position = widget.position;
+    final Position? position    = widget.position;
     final LocationStatus status = widget.status;
-    final bool isLoading = (status == LocationStatus.loading) && (position == null);
+    final bool isLoading        = (status == LocationStatus.loading) && (position == null);
 
     final String modeLabel = widget.isFollowingUser
       ? l10n.mapFollowingUser

@@ -16,6 +16,21 @@ class AppLocalizationsIt extends AppLocalizations {
   String get commonCancel => 'Annulla';
 
   @override
+  String get commonPause => 'Pausa';
+
+  @override
+  String get commonResume => 'Riprendi';
+
+  @override
+  String get commonSave => 'Salva';
+
+  @override
+  String get commonDelete => 'Elimina';
+
+  @override
+  String get commonClose => 'Chiudi';
+
+  @override
   String get commonSystemDefault => 'Predefinito di sistema';
 
   @override
@@ -67,12 +82,18 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String locationSpeedValue(String kmh) {
-    return 'Velocita\': $kmh km/h';
+    return 'Velocità: $kmh km/h';
   }
 
   @override
   String get mapVoidGridBadge =>
       'Reticolo cartografico - In attesa della mappa';
+
+  @override
+  String get mapStatusOfflineReady => 'Mappa offline attiva';
+
+  @override
+  String get mapStatusWorldOverview => 'Mappa base globale';
 
   @override
   String get mapZoomIn => 'Ingrandisci';
@@ -138,81 +159,30 @@ class AppLocalizationsIt extends AppLocalizations {
   String get settingsDarkTheme => 'Scuro';
 
   @override
-  String get settingsMapsSection => 'Mappe e Download Offline';
+  String get settingsMapsSection => 'Mappe e download';
 
   @override
-  String get settingsMapDownloadMode => 'Modalita\' di download';
+  String get settingsDownloadMapsTitle => 'Scarica mappe';
 
   @override
-  String get settingsMapDownloadModeSelect =>
-      'Seleziona modalita\' di download';
+  String get settingsMapStyleTitle => 'Stile mappa';
 
   @override
-  String get settingsMapModeByRegionTitle => 'Per Stato o Regione';
+  String get settingsMapStyleSelect => 'Seleziona stile mappa';
 
   @override
-  String get settingsMapModeByRegionDesc =>
-      'Scarica intere nazioni o regioni amministrative dal catalogo';
+  String get mapStyleTacticalTitle => 'Cartografico Tattico';
 
   @override
-  String get settingsMapModeCircleAreaTitle => 'Cerchia con il dito';
+  String get mapStyleTacticalDesc =>
+      'Vettori ad alto contrasto con reticolo di precisione, città e dorsali principali.';
 
   @override
-  String get settingsMapModeCircleAreaDesc =>
-      'Disegna a mano libera sulla mappa e scarica solo l\'area desiderata';
-
-  @override
-  String get settingsMapModeRouteCorridorTitle => 'Solo lungo la rotta';
-
-  @override
-  String get settingsMapModeRouteCorridorDesc =>
-      'Dettaglio nel corridoio +/-15 km e destinazione HD, mappa base altrove';
-
-  @override
-  String get settingsMapCircleDownloadAction => 'Cerchia e scarica';
-
-  @override
-  String get settingsMapCircleDownloadDesc =>
-      'Seleziona e scarica celle 0.5 x 0.5 col dito';
-
-  @override
-  String get settingsMapWifiOnlyTitle => 'Scarica solo con Wi-Fi';
+  String get settingsMapWifiOnlyTitle => 'Scarica solo Wi-Fi';
 
   @override
   String get settingsMapWifiOnlyDesc =>
       'Evita il consumo della connessione dati cellulare';
-
-  @override
-  String get settingsMapLayersSection => 'Livelli di dettaglio aggiuntivi';
-
-  @override
-  String get settingsMapLayerBuildingsTitle => 'Edifici 3D (Z13-15)';
-
-  @override
-  String get settingsMapLayerBuildingsDesc =>
-      'Estrusioni volumetriche degli isolati urbani';
-
-  @override
-  String get settingsMapLayerPedestrianTitle =>
-      'Pedonale e Mobilita\' Dolce (Z13-15)';
-
-  @override
-  String get settingsMapLayerPedestrianDesc =>
-      'Sentieri, marciapiedi e percorsi a piedi Park & Walk';
-
-  @override
-  String get settingsMapLayerTerrainTitle => 'Rilievi altimetrici HD';
-
-  @override
-  String get settingsMapLayerTerrainDesc =>
-      'Modelli DEM e curve di livello montane';
-
-  @override
-  String get settingsMapServerUrlTitle => 'Server Mappe Web API';
-
-  @override
-  String get settingsMapServerUrlDesc =>
-      'Indirizzo del servizio di distribuzione mappe';
 
   @override
   String get settingsMapServerUrlDialogTitle => 'Configura Server Mappe';
@@ -257,122 +227,110 @@ class AppLocalizationsIt extends AppLocalizations {
   String get settingsMapServerCustomHint => 'http://192.168.x.x:5001';
 
   @override
-  String get commonSave => 'Salva';
+  String get mapDownloadTitle => 'Scarica mappe';
 
   @override
-  String get commonDelete => 'Elimina';
+  String get mapDownloadServerSection => 'Server';
 
   @override
-  String get commonClose => 'Chiudi';
+  String get mapDownloadServerChecking => 'Verifica...';
 
   @override
-  String get circleDownloadTitle => 'Cerchia e Scarica';
+  String get mapDownloadServerStatusOnline => 'Online';
 
   @override
-  String get circleDownloadDrawInstruction =>
-      'Disegna un cerchio o poligono col dito per delimitare l\'area';
+  String get mapDownloadServerStatusOffline => 'Offline';
 
   @override
-  String get circleDownloadModeDraw => 'Disegna';
-
-  @override
-  String get circleDownloadModePan => 'Sposta';
-
-  @override
-  String get circleDownloadActionClear => 'Cancella';
-
-  @override
-  String get circleDownloadActionRecenter => 'Centra';
-
-  @override
-  String circleDownloadSelectedCellsCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other : '$count celle (0.5 x 0.5)',
-      one   : '1 cella (0.5 x 0.5)',
-    );
-    return '$_temp0';
+  String mapDownloadServerOnline(String url) {
+    return 'Server Mappe online ($url)';
   }
 
   @override
-  String circleDownloadEstimatedSize(String size) {
-    return 'Dimensione stimata: $size MB';
+  String mapDownloadServerOffline(String url) {
+    return 'Server Mappe non raggiungibile ($url)';
   }
 
   @override
-  String get circleDownloadActionDownload => 'Scarica area selezionata';
-
-  @override
-  String circleDownloadProgressPercent(int percent) {
-    return 'Download in corso: $percent%';
+  String mapDownloadServerOfflineError(String url) {
+    return 'Impossibile scaricare: il Server Mappe ($url) non è raggiungibile. Verifica che sia avviato.';
   }
 
   @override
-  String get circleDownloadCompleted => 'Download completato con successo!';
+  String get mapDownloadBaseMapSection => 'Mappa base';
 
   @override
-  String get circleDownloadNoSelectionHint =>
-      'Nessuna area selezionata. Tocca \'Disegna\' e traccia col dito sulla mappa.';
+  String get mapDownloadBaseMapTitle => 'Mappa mondiale panoramica';
 
   @override
-  String get circleDownloadLayerBase => 'Base Guida';
-
-  @override
-  String get circleDownloadLayerBuildings => 'Edifici 3D';
-
-  @override
-  String get circleDownloadLayerPedestrian => 'Pedonale';
-
-  @override
-  String get settingsMapDownloadManagerTitle => 'Scarica mappe offline';
-
-  @override
-  String get settingsMapDownloadManagerDesc =>
-      'Mappa del mondo, stati e regioni con selezione dettaglio';
-
-  @override
-  String get mapDownloadTitle => 'Download Mappe Offline';
-
-  @override
-  String get mapDownloadWorldSection => 'Mappa del Mondo (Base)';
-
-  @override
-  String get mapDownloadWorldDesc =>
-      'Panoramica globale (Zoom 0-7) - Indispensabile per navigare e orientarsi offline tra nazioni e continenti';
-
-  @override
-  String mapDownloadWorldDownloadBtn(String size) {
-    return 'Scarica Mappa Base ($size MB)';
+  String mapDownloadBaseMapSubtitle(String size) {
+    return 'Zoom 0-7 • ~$size MB';
   }
 
   @override
-  String get mapDownloadWorldDownloaded => 'Mappa del Mondo scaricata';
+  String get mapDownloadBaseMapDownloadAction => 'Scarica';
 
   @override
-  String get mapDownloadRegionsSection => 'Stati e Regioni';
+  String get mapDownloadWorldDownloaded => 'Scaricata';
 
   @override
-  String get mapDownloadRegionsDesc =>
-      'Seleziona uno stato o una regione per scegliere il livello di dettaglio da scaricare';
-
-  @override
-  String get mapDownloadRegionsSearchHint => 'Cerca stato o regione...';
-
-  @override
-  String get mapDownloadDetailLevelTitle => 'Livello di dettaglio';
-
-  @override
-  String mapDownloadDetailSelectFor(String name) {
-    return 'Seleziona dettaglio per $name';
+  String mapDownloadStatusDownloading(int percent) {
+    return 'Download in corso ($percent%)';
   }
+
+  @override
+  String mapDownloadStatusPaused(int percent) {
+    return 'In pausa ($percent%)';
+  }
+
+  @override
+  String get mapDownloadActionDeleteConfirmTitle => 'Elimina mappa';
+
+  @override
+  String mapDownloadActionDeleteConfirmMsg(String name) {
+    return 'Sei sicuro di voler eliminare i dati offline per $name?';
+  }
+
+  @override
+  String get mapDownloadSelectionSection => 'Selezione';
+
+  @override
+  String mapDownloadDownloadedZonesBtn(int count) {
+    return 'Zone scaricate ($count)';
+  }
+
+  @override
+  String get mapDownloadSearchPlaceholder => 'Cerca città, regione o stato...';
+
+  @override
+  String get mapDownloadSearchNoResults => 'Nessun risultato trovato';
+
+  @override
+  String get mapDownloadPlaceTypeCountry => 'Stato';
+
+  @override
+  String get mapDownloadPlaceTypeRegion => 'Regione';
+
+  @override
+  String get mapDownloadPlaceTypeCity => 'Città';
+
+  @override
+  String get mapDownloadPlaceTypeCustom => 'Area personalizzata';
+
+  @override
+  String mapDownloadCustomZoneLabel(String coordinates, int count) {
+    return 'Area $coordinates ($count celle)';
+  }
+
+  @override
+  String get mapDownloadLegendLabel => 'Scaricate:';
 
   @override
   String get mapDownloadDetailBaseTitle => 'Base (Stradale & Navigazione)';
 
   @override
   String get mapDownloadDetailBaseDesc =>
-      'Rete stradale completa, citta\' e routing (Z8-14)';
+      'Rete stradale completa, città e routing (Z8-14)';
 
   @override
   String get mapDownloadDetailDetailedTitle =>
@@ -390,6 +348,14 @@ class AppLocalizationsIt extends AppLocalizations {
       'Stradale + sentieri + edifici volumetrici 3D e curve di livello DEM (Z8-16)';
 
   @override
+  String get mapDownloadDetailLevelsInfoTitle =>
+      'Livelli di dettaglio della mappa';
+
+  @override
+  String get mapDownloadDetailLevelsInfoSubtitle =>
+      'Scegli il livello di dati da scaricare per la navigazione offline:';
+
+  @override
   String get mapDownloadDetailBaseBadge => 'Base';
 
   @override
@@ -399,60 +365,29 @@ class AppLocalizationsIt extends AppLocalizations {
   String get mapDownloadDetailCompleteBadge => 'Completo';
 
   @override
-  String get mapDownloadStatusDownloaded => 'Scaricata';
+  String get mapDownloadModeRemoveBadge => 'Rimuovi';
 
   @override
-  String get mapDownloadStatusNotDownloaded => 'Non scaricata';
+  String get mapDownloadToolPan => 'Sposta';
 
   @override
-  String mapDownloadStatusDownloading(int percent) {
-    return 'Download in corso ($percent%)';
-  }
+  String get mapDownloadToolLasso => 'Cerchia';
 
   @override
-  String mapDownloadActionDownload(String size) {
-    return 'Scarica ($size MB)';
-  }
+  String get mapDownloadWorldView => 'Vista mondo';
 
   @override
-  String get mapDownloadActionUpdate => 'Aggiorna livello di dettaglio';
+  String get mapDownloadFullscreenEnter => 'Espandi mappa';
 
   @override
-  String get mapDownloadActionDelete => 'Elimina mappa scaricata';
+  String get mapDownloadFullscreenExit => 'Riduci mappa';
 
   @override
-  String get mapDownloadActionDeleteConfirmTitle => 'Elimina mappa';
+  String get mapDownloadSelectionEmptyHint =>
+      'Tocca o clicca sulle celle, usa Cerchia o cerca città, regione o stato.';
 
   @override
-  String mapDownloadActionDeleteConfirmMsg(String name) {
-    return 'Sei sicuro di voler eliminare i dati offline per $name?';
-  }
-
-  @override
-  String get mapDownloadCircleActionTitle => 'Cerchia e scarica su mappa';
-
-  @override
-  String get mapDownloadCircleActionDesc =>
-      'Disegna a mano libera sulla mappa mondiale per scaricare solo le celle desiderate';
-
-  @override
-  String get circleDownloadDetailModalTitle =>
-      'Dettaglio download per l\'area selezionata';
-
-  @override
-  String get circleDownloadLegendTitle => 'Livelli scaricati:';
-
-  @override
-  String get circleDownloadLegendBase => 'Base';
-
-  @override
-  String get circleDownloadLegendDetailed => 'Dettagliato';
-
-  @override
-  String get circleDownloadLegendComplete => 'Completo';
-
-  @override
-  String circleDownloadCellsSelectedCount(int count) {
+  String mapDownloadSelectedCellsSummary(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -463,21 +398,102 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
-  String get circleDownloadActionChooseDetail => 'Scegli dettaglio e scarica';
-
-  @override
-  String mapDownloadServerOnline(String url) {
-    return 'Server Mappe online ($url)';
+  String mapDownloadNamedSelectionSummary(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other : '$count celle',
+      one   : '1 cella',
+    );
+    return '$name • $_temp0';
   }
 
   @override
-  String mapDownloadServerOffline(String url) {
-    return 'Server Mappe non raggiungibile ($url)';
+  String mapDownloadRemoveSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other : '$count celle scaricate da rimuovere',
+      one   : '1 cella scaricata da rimuovere',
+      zero  : 'Nessuna cella scaricata nella selezione',
+    );
+    return '$_temp0';
   }
 
   @override
-  String mapDownloadServerOfflineError(String url) {
-    return 'Impossibile scaricare: il Server Mappe ($url) non e\' raggiungibile. Verifica che sia avviato.';
+  String mapDownloadApplyDownloadAction(String level, String size) {
+    return 'Scarica $level (~$size MB)';
+  }
+
+  @override
+  String mapDownloadApplyRemoveAction(int count) {
+    return 'Rimuovi ($count)';
+  }
+
+  @override
+  String get mapDownloadClearSelectionAction => 'Deseleziona';
+
+  @override
+  String get mapDownloadZonesModalTitle => 'Zone scaricate';
+
+  @override
+  String get mapDownloadZonesEmptyTitle => 'Nessuna zona scaricata';
+
+  @override
+  String get mapDownloadZonesEmptyDesc =>
+      'Seleziona un\'area sulla mappa mondiale o cerca una città, regione o stato per scaricarla.';
+
+  @override
+  String get mapDownloadZonesSelectAll => 'Seleziona tutte';
+
+  @override
+  String get mapDownloadZonesDeselectAll => 'Deseleziona tutte';
+
+  @override
+  String mapDownloadZonesSelectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other : '$count selezionate',
+      one   : '1 selezionata',
+      zero  : 'Nessuna selezionata',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mapDownloadZonesChangeLevelBtn => 'Cambia livello';
+
+  @override
+  String get mapDownloadZonesChangeLevelTitle =>
+      'Scegli nuovo livello di dettaglio';
+
+  @override
+  String get mapDownloadZonesRemoveBtn => 'Rimuovi';
+
+  @override
+  String get mapDownloadZonesRemoveConfirmTitle => 'Rimuovi zone selezionate';
+
+  @override
+  String mapDownloadZonesRemoveConfirmMsg(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other : 'Vuoi rimuovere le $count zone selezionate dal dispositivo?',
+      one   : 'Vuoi rimuovere la zona selezionata dal dispositivo?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String mapDownloadZoneItemSubtitle(String type, int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other : '$count celle',
+      one   : '1 cella',
+    );
+    return '$type • $_temp0 • ~$size MB';
   }
 
   @override

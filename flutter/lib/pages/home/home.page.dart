@@ -1,8 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:nanna_platform/nanna_platform.dart';
 
-import 'widgets/home.widget.dart';
 import '../../l10n/app_localizations.dart';
+
+import 'widgets/home.widget.dart';
 
 /// Main screen of the application with the map view and bottom navigation bar.
 class HomePage extends StatefulWidget {

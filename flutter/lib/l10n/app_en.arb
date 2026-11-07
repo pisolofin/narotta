@@ -2,6 +2,11 @@
   "@@locale": "en",
   "commonAppTitle": "NaRotta",
   "commonCancel": "Cancel",
+  "commonPause": "Pause",
+  "commonResume": "Resume",
+  "commonSave": "Save",
+  "commonDelete": "Delete",
+  "commonClose": "Close",
   "commonSystemDefault": "System Default",
   "mapTab": "Map",
   "settingsTab": "Settings",
@@ -49,6 +54,8 @@
     }
   },
   "mapVoidGridBadge": "Cartographic Grid - Awaiting map data",
+  "mapStatusOfflineReady": "Offline map active",
+  "mapStatusWorldOverview": "Global base map",
   "mapZoomIn": "Zoom In",
   "mapZoomOut": "Zoom Out",
   "mapRecenter": "Recenter on position",
@@ -89,28 +96,14 @@
   "settingsThemeSelect": "Select theme",
   "settingsLightTheme": "Light",
   "settingsDarkTheme": "Dark",
-  "settingsMapsSection": "Maps & Offline Downloads",
-  "settingsMapDownloadMode": "Download mode",
-  "settingsMapDownloadModeSelect": "Select download mode",
-  "settingsMapModeByRegionTitle": "By Country or Region",
-  "settingsMapModeByRegionDesc": "Download full countries or administrative regions from catalog",
-  "settingsMapModeCircleAreaTitle": "Circle with finger",
-  "settingsMapModeCircleAreaDesc": "Draw freehand on the map to download only the desired area",
-  "settingsMapModeRouteCorridorTitle": "Along route only",
-  "settingsMapModeRouteCorridorDesc": "Detail in +/-15 km corridor and HD destination, base map elsewhere",
-  "settingsMapCircleDownloadAction": "Circle and download",
-  "settingsMapCircleDownloadDesc": "Select and download 0.5 x 0.5 cells with your finger",
+  "settingsMapsSection": "Maps & Downloads",
+  "settingsDownloadMapsTitle": "Download maps",
+  "settingsMapStyleTitle": "Map style",
+  "settingsMapStyleSelect": "Select map style",
+  "mapStyleTacticalTitle": "Tactical Cartographic",
+  "mapStyleTacticalDesc": "High-contrast vectors with precision grid, cities, and major highways.",
   "settingsMapWifiOnlyTitle": "Download via Wi-Fi only",
   "settingsMapWifiOnlyDesc": "Prevent cellular data usage during map downloads",
-  "settingsMapLayersSection": "Additional Detail Layers",
-  "settingsMapLayerBuildingsTitle": "3D Buildings (Z13-15)",
-  "settingsMapLayerBuildingsDesc": "Volumetric extrusions of urban blocks",
-  "settingsMapLayerPedestrianTitle": "Pedestrian & Soft Mobility (Z13-15)",
-  "settingsMapLayerPedestrianDesc": "Walking paths, hiking trails and Park & Walk",
-  "settingsMapLayerTerrainTitle": "HD Elevation Contours",
-  "settingsMapLayerTerrainDesc": "DEM elevation models and mountain contour lines",
-  "settingsMapServerUrlTitle": "Map Server Web API",
-  "settingsMapServerUrlDesc": "Map distribution service address",
   "settingsMapServerUrlDialogTitle": "Configure Map Server",
   "settingsMapServerLocalhost": "Local Server (localhost:5001)",
   "settingsMapServerLocalhostDesc": "For local development and testing on Windows or Mac",
@@ -123,125 +116,11 @@
   "settingsMapServerCustom": "Custom URL...",
   "settingsMapServerCustomDesc": "Manually enter IP address and port",
   "settingsMapServerCustomHint": "http://192.168.x.x:5001",
-  "commonSave": "Save",
-  "commonDelete": "Delete",
-  "commonClose": "Close",
-  "circleDownloadTitle": "Circle & Download",
-  "circleDownloadDrawInstruction": "Draw a circle or polygon with your finger to select an area",
-  "circleDownloadModeDraw": "Draw",
-  "circleDownloadModePan": "Pan",
-  "circleDownloadActionClear": "Clear",
-  "circleDownloadActionRecenter": "Recenter",
-  "circleDownloadSelectedCellsCount": "{count, plural, =1{1 cell (0.5 x 0.5)} other{{count} cells (0.5 x 0.5)}}",
-  "@circleDownloadSelectedCellsCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "circleDownloadEstimatedSize": "Estimated size: {size} MB",
-  "@circleDownloadEstimatedSize": {
-    "placeholders": {
-      "size": {
-        "type": "String"
-      }
-    }
-  },
-  "circleDownloadActionDownload": "Download selected area",
-  "circleDownloadProgressPercent": "Downloading: {percent}%",
-  "@circleDownloadProgressPercent": {
-    "placeholders": {
-      "percent": {
-        "type": "int"
-      }
-    }
-  },
-  "circleDownloadCompleted": "Download successfully completed!",
-  "circleDownloadNoSelectionHint": "No area selected. Tap 'Draw' and trace with your finger on the map.",
-  "circleDownloadLayerBase": "Base Driving",
-  "circleDownloadLayerBuildings": "3D Buildings",
-  "circleDownloadLayerPedestrian": "Pedestrian",
-  "settingsMapDownloadManagerTitle": "Download offline maps",
-  "settingsMapDownloadManagerDesc": "World map, countries and regions with detail selection",
-  "mapDownloadTitle": "Offline Maps Download",
-  "mapDownloadWorldSection": "World Base Map",
-  "mapDownloadWorldDesc": "Global overview (Zoom 0-7) - Essential for offline orientation across countries and continents",
-  "mapDownloadWorldDownloadBtn": "Download World Base Map ({size} MB)",
-  "@mapDownloadWorldDownloadBtn": {
-    "placeholders": {
-      "size": {
-        "type": "String"
-      }
-    }
-  },
-  "mapDownloadWorldDownloaded": "World Map downloaded",
-  "mapDownloadRegionsSection": "Countries and Regions",
-  "mapDownloadRegionsDesc": "Select a country or region to choose detail level and download",
-  "mapDownloadRegionsSearchHint": "Search country or region...",
-  "mapDownloadDetailLevelTitle": "Detail level",
-  "mapDownloadDetailSelectFor": "Select detail for {name}",
-  "@mapDownloadDetailSelectFor": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "mapDownloadDetailBaseTitle": "Base (Roads & Navigation)",
-  "mapDownloadDetailBaseDesc": "Full road network, cities and vehicle routing (Z8-14)",
-  "mapDownloadDetailDetailedTitle": "Detailed (+ Pedestrian & Trails)",
-  "mapDownloadDetailDetailedDesc": "Roads + hiking trails, walking paths and cycle tracks (Z8-16)",
-  "mapDownloadDetailCompleteTitle": "Complete (+ 3D & HD Terrain)",
-  "mapDownloadDetailCompleteDesc": "Roads + trails + 3D building extrusions and DEM contours (Z8-16)",
-  "mapDownloadDetailBaseBadge": "Base",
-  "mapDownloadDetailDetailedBadge": "Detailed",
-  "mapDownloadDetailCompleteBadge": "Complete",
-  "mapDownloadStatusDownloaded": "Downloaded",
-  "mapDownloadStatusNotDownloaded": "Not downloaded",
-  "mapDownloadStatusDownloading": "Downloading ({percent}%)",
-  "@mapDownloadStatusDownloading": {
-    "placeholders": {
-      "percent": {
-        "type": "int"
-      }
-    }
-  },
-  "mapDownloadActionDownload": "Download ({size} MB)",
-  "@mapDownloadActionDownload": {
-    "placeholders": {
-      "size": {
-        "type": "String"
-      }
-    }
-  },
-  "mapDownloadActionUpdate": "Update detail level",
-  "mapDownloadActionDelete": "Delete downloaded map",
-  "mapDownloadActionDeleteConfirmTitle": "Delete map",
-  "mapDownloadActionDeleteConfirmMsg": "Are you sure you want to delete offline data for {name}?",
-  "@mapDownloadActionDeleteConfirmMsg": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "mapDownloadCircleActionTitle": "Circle and download on map",
-  "mapDownloadCircleActionDesc": "Draw freehand on the world map to download only desired cells",
-  "circleDownloadDetailModalTitle": "Download detail for selected area",
-  "circleDownloadLegendTitle": "Downloaded levels:",
-  "circleDownloadLegendBase": "Base",
-  "circleDownloadLegendDetailed": "Detailed",
-  "circleDownloadLegendComplete": "Complete",
-  "circleDownloadCellsSelectedCount": "{count, plural, =1{1 cell selected} other{{count} cells selected}}",
-  "@circleDownloadCellsSelectedCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "circleDownloadActionChooseDetail": "Choose detail and download",
+  "mapDownloadTitle": "Download Maps",
+  "mapDownloadServerSection": "Server",
+  "mapDownloadServerChecking": "Checking...",
+  "mapDownloadServerStatusOnline": "Online",
+  "mapDownloadServerStatusOffline": "Offline",
   "mapDownloadServerOnline": "Map Server online ({url})",
   "@mapDownloadServerOnline": {
     "placeholders": {
@@ -262,6 +141,174 @@
   "@mapDownloadServerOfflineError": {
     "placeholders": {
       "url": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDownloadBaseMapSection": "Base map",
+  "mapDownloadBaseMapTitle": "World overview map",
+  "mapDownloadBaseMapSubtitle": "Zoom 0-7 • ~{size} MB",
+  "@mapDownloadBaseMapSubtitle": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDownloadBaseMapDownloadAction": "Download",
+  "mapDownloadWorldDownloaded": "Downloaded",
+  "mapDownloadStatusDownloading": "Downloading ({percent}%)",
+  "@mapDownloadStatusDownloading": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "mapDownloadStatusPaused": "Paused ({percent}%)",
+  "@mapDownloadStatusPaused": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "mapDownloadActionDeleteConfirmTitle": "Delete map",
+  "mapDownloadActionDeleteConfirmMsg": "Are you sure you want to delete offline data for {name}?",
+  "@mapDownloadActionDeleteConfirmMsg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDownloadSelectionSection": "Selection",
+  "mapDownloadDownloadedZonesBtn": "Downloaded zones ({count})",
+  "@mapDownloadDownloadedZonesBtn": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapDownloadSearchPlaceholder": "Search city, region or country...",
+  "mapDownloadSearchNoResults": "No results found",
+  "mapDownloadPlaceTypeCountry": "Country",
+  "mapDownloadPlaceTypeRegion": "Region",
+  "mapDownloadPlaceTypeCity": "City",
+  "mapDownloadPlaceTypeCustom": "Custom area",
+  "mapDownloadCustomZoneLabel": "Area {coordinates} ({count} cells)",
+  "@mapDownloadCustomZoneLabel": {
+    "placeholders": {
+      "coordinates": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapDownloadLegendLabel": "Downloaded:",
+  "mapDownloadDetailBaseTitle": "Base (Roads & Navigation)",
+  "mapDownloadDetailBaseDesc": "Full road network, cities and vehicle routing (Z8-14)",
+  "mapDownloadDetailDetailedTitle": "Detailed (+ Pedestrian & Trails)",
+  "mapDownloadDetailDetailedDesc": "Roads + hiking trails, walking paths and cycle tracks (Z8-16)",
+  "mapDownloadDetailCompleteTitle": "Complete (+ 3D & HD Terrain)",
+  "mapDownloadDetailCompleteDesc": "Roads + trails + 3D building extrusions and DEM contours (Z8-16)",
+  "mapDownloadDetailLevelsInfoTitle": "Map Detail Levels",
+  "mapDownloadDetailLevelsInfoSubtitle": "Choose the data detail level to download for offline navigation:",
+  "mapDownloadDetailBaseBadge": "Base",
+  "mapDownloadDetailDetailedBadge": "Detailed",
+  "mapDownloadDetailCompleteBadge": "Complete",
+  "mapDownloadModeRemoveBadge": "Remove",
+  "mapDownloadToolPan": "Pan",
+  "mapDownloadToolLasso": "Circle",
+  "mapDownloadWorldView": "World view",
+  "mapDownloadFullscreenEnter": "Expand map",
+  "mapDownloadFullscreenExit": "Collapse map",
+  "mapDownloadSelectionEmptyHint": "Tap or click cells, use Circle, or search for a city, region, or country.",
+  "mapDownloadSelectedCellsSummary": "{count, plural, =1{1 cell selected} other{{count} cells selected}}",
+  "@mapDownloadSelectedCellsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapDownloadNamedSelectionSummary": "{name} • {count, plural, =1{1 cell} other{{count} cells}}",
+  "@mapDownloadNamedSelectionSummary": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapDownloadRemoveSummary": "{count, plural, =0{No downloaded cells in selection} =1{1 downloaded cell to remove} other{{count} downloaded cells to remove}}",
+  "@mapDownloadRemoveSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapDownloadApplyDownloadAction": "Download {level} (~{size} MB)",
+  "@mapDownloadApplyDownloadAction": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDownloadApplyRemoveAction": "Remove ({count})",
+  "@mapDownloadApplyRemoveAction": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapDownloadClearSelectionAction": "Clear",
+  "mapDownloadZonesModalTitle": "Downloaded zones",
+  "mapDownloadZonesEmptyTitle": "No downloaded zones",
+  "mapDownloadZonesEmptyDesc": "Select an area on the world map or search for a city, region, or country to download it.",
+  "mapDownloadZonesSelectAll": "Select all",
+  "mapDownloadZonesDeselectAll": "Deselect all",
+  "mapDownloadZonesSelectedCount": "{count, plural, =0{None selected} =1{1 selected} other{{count} selected}}",
+  "@mapDownloadZonesSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapDownloadZonesChangeLevelBtn": "Change level",
+  "mapDownloadZonesChangeLevelTitle": "Choose new detail level",
+  "mapDownloadZonesRemoveBtn": "Remove",
+  "mapDownloadZonesRemoveConfirmTitle": "Remove selected zones",
+  "mapDownloadZonesRemoveConfirmMsg": "{count, plural, =1{Do you want to remove the selected zone from the device?} other{Do you want to remove the {count} selected zones from the device?}}",
+  "@mapDownloadZonesRemoveConfirmMsg": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mapDownloadZoneItemSubtitle": "{type} • {count, plural, =1{1 cell} other{{count} cells}} • ~{size} MB",
+  "@mapDownloadZoneItemSubtitle": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "size": {
         "type": "String"
       }
     }

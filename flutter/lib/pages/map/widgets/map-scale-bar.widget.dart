@@ -18,7 +18,7 @@ class MapScaleBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
-    final double pixelWidth = (this.gridMetersStep * this.zoom).clamp(40.0, 140.0);
+    final double pixelWidth     = (this.gridMetersStep * this.zoom).clamp(40.0, 140.0);
 
     final String distanceLabel = (this.gridMetersStep >= 1000.0)
       ? l10n.mapScaleKilometers((this.gridMetersStep / 1000.0).toStringAsFixed(1))

@@ -49,3 +49,10 @@ map-builder/tools/*.jar
 !.env.example
 data/
 output/
+
+# Local docker for test
+deploy-synology.bat
+docker-compose.nas.yml
+docker-compose.local-nas.yml
+docker-compose.synology.yml
+run-local-nas.bat

@@ -137,7 +137,8 @@ Dalla dashboard è possibile fare clic su **"Compila"** direttamente dalla riga 
    TOOLS_DIR=/app/tools
    BASE_URL=https://storage.narotta.app/maps/
    ```
-7. Fai clic su **"Deploy"**.
+7. In **Domains**: se si usa `sslip.io` su un VPS dietro NAT privato (es. Oracle Cloud con interfaccia `10.0.0.x`), Coolify potrebbe suggerire per errore l'IP privato `*.10.0.0.x.sslip.io`. Sostituirlo sempre con l'IP pubblico del VPS (es. `http://map-builder.narotta.141.144.198.162.sslip.io`).
+8. Fai clic su **"Deploy"**.
 
 ---
 

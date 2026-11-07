@@ -16,15 +16,22 @@ class MapServerService {
 
   MapServerService._internal();
 
+  /// Optional test hook allowing widget tests to simulate server reachability.
+  Future<bool> Function()? healthCheckOverride;
+
   /// Checks the connectivity and health status of the configured Map Server, with smart local port detection.
   Future<bool> checkHealthAsync() async {
-    final String serverUrl = SettingsService().mapServerUrl.replaceAll(RegExp(r'/+$'), '');
+    if (this.healthCheckOverride != null) {
+      return await this.healthCheckOverride!();
+    }
+
+    final String serverUrl  = SettingsService().mapServerUrl.replaceAll(RegExp(r'/+$'), '');
     final HttpClient client = HttpClient();
     client.connectionTimeout = const Duration(seconds: 4);
 
     try {
-      final Uri uri = Uri.parse('$serverUrl/health');
-      final HttpClientRequest request = await client.getUrl(uri);
+      final Uri uri                     = Uri.parse('$serverUrl/health');
+      final HttpClientRequest request   = await client.getUrl(uri);
       final HttpClientResponse response = await request.close();
       if (response.statusCode == HttpStatus.ok) {
         return true;
@@ -51,8 +58,8 @@ class MapServerService {
         final HttpClient fallbackClient = HttpClient();
         fallbackClient.connectionTimeout = const Duration(seconds: 2);
         try {
-          final Uri altUri = Uri.parse('$candidateUrl/health');
-          final HttpClientRequest altReq = await fallbackClient.getUrl(altUri);
+          final Uri altUri                 = Uri.parse('$candidateUrl/health');
+          final HttpClientRequest altReq   = await fallbackClient.getUrl(altUri);
           final HttpClientResponse altResp = await altReq.close();
           if (altResp.statusCode == HttpStatus.ok) {
             await SettingsService().updateMapServerUrlAsync(candidateUrl);
@@ -69,24 +76,99 @@ class MapServerService {
     return false;
   }
 
+  /// Downloads a file stream from the server with support for HTTP Range (resumable downloads)
+  /// and writes chunks directly to [destinationFile].
+  Future<bool> downloadFileToDiskAsync({
+    required String relativePath,
+    required File destinationFile,
+    int existingBytes = 0,
+    void Function(int receivedBytes, int totalBytes)? onProgress,
+    bool Function()? isPausedOrCancelled,
+  }) async {
+    final String serverUrl  = SettingsService().mapServerUrl.replaceAll(RegExp(r'/+$'), '');
+    final HttpClient client = HttpClient();
+    client.connectionTimeout = const Duration(seconds: 8);
+
+    IOSink? sink;
+    try {
+      if (!destinationFile.parent.existsSync()) {
+        await destinationFile.parent.create(recursive: true);
+      }
+
+      final String cleanPath          = relativePath.replaceAll(RegExp(r'^/+'), '');
+      final Uri uri                   = Uri.parse('$serverUrl/api/v1/download/$cleanPath');
+      final HttpClientRequest request = await client.getUrl(uri);
+
+      if (existingBytes > 0) {
+        request.headers.add(HttpHeaders.rangeHeader, 'bytes=$existingBytes-');
+      }
+
+      final HttpClientResponse response = await request.close();
+
+      if ((response.statusCode == HttpStatus.partialContent) || (response.statusCode == HttpStatus.ok)) {
+        final bool isPartial    = (response.statusCode == HttpStatus.partialContent);
+        final int contentLength = response.contentLength;
+        int totalBytes          = (isPartial && (contentLength > 0)) ? (existingBytes + contentLength) : contentLength;
+        int currentBytes        = isPartial ? existingBytes : 0;
+
+        final IOSink localSink = destinationFile.openWrite(
+          mode: isPartial ? FileMode.append : FileMode.write,
+        );
+        sink = localSink;
+
+        await for (final List<int> chunk in response) {
+          if ((isPausedOrCancelled != null) && isPausedOrCancelled()) {
+            await localSink.flush();
+            await localSink.close();
+            sink = null;
+            client.close(force: true);
+            return false;
+          }
+
+          localSink.add(chunk);
+          currentBytes += chunk.length;
+
+          if ((totalBytes > 0) && (onProgress != null)) {
+            onProgress(currentBytes, totalBytes);
+          }
+        }
+
+        await localSink.flush();
+        await localSink.close();
+        sink = null;
+        return true;
+      }
+      return false;
+    }catch (_) {
+      return false;
+    }finally {
+      if (sink != null) {
+        try {
+          await sink.close();
+        }catch (_) {}
+      }
+      client.close();
+    }
+  }
+
   /// Downloads a file stream from the server with progress notification.
   Future<bool> downloadFileStreamAsync(
     String relativePath, {
     void Function(double progress)? onProgress,
   }) async {
-    final String serverUrl = SettingsService().mapServerUrl.replaceAll(RegExp(r'/+$'), '');
+    final String serverUrl  = SettingsService().mapServerUrl.replaceAll(RegExp(r'/+$'), '');
     final HttpClient client = HttpClient();
     client.connectionTimeout = const Duration(seconds: 8);
 
     try {
-      final String cleanPath = relativePath.replaceAll(RegExp(r'^/+'), '');
-      final Uri uri = Uri.parse('$serverUrl/api/v1/download/$cleanPath');
-      final HttpClientRequest request = await client.getUrl(uri);
+      final String cleanPath            = relativePath.replaceAll(RegExp(r'^/+'), '');
+      final Uri uri                     = Uri.parse('$serverUrl/api/v1/download/$cleanPath');
+      final HttpClientRequest request   = await client.getUrl(uri);
       final HttpClientResponse response = await request.close();
 
       if (response.statusCode == HttpStatus.ok) {
         final int totalLength = response.contentLength;
-        int receivedBytes = 0;
+        int receivedBytes     = 0;
 
         await for (final List<int> chunk in response) {
           receivedBytes += chunk.length;
@@ -109,12 +191,12 @@ class MapServerService {
     List<math.Point<double>> coordinateList, {
     List<String>? layerList,
   }) async {
-    final String serverUrl = SettingsService().mapServerUrl.replaceAll(RegExp(r'/+$'), '');
+    final String serverUrl  = SettingsService().mapServerUrl.replaceAll(RegExp(r'/+$'), '');
     final HttpClient client = HttpClient();
     client.connectionTimeout = const Duration(seconds: 5);
 
     try {
-      final Uri uri = Uri.parse('$serverUrl/api/v1/cells/query-lasso');
+      final Uri uri                   = Uri.parse('$serverUrl/api/v1/cells/query-lasso');
       final HttpClientRequest request = await client.postUrl(uri);
       request.headers.contentType = ContentType.json;
 
@@ -135,15 +217,15 @@ class MapServerService {
       final HttpClientResponse response = await request.close();
 
       if (response.statusCode == HttpStatus.ok) {
-        final String responseBody = await response.transform(utf8.decoder).join();
-        final Map<String, dynamic> json = jsonDecode(responseBody) as Map<String, dynamic>;
+        final String responseBody        = await response.transform(utf8.decoder).join();
+        final Map<String, dynamic> json  = jsonDecode(responseBody) as Map<String, dynamic>;
         final List<dynamic>? rawCellList = json['cells'] as List<dynamic>?;
 
         if (rawCellList != null) {
           final List<GeoCellModel> resultList = [];
           for (final dynamic item in rawCellList) {
             final Map<String, dynamic> cellMap = item as Map<String, dynamic>;
-            final List<dynamic> bbox = cellMap['bbox'] as List<dynamic>;
+            final List<dynamic> bbox           = cellMap['bbox'] as List<dynamic>;
             resultList.add(
               GeoCellModel(
                 cellId         : cellMap['cell_id'] as String,

@@ -15,7 +15,8 @@ I documenti architetturali e operativi sono strutturati in ordine progressivo:
 | **03** | [`03_funzionamento_build_world_e_mappatura_file.md`](03_funzionamento_build_world_e_mappatura_file.md) | **Guida Operativa `build-world` & Mappatura File**: Mappatura esaustiva di ogni file sorgente e generato, funzionamento passo-passo della pipeline mondiale, sorgenti dati, gestione RAM/I-O e artefatti di output. |
 | **04** | [`04_web_dashboard_e_deploy_coolify.md`](04_web_dashboard_e_deploy_coolify.md) | **Web Dashboard & Deploy Remoto Coolify**: Applicazione Web ASP.NET Core .NET 10, monitoraggio real-time con SSE, verifica aggiornamenti OpenStreetMap/Geofabrik, start/stop controllato, architettura container Dockerfile e configurazione Coolify. |
 | **05** | *In definizione* | **Architettura Mobile & Integrazione Nativa**: Flutter, MapLibre Native, Valhalla C++ FFI e TTS. |
-| **06** | *In definizione* | **UI/UX & Flussi di Navigazione**: Layout adattivo per smartphone/tablet, HUD, tema giorno/notte e gestione rotte. |
+| **06** | [`06_impostazioni_e_download_mappe_ux.md`](06_impostazioni_e_download_mappe_ux.md) | **Impostazioni & Hub Unificato "Scarica Mappe"**: Analisi grafica card, semplificazione Impostazioni, vista mappa mondiale zoomabile con legenda livelli, selettore download/rimuovi, selezione dito/mouse/cerchia, ricerca città/regioni/stati e gestione lista zone scaricate. |
+| **07** | [`07_stili_visualizzazione_mappa.md`](07_stili_visualizzazione_mappa.md) | **Stili di Visualizzazione Mappa & Temi (Light / Dark)**: Modello `MapDisplayStyle`, matrice colori per tema chiaro/scuro, integrazione MapLibre e procedura per aggiungere nuovi stili grafici. |
 
 ---
 

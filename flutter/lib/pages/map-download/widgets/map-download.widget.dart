@@ -1,6 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
 import 'package:nanna_platform/nanna_platform.dart';
 
 import '../../../constants/app-sizes.dart';
@@ -9,173 +8,187 @@ import '../../../l10n/app_localizations.dart';
 import '../../../services/settings-service.dart';
 import '../../../services/map-server-service.dart';
 import '../../../services/map-download-service.dart';
-import '../../circle-download/circle-download.page.dart';
 
-/// Body content widget for managing offline map downloads including World Base Map, Countries, and Regions.
+import 'world-selection-map.widget.dart';
+import 'downloaded-zones-modal.widget.dart';
+
+/// Unified body widget for "Scarica mappe" featuring Server configuration, World Base Map, and interactive World Selection.
 class MapDownload extends StatefulWidget {
   const MapDownload({ super.key });
-
   @override
   State<MapDownload> createState() => _MapDownloadState();
 }
-
-/// State for [MapDownload] managing search query, catalog expansion, and detail level modals.
+/// State for [MapDownload] managing server health status, base map actions, and fullscreen map toggle.
 class _MapDownloadState extends State<MapDownload> {
-  final MapDownloadService _mapDownloadService = MapDownloadService();
-  final MapServerService _mapServerService     = MapServerService();
-  final SettingsService _settingsService       = SettingsService();
-
-  final TextEditingController _searchController = TextEditingController();
-  final Set<String> _expandedCountryIdSet       = { 'europe/italy' };
-
-  String _searchFilterText = '';
+  static const String _customServerChoiceValue     = 'custom';
+  final MapDownloadService _mapDownloadService     = MapDownloadService();
+  final MapServerService _mapServerService         = MapServerService();
+  final SettingsService _settingsService           = SettingsService();
+  final GlobalKey _worldMapKey                     = GlobalKey();
+  final TextEditingController _customUrlController = TextEditingController();
+  bool _isCheckingServer                           = true;
   bool? _isServerOnline;
-
+  bool _isMapFullscreen  = false;
   @override
   void initState() {
     super.initState();
     _checkServerConnectivityAsync();
   }
-
   @override
   void dispose() {
-    _searchController.dispose();
+    _customUrlController.dispose();
     super.dispose();
   }
-
-  /// Checks whether the configured map distribution server is currently online.
+  /// Checks whether the currently configured Map Server URL responds to `/health`.
   Future _checkServerConnectivityAsync() async {
-    final bool online = await _mapServerService.checkHealthAsync();
+    if (mounted) {
+      setState(() {
+        _isCheckingServer = true;
+      });
+    }
+    final bool isOnline = await _mapServerService.checkHealthAsync();
     if (!mounted) {
       return;
     }
     setState(() {
-      _isServerOnline = online;
+      _isCheckingServer = false;
+      _isServerOnline   = isOnline;
     });
   }
-
-  /// Toggles country expansion in the list.
-  void _toggleCountryExpansion(String countryId) {
-    setState(() {
-      if (_expandedCountryIdSet.contains(countryId)) {
-        _expandedCountryIdSet.remove(countryId);
-      }else {
-        _expandedCountryIdSet.add(countryId);
-      }
-    });
-  }
-
-  /// Downloads the world base map, alerting if the server is offline.
-  Future _downloadWorldMapAsync(
+  /// Opens the platform-adaptive selection modal to pick a Map Server preset or enter a custom URL.
+  Future _openServerSelectorAsync(
+    BuildContext context,
+    String currentUrl,
     AppLocalizations l10n,
   ) async {
-    final bool success = await _mapDownloadService.downloadWorldMapAsync(MapDetailLevel.base);
-    if (!mounted) {
+    final bool isCustomUrl                             = SettingsService.isCustomServerUrl(currentUrl);
+    final List<NaSelectionItem<String>> serverItemList = [
+      NaSelectionItem<String>(
+        value     : SettingsService.serverLocalhost,
+        title     : Text(l10n.settingsMapServerLocalhost),
+        subtitle  : Text(l10n.settingsMapServerLocalhostDesc),
+        isSelected: currentUrl == SettingsService.serverLocalhost,
+      ),
+      NaSelectionItem<String>(
+        value     : SettingsService.serverAndroidEmulator,
+        title     : Text(l10n.settingsMapServerAndroidEmulator),
+        subtitle  : Text(l10n.settingsMapServerAndroidEmulatorDesc),
+        isSelected: currentUrl == SettingsService.serverAndroidEmulator,
+      ),
+      NaSelectionItem<String>(
+        value     : SettingsService.serverLan,
+        title     : Text(l10n.settingsMapServerLan),
+        subtitle  : Text(l10n.settingsMapServerLanDesc),
+        isSelected: currentUrl == SettingsService.serverLan,
+      ),
+      NaSelectionItem<String>(
+        value     : SettingsService.serverProduction,
+        title     : Text(l10n.settingsMapServerProduction),
+        subtitle  : Text(l10n.settingsMapServerProductionDesc),
+        isSelected: currentUrl == SettingsService.serverProduction,
+      ),
+      NaSelectionItem<String>(
+        value     : _customServerChoiceValue,
+        title     : Text(l10n.settingsMapServerCustom),
+        subtitle  : Text(isCustomUrl ? currentUrl : l10n.settingsMapServerCustomDesc),
+        isSelected: isCustomUrl,
+      ),
+    ];
+    final String? selectedChoice = await naShowSelectionModalAsync<String>(
+      context     : context,
+      title       : Text(l10n.settingsMapServerUrlDialogTitle),
+      cancelButton: Text(l10n.commonCancel),
+      itemList    : serverItemList,
+    );
+    if ((selectedChoice == null) || (!context.mounted)) {
       return;
     }
-    if (!success) {
-      await naShowDialog(
-        context: context,
-        builder: (BuildContext dialogContext) => NaAlertDialog(
-          title  : Text(l10n.mapDownloadServerOffline(_settingsService.mapServerUrl)),
-          content: Text(l10n.mapDownloadServerOfflineError(_settingsService.mapServerUrl)),
-          actions: [
-            NaDialogAction(
-              child    : Text(l10n.commonClose),
-              onPressed: () => Navigator.of(dialogContext).pop(),
-            ),
-          ],
-        ),
-      );
+    if (selectedChoice == _customServerChoiceValue) {
+      await _openCustomServerUrlDialogAsync(context, currentUrl, l10n);
+    }else {
+      await _settingsService.updateMapServerUrlAsync(selectedChoice);
+      await _checkServerConnectivityAsync();
     }
   }
-
-  /// Opens the detail level selection dialog/modal for a country or region.
-  Future _openDetailLevelPickerAsync(
-    RegionCatalogItemModel item,
+  /// Opens the dialog allowing manual entry of a custom Map Server URL.
+  Future _openCustomServerUrlDialogAsync(
+    BuildContext context,
+    String currentUrl,
     AppLocalizations l10n,
   ) async {
-    final MapDetailLevel? currentLevel = _mapDownloadService.getItemDetailLevel(item.id);
-    MapDetailLevel selectedLevel = currentLevel ?? MapDetailLevel.base;
-
-    final bool? confirmed = await naShowDialog<bool>(
+    _customUrlController.text      = currentUrl;
+    _customUrlController.selection = TextSelection(baseOffset: 0, extentOffset: currentUrl.length);
+    final bool? confirmed = await naShowDialogAsync<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
-        return StatefulBuilder(
-          builder: (BuildContext _, StateSetter setModalState) {
-            return NaAlertDialog(
-              title  : Text(l10n.mapDownloadDetailSelectFor(item.name)),
-              content: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: AppSizes.p8),
-                  child  : Column(
-                    mainAxisSize      : MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children          : [
-                      // Base option card
-                      _buildModalDetailLevelOption(
-                        dialogContext,
-                        item,
-                        MapDetailLevel.base,
-                        selectedLevel,
-                        l10n,
-                        onSelected: (MapDetailLevel level) => setModalState(() => selectedLevel = level),
-                      ),
-                      const SizedBox(height: AppSizes.p8),
-
-                      // Detailed option card
-                      _buildModalDetailLevelOption(
-                        dialogContext,
-                        item,
-                        MapDetailLevel.detailed,
-                        selectedLevel,
-                        l10n,
-                        onSelected: (MapDetailLevel level) => setModalState(() => selectedLevel = level),
-                      ),
-                      const SizedBox(height: AppSizes.p8),
-
-                      // Complete option card
-                      _buildModalDetailLevelOption(
-                        dialogContext,
-                        item,
-                        MapDetailLevel.complete,
-                        selectedLevel,
-                        l10n,
-                        onSelected: (MapDetailLevel level) => setModalState(() => selectedLevel = level),
-                      ),
-                    ],
+        return NaAlertDialog(
+          title  : Text(l10n.settingsMapServerUrlDialogTitle),
+          content: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSizes.p8),
+              child  : Column(
+                mainAxisSize      : MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children          : [
+                  // Dialog description
+                  Text(
+                    l10n.settingsMapServerCustomDesc,
+                    style: TextStyle(
+                      fontSize: AppSizes.font12,
+                      color   : AppColors.textSecondary(dialogContext),
+                    ),
                   ),
-                ),
+                  // Spacing
+                  const SizedBox(height: AppSizes.p12),
+                  // Custom URL input field
+                  NaTextField(
+                    controller     : _customUrlController,
+                    keyboardType   : TextInputType.url,
+                    textInputAction: TextInputAction.done,
+                    autofocus      : true,
+                    onSubmitted    : (String submittedValue) => Navigator.of(dialogContext).pop(true),
+                  ),
+                ],
               ),
-              actions: [
-                NaDialogAction(
-                  child    : Text(l10n.commonCancel),
-                  onPressed: () => Navigator.of(dialogContext).pop(false),
-                ),
-                NaDialogAction(
-                  child: Text(
-                    currentLevel == null
-                      ? l10n.mapDownloadActionDownload(item.getEstimatedMb(selectedLevel).toString())
-                      : l10n.mapDownloadActionUpdate,
-                  ),
-                  onPressed: () => Navigator.of(dialogContext).pop(true),
-                ),
-              ],
-            );
-          },
+            ),
+          ),
+          actions: [
+            NaDialogAction(
+              child    : Text(l10n.commonCancel),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+            ),
+            NaDialogAction(
+              child    : Text(l10n.commonSave),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+            ),
+          ],
         );
       },
     );
-
-    if (confirmed == true) {
-      final bool success = await _mapDownloadService.downloadRegionAsync(item, selectedLevel);
-      if (!mounted) {
-        return;
-      }
-      if (!success) {
-        await naShowDialog(
-          context: context,
-          builder: (BuildContext dialogContext) => NaAlertDialog(
+    final String trimmedUrl = _customUrlController.text.trim();
+    if ((confirmed == true) && trimmedUrl.isNotEmpty) {
+      await _settingsService.updateMapServerUrlAsync(trimmedUrl);
+      await _checkServerConnectivityAsync();
+    }
+  }
+  /// Downloads the world base overview map, displaying an alert dialog if the server is offline.
+  Future _downloadWorldMapAsync(AppLocalizations l10n) async {
+    final bool success = await _mapDownloadService.downloadWorldMapAsync();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _isCheckingServer = false;
+      _isServerOnline   = success ? true : _isServerOnline;
+    });
+    if (!success) {
+      setState(() {
+        _isServerOnline = false;
+      });
+      await naShowDialogAsync(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          return NaAlertDialog(
             title  : Text(l10n.mapDownloadServerOffline(_settingsService.mapServerUrl)),
             content: Text(l10n.mapDownloadServerOfflineError(_settingsService.mapServerUrl)),
             actions: [
@@ -184,488 +197,210 @@ class _MapDownloadState extends State<MapDownload> {
                 onPressed: () => Navigator.of(dialogContext).pop(),
               ),
             ],
-          ),
-        );
-      }
+          );
+        },
+      );
     }
   }
-
-  /// Builds a clickable detail level option inside the modal dialog.
-  Widget _buildModalDetailLevelOption(
-    BuildContext context,
-    RegionCatalogItemModel item,
-    MapDetailLevel level,
-    MapDetailLevel currentSelected,
-    AppLocalizations l10n, {
-    required ValueChanged<MapDetailLevel> onSelected,
-  }) {
-    final bool isSelected = level == currentSelected;
-    final Color levelColor = level.getColor(context);
-    final String sizeMb = item.getEstimatedMb(level).toString();
-
-    return GestureDetector(
-      onTap: () => onSelected(level),
-      child: Container(
-        padding   : const EdgeInsets.all(AppSizes.p12),
-        decoration: BoxDecoration(
-          color       : isSelected ? levelColor.withValues(alpha: 0.14) : AppColors.surface(context),
-          borderRadius: BorderRadius.circular(AppSizes.radius12),
-          border      : Border.all(
-            color: isSelected ? levelColor : AppColors.border(context),
-            width: isSelected ? AppSizes.borderWidthThick : AppSizes.borderWidthRegular,
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children          : [
-            // Title and size row
-            Row(
-              children: [
-                Container(
-                  width     : AppSizes.p12,
-                  height    : AppSizes.p12,
-                  decoration: BoxDecoration(
-                    color: levelColor,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: AppSizes.p8),
-                Expanded(
-                  child: Text(
-                    level.getTitle(l10n),
-                    style: TextStyle(
-                      fontSize  : AppSizes.font14,
-                      fontWeight: FontWeight.bold,
-                      color     : isSelected ? levelColor : AppColors.textPrimary(context),
-                    ),
-                  ),
-                ),
-                Text(
-                  l10n.commonMegabytesValue(sizeMb),
-                  style: TextStyle(
-                    fontSize  : AppSizes.font13,
-                    fontWeight: FontWeight.w600,
-                    color     : isSelected ? levelColor : AppColors.textSecondary(context),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSizes.p4),
-
-            // Description
-            Padding(
-              padding: const EdgeInsets.only(left: AppSizes.p20),
-              child  : Text(
-                level.getDescription(l10n),
-                style: TextStyle(
-                  fontSize: AppSizes.font12,
-                  color   : AppColors.textSecondary(context),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Confirms deletion of a downloaded map package.
-  Future _confirmDeleteMapAsync(
-    BuildContext context,
-    String itemId,
-    String itemName,
-    AppLocalizations l10n,
-  ) async {
-    final bool? confirmed = await naShowDialog<bool>(
+  /// Confirms and deletes the downloaded world base map.
+  Future _confirmDeleteWorldMapAsync(BuildContext context, AppLocalizations l10n) async {
+    final bool? confirmed = await naShowDialogAsync<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
         return NaAlertDialog(
           title  : Text(l10n.mapDownloadActionDeleteConfirmTitle),
-          content: Text(l10n.mapDownloadActionDeleteConfirmMsg(itemName)),
+          content: Text(l10n.mapDownloadActionDeleteConfirmMsg(l10n.mapDownloadBaseMapTitle)),
           actions: [
             NaDialogAction(
               child    : Text(l10n.commonCancel),
               onPressed: () => Navigator.of(dialogContext).pop(false),
             ),
             NaDialogAction(
-              child    : Text(l10n.commonDelete),
+              optionsBuilder: (BuildContext actionContext, NaUiType uiType) {
+                if (uiType == NaUiType.cupertino) {
+                  return NaDialogActionOptionsCupertino(
+                    isDestructiveAction: true,
+                  );
+                }
+                return null;
+              },
+              child: Text(
+                l10n.commonDelete,
+                style: TextStyle(color: AppColors.error(dialogContext)),
+              ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
             ),
           ],
         );
       },
     );
-
     if (confirmed == true) {
-      await _mapDownloadService.deleteItemAsync(itemId);
+      await _mapDownloadService.deleteWorldMapAsync();
     }
   }
-
-  @override
-  Widget build(BuildContext context) {
-    final AppLocalizations l10n = AppLocalizations.of(context)!;
-
-    return ListenableBuilder(
-      listenable: _mapDownloadService,
-      builder   : (BuildContext context, Widget? child) {
-        final bool isWorldDownloaded = _mapDownloadService.isWorldMapDownloaded;
-        final bool isWorldDownloading = _mapDownloadService.isItemDownloading(MapDownloadService.worldOverviewId);
-        final double worldProgress = _mapDownloadService.getItemProgress(MapDownloadService.worldOverviewId) ?? 0.0;
-        final int worldPercent = (worldProgress * 100.0).round();
-
-        // Catalog filtering based on search text
-        final List<RegionCatalogItemModel> filteredCatalogList = [];
-        final String query = _searchFilterText.trim().toLowerCase();
-
-        for (final RegionCatalogItemModel country in _mapDownloadService.getCatalogList()) {
-          if (query.isEmpty) {
-            filteredCatalogList.add(country);
-          }else {
-            final bool countryMatches = country.name.toLowerCase().contains(query);
-            final List<RegionCatalogItemModel> matchedSubList = country.subRegionList
-              .where((RegionCatalogItemModel r) => r.name.toLowerCase().contains(query))
-              .toList()
-            ;
-
-            if (countryMatches || matchedSubList.isNotEmpty) {
-              filteredCatalogList.add(
-                RegionCatalogItemModel(
-                  id             : country.id,
-                  parentId       : country.parentId,
-                  name           : country.name,
-                  countryCode    : country.countryCode,
-                  baseSizeBytes  : country.baseSizeBytes,
-                  boundingBoxList: country.boundingBoxList,
-                  cellIdList     : country.cellIdList,
-                  subRegionList  : countryMatches ? country.subRegionList : matchedSubList,
-                ),
-              );
-            }
-          }
-        }
-
-        return Container(
-          width : double.infinity,
-          height: double.infinity,
-          color : AppColors.background(context),
-          child : ListView(
-            padding : const EdgeInsets.all(AppSizes.p16),
-            children: [
-              // -------------------------------------------------------------
-              // Server Connectivity Status Banner
-              // -------------------------------------------------------------
-              if (_isServerOnline != null) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSizes.p12,
-                    vertical  : AppSizes.p8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: (_isServerOnline == true)
-                      ? AppColors.success(context).withValues(alpha: 0.12)
-                      : AppColors.error(context).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(AppSizes.radius12),
-                    border      : Border.all(
-                      color: (_isServerOnline == true)
-                        ? AppColors.success(context)
-                        : AppColors.error(context),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      NaIcon(
-                        (_isServerOnline == true) ? NaIcons.checkCircle : NaIcons.warning,
-                        size: AppSizes.icon16,
-                      ),
-                      const SizedBox(width: AppSizes.p8),
-                      Expanded(
-                        child: Text(
-                          (_isServerOnline == true)
-                            ? l10n.mapDownloadServerOnline(_settingsService.mapServerUrl)
-                            : l10n.mapDownloadServerOffline(_settingsService.mapServerUrl),
-                          style: TextStyle(
-                            fontSize  : AppSizes.font12,
-                            fontWeight: FontWeight.w500,
-                            color     : (_isServerOnline == true)
-                              ? AppColors.success(context)
-                              : AppColors.error(context),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSizes.p16),
-              ],
-
-              // -------------------------------------------------------------
-              // 1. World Base Map Section
-              // -------------------------------------------------------------
-              Padding(
-                padding: const EdgeInsets.only(left: AppSizes.p8, bottom: AppSizes.p8),
-                child  : Text(
-                  l10n.mapDownloadWorldSection,
-                  style: TextStyle(
-                    fontSize  : AppSizes.font14,
-                    fontWeight: FontWeight.bold,
-                    color     : AppColors.textSecondary(context),
-                  ),
-                ),
-              ),
-
-              NaCard(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSizes.p16),
-                  child  : Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children          : [
-                      Row(
-                        children: [
-                          Container(
-                            padding   : const EdgeInsets.all(AppSizes.p10),
-                            decoration: BoxDecoration(
-                              color       : AppColors.primary(context).withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(AppSizes.radius12),
-                            ),
-                            child: const NaIcon(
-                              NaIcons.public,
-                              size: AppSizes.icon28,
-                            ),
-                          ),
-                          const SizedBox(width: AppSizes.p12),
-
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children          : [
-                                Text(
-                                  l10n.mapDownloadWorldSection,
-                                  style: TextStyle(
-                                    fontSize  : AppSizes.font16,
-                                    fontWeight: FontWeight.bold,
-                                    color     : AppColors.textPrimary(context),
-                                  ),
-                                ),
-                                const SizedBox(height: AppSizes.p4),
-                                Text(
-                                  l10n.mapDownloadWorldDesc,
-                                  style: TextStyle(
-                                    fontSize: AppSizes.font12,
-                                    color   : AppColors.textSecondary(context),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSizes.p12),
-
-                      // Progress bar if downloading
-                      if (isWorldDownloading) ...[
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children          : [
-                            Text(
-                              l10n.mapDownloadStatusDownloading(worldPercent),
-                              style: TextStyle(
-                                fontSize  : AppSizes.font12,
-                                fontWeight: FontWeight.bold,
-                                color     : AppColors.primary(context),
-                              ),
-                            ),
-                            const SizedBox(height: AppSizes.p6),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(AppSizes.radius8),
-                              child       : Container(
-                                height: AppSizes.p8,
-                                color : AppColors.surface(context),
-                                child : FractionallySizedBox(
-                                  alignment  : Alignment.centerLeft,
-                                  widthFactor: worldProgress,
-                                  child      : Container(
-                                    color: AppColors.primary(context),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ]else if (isWorldDownloaded) ...[
-                        // Already downloaded badge and delete action
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children         : [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSizes.p10,
-                                vertical  : AppSizes.p4,
-                              ),
-                              decoration: BoxDecoration(
-                                color       : AppColors.detailBase(context).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(AppSizes.radius8),
-                                border      : Border.all(color: AppColors.detailBase(context)),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children    : [
-                                  const NaIcon(NaIcons.check, size: AppSizes.icon16),
-                                  const SizedBox(width: AppSizes.p6),
-                                  Text(
-                                    l10n.mapDownloadWorldDownloaded,
-                                    style: TextStyle(
-                                      fontSize  : AppSizes.font12,
-                                      fontWeight: FontWeight.bold,
-                                      color     : AppColors.detailBase(context),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            NaIconButton(
-                              icon     : const NaIcon(NaIcons.delete),
-                              onPressed: () => _confirmDeleteMapAsync(
-                                context,
-                                MapDownloadService.worldOverviewId,
-                                l10n.mapDownloadWorldSection,
-                                l10n,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ]else ...[
-                        // Download action button
-                        NaButtonFilled(
-                          onPressed: () => _downloadWorldMapAsync(l10n),
-                          child    : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children         : [
-                              const NaIcon(NaIcons.cloudDownload),
-                              const SizedBox(width: AppSizes.p8),
-                              Text(l10n.mapDownloadWorldDownloadBtn('40')),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSizes.p20),
-
-              // -------------------------------------------------------------
-              // 2. Circle and Download Interactive Canvas Shortcut Card
-              // -------------------------------------------------------------
-              NaCard(
-                child: NaListTile(
-                  leading: Container(
+  /// Builds the status badge displayed inside the Server card.
+  Widget _buildServerStatusBadge(BuildContext context, AppLocalizations l10n) {
+    if (_isCheckingServer) {
+      return Text(
+        l10n.mapDownloadServerChecking,
+        style: TextStyle(
+          fontSize: AppSizes.font12,
+          color   : AppColors.textSecondary(context),
+        ),
+      );
+    }
+    final bool isOnline    = _isServerOnline == true;
+    final Color badgeColor = isOnline ? AppColors.success(context) : AppColors.error(context);
+    final String labelText = isOnline ? l10n.mapDownloadServerStatusOnline : l10n.mapDownloadServerStatusOffline;
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSizes.p8,
+        vertical  : AppSizes.p3,
+      ),
+      decoration: BoxDecoration(
+        color       : badgeColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppSizes.radiusCircle),
+        border      : Border.all(
+          color: badgeColor.withValues(alpha: 0.6),
+          width: AppSizes.borderWidthThin,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children    : [
+          // Status indicator dot
+          Container(
+            width     : AppSizes.p6,
+            height    : AppSizes.p6,
+            decoration: BoxDecoration(
+              color: badgeColor,
+              shape: BoxShape.circle,
+            ),
+          ),
+          // Spacing
+          const SizedBox(width: AppSizes.p4),
+          // Status text
+          Text(
+            labelText,
+            style: TextStyle(
+              fontSize  : AppSizes.font11,
+              fontWeight: FontWeight.w600,
+              color     : badgeColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  /// Builds Section 1: Server configuration card.
+  Widget _buildServerSection(BuildContext context, AppLocalizations l10n) {
+    final String activeUrl  = _settingsService.mapServerUrl;
+    final String shortLabel = SettingsService.getServerShortLabel(activeUrl);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize      : MainAxisSize.min,
+      children          : [
+        // Server section header
+        Padding(
+          padding: const EdgeInsets.only(
+            left  : AppSizes.p8,
+            bottom: AppSizes.p6,
+          ),
+          child: Text(
+            l10n.mapDownloadServerSection,
+            style: TextStyle(
+              fontSize  : AppSizes.font13,
+              fontWeight: FontWeight.bold,
+              color     : AppColors.textSecondary(context),
+            ),
+          ),
+        ),
+        // Server selector card
+        NaCard(
+          child: NaListTile(
+            leading   : const NaIcon(NaIcons.dns),
+            title     : Text(shortLabel),
+            trailing  : _buildServerStatusBadge(context, l10n),
+            hasChevron: true,
+            onTap     : () => _openServerSelectorAsync(context, activeUrl, l10n),
+          ),
+        ),
+      ],
+    );
+  }
+  /// Builds Section 2: World Base Map (`Mappa base`) card.
+  Widget _buildBaseMapSection(BuildContext context, AppLocalizations l10n) {
+    final bool isWorldDownloaded  = _mapDownloadService.isWorldMapDownloaded;
+    final bool isWorldDownloading = _mapDownloadService.isItemDownloading(MapDownloadService.worldOverviewId);
+    final bool isWorldPaused      = _mapDownloadService.isItemPaused(MapDownloadService.worldOverviewId);
+    final double worldProgress    = _mapDownloadService.getItemProgress(MapDownloadService.worldOverviewId) ?? 0.0;
+    final int worldPercent        = (worldProgress * 100.0).round();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize      : MainAxisSize.min,
+      children          : [
+        // Base Map section header
+        Padding(
+          padding: const EdgeInsets.only(
+            left  : AppSizes.p8,
+            bottom: AppSizes.p6,
+          ),
+          child: Text(
+            l10n.mapDownloadBaseMapSection,
+            style: TextStyle(
+              fontSize  : AppSizes.font13,
+              fontWeight: FontWeight.bold,
+              color     : AppColors.textSecondary(context),
+            ),
+          ),
+        ),
+        // Base Map status & action card
+        NaCard(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSizes.p14,
+            vertical  : AppSizes.p10,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize      : MainAxisSize.min,
+            children          : [
+              // Main row: icon, title/subtitle, and trailing action
+              Row(
+                children: [
+                  // Globe icon badge
+                  Container(
                     padding   : const EdgeInsets.all(AppSizes.p8),
                     decoration: BoxDecoration(
                       color       : AppColors.primary(context).withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(AppSizes.radius10),
                     ),
-                    child: const NaIcon(NaIcons.brush, size: AppSizes.icon24),
-                  ),
-                  title   : Text(l10n.mapDownloadCircleActionTitle),
-                  subtitle: Text(
-                    l10n.mapDownloadCircleActionDesc,
-                    style: TextStyle(
-                      fontSize: AppSizes.font12,
-                      color   : AppColors.textSecondary(context),
+                    child: const NaIcon(
+                      NaIcons.public,
+                      size: AppSizes.icon20,
                     ),
                   ),
-                  hasChevron: true,
-                  onTap     : () {
-                    Navigator.of(context).push(
-                      NaPageRoute.create(
-                        context,
-                        builder: (BuildContext pageContext) => const CircleDownloadPage(),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: AppSizes.p20),
-
-              // -------------------------------------------------------------
-              // 3. Countries and Regions Section Header & Legend
-              // -------------------------------------------------------------
-              Padding(
-                padding: const EdgeInsets.only(left: AppSizes.p8, bottom: AppSizes.p8),
-                child  : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children          : [
-                    Text(
-                      l10n.mapDownloadRegionsSection,
-                      style: TextStyle(
-                        fontSize  : AppSizes.font14,
-                        fontWeight: FontWeight.bold,
-                        color     : AppColors.textSecondary(context),
-                      ),
-                    ),
-                    const SizedBox(height: AppSizes.p4),
-                    Text(
-                      l10n.mapDownloadRegionsDesc,
-                      style: TextStyle(
-                        fontSize: AppSizes.font12,
-                        color   : AppColors.textSecondary(context),
-                      ),
-                    ),
-                    const SizedBox(height: AppSizes.p8),
-
-                    // Color Legend row
-                    Row(
-                      children: [
-                        // Base legend
-                        Container(
-                          width     : AppSizes.p8,
-                          height    : AppSizes.p8,
-                          decoration: BoxDecoration(
-                            color: AppColors.detailBase(context),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: AppSizes.p4),
+                  // Spacing
+                  const SizedBox(width: AppSizes.p12),
+                  // Base map title and zoom/size subtitle
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize      : MainAxisSize.min,
+                      children          : [
+                        // Title
                         Text(
-                          l10n.mapDownloadDetailBaseBadge,
+                          l10n.mapDownloadBaseMapTitle,
                           style: TextStyle(
-                            fontSize: AppSizes.font12,
-                            color   : AppColors.textSecondary(context),
+                            fontSize  : AppSizes.font14,
+                            fontWeight: FontWeight.w600,
+                            color     : AppColors.textPrimary(context),
                           ),
                         ),
-                        const SizedBox(width: AppSizes.p12),
-
-                        // Detailed legend
-                        Container(
-                          width     : AppSizes.p8,
-                          height    : AppSizes.p8,
-                          decoration: BoxDecoration(
-                            color: AppColors.detailDetailed(context),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: AppSizes.p4),
+                        // Spacing
+                        const SizedBox(height: AppSizes.p2),
+                        // Subtitle
                         Text(
-                          l10n.mapDownloadDetailDetailedBadge,
-                          style: TextStyle(
-                            fontSize: AppSizes.font12,
-                            color   : AppColors.textSecondary(context),
-                          ),
-                        ),
-                        const SizedBox(width: AppSizes.p12),
-
-                        // Complete legend
-                        Container(
-                          width     : AppSizes.p8,
-                          height    : AppSizes.p8,
-                          decoration: BoxDecoration(
-                            color: AppColors.detailComplete(context),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: AppSizes.p4),
-                        Text(
-                          l10n.mapDownloadDetailCompleteBadge,
+                          l10n.mapDownloadBaseMapSubtitle(MapDownloadService.worldMapEstimatedMb),
                           style: TextStyle(
                             fontSize: AppSizes.font12,
                             color   : AppColors.textSecondary(context),
@@ -673,215 +408,343 @@ class _MapDownloadState extends State<MapDownload> {
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-
-              // Search bar
-              NaSearchBar(
-                controller: _searchController,
-                hintText  : l10n.mapDownloadRegionsSearchHint,
-                leading   : const NaIcon(NaIcons.search),
-                onChanged : (String value) {
-                  setState(() {
-                    _searchFilterText = value;
-                  });
-                },
-              ),
-              const SizedBox(height: AppSizes.p12),
-
-              // Countries & Regions expandable list
-              NaCard(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children    : [
-                    for (int i = 0; i < filteredCatalogList.length; i++) ...[
-                      _buildCountryItem(
-                        context,
-                        filteredCatalogList[i],
-                        l10n,
-                        isLast: (i == filteredCatalogList.length - 1),
+                  ),
+                  // Spacing before trailing control
+                  const SizedBox(width: AppSizes.p8),
+                  // Trailing status or download button
+                  if (isWorldDownloading) ...[
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children    : [
+                        // Percent text
+                        Text(
+                          l10n.commonPercentValue(worldPercent),
+                          style: TextStyle(
+                            fontSize  : AppSizes.font13,
+                            fontWeight: FontWeight.bold,
+                            color     : AppColors.primary(context),
+                          ),
+                        ),
+                        // Spacing
+                        const SizedBox(width: AppSizes.p4),
+                        // Pause button
+                        NaIconButton(
+                          icon     : const NaIcon(NaIcons.pause, size: AppSizes.icon18),
+                          onPressed: () => _mapDownloadService.pauseDownload(MapDownloadService.worldOverviewId),
+                        ),
+                        // Cancel button
+                        NaIconButton(
+                          icon     : const NaIcon(NaIcons.close, size: AppSizes.icon18),
+                          onPressed: () => _mapDownloadService.cancelDownloadAsync(MapDownloadService.worldOverviewId),
+                        ),
+                      ],
+                    ),
+                  ]else if (isWorldPaused) ...[
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children    : [
+                        // Paused percent text
+                        Text(
+                          l10n.mapDownloadStatusPaused(worldPercent),
+                          style: TextStyle(
+                            fontSize  : AppSizes.font12,
+                            fontWeight: FontWeight.bold,
+                            color     : AppColors.detailDetailed(context),
+                          ),
+                        ),
+                        // Spacing
+                        const SizedBox(width: AppSizes.p4),
+                        // Resume button
+                        NaIconButton(
+                          icon     : const NaIcon(NaIcons.playArrow, size: AppSizes.icon18),
+                          onPressed: () => _mapDownloadService.resumeDownloadAsync(MapDownloadService.worldOverviewId),
+                        ),
+                        // Cancel button
+                        NaIconButton(
+                          icon     : const NaIcon(NaIcons.close, size: AppSizes.icon18),
+                          onPressed: () => _mapDownloadService.cancelDownloadAsync(MapDownloadService.worldOverviewId),
+                        ),
+                      ],
+                    ),
+                  ]else if (isWorldDownloaded) ...[
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children    : [
+                        // Downloaded badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSizes.p8,
+                            vertical  : AppSizes.p4,
+                          ),
+                          decoration: BoxDecoration(
+                            color       : AppColors.detailBase(context).withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(AppSizes.radius8),
+                            border      : Border.all(
+                              color: AppColors.detailBase(context),
+                              width: AppSizes.borderWidthThin,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children    : [
+                              // Checkmark icon
+                              NaIcon(
+                                NaIcons.check,
+                                size : AppSizes.icon14,
+                                color: AppColors.detailBase(context),
+                              ),
+                              // Spacing
+                              const SizedBox(width: AppSizes.p4),
+                              // Downloaded label
+                              Text(
+                                l10n.mapDownloadWorldDownloaded,
+                                style: TextStyle(
+                                  fontSize  : AppSizes.font11,
+                                  fontWeight: FontWeight.bold,
+                                  color     : AppColors.detailBase(context),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Spacing
+                        const SizedBox(width: AppSizes.p4),
+                        // Delete base map button
+                        NaIconButton(
+                          icon     : const NaIcon(NaIcons.deleteOutline, size: AppSizes.icon18),
+                          onPressed: () => _confirmDeleteWorldMapAsync(context, l10n),
+                        ),
+                      ],
+                    ),
+                  ]else ...[
+                    // Download button
+                    GestureDetector(
+                      onTap: () => _downloadWorldMapAsync(l10n),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSizes.p12,
+                          vertical  : AppSizes.p8,
+                        ),
+                        decoration: BoxDecoration(
+                          color       : AppColors.primary(context),
+                          borderRadius: BorderRadius.circular(AppSizes.radius8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children    : [
+                            // Cloud download icon
+                            NaIcon(
+                              NaIcons.cloudDownload,
+                              size : AppSizes.icon16,
+                              color: AppColors.white(context),
+                            ),
+                            // Spacing
+                            const SizedBox(width: AppSizes.p6),
+                            // Download button text
+                            Text(
+                              l10n.mapDownloadBaseMapDownloadAction,
+                              style: TextStyle(
+                                fontSize  : AppSizes.font12,
+                                fontWeight: FontWeight.bold,
+                                color     : AppColors.white(context),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
+                    ),
                   ],
-                ),
+                ],
               ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  /// Builds a single country row and its nested subregions if expanded.
-  Widget _buildCountryItem(
-    BuildContext context,
-    RegionCatalogItemModel country,
-    AppLocalizations l10n, {
-    required bool isLast,
-  }) {
-    final bool isExpanded = _expandedCountryIdSet.contains(country.id);
-    final bool hasSubRegions = country.subRegionList.isNotEmpty;
-    final MapDetailLevel? downloadLevel = _mapDownloadService.getItemDetailLevel(country.id);
-    final bool isDownloading = _mapDownloadService.isItemDownloading(country.id);
-    final double? progress = _mapDownloadService.getItemProgress(country.id);
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children    : [
-        // Main country row
-        NaListTile(
-          leading: const NaIcon(NaIcons.flag),
-          title  : Text(
-            country.name,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Text(
-            l10n.commonApproximateMegabytesValue(country.getEstimatedMb(MapDetailLevel.base).toString()),
-            style: TextStyle(
-              fontSize: AppSizes.font12,
-              color   : AppColors.textSecondary(context),
-            ),
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children    : [
-              // Download status badge with color
-              if (isDownloading) ...[
-                Text(
-                  l10n.commonPercentValue(((progress ?? 0.0) * 100.0).round()),
-                  style: TextStyle(
-                    fontSize  : AppSizes.font12,
-                    fontWeight: FontWeight.bold,
-                    color     : AppColors.primary(context),
-                  ),
-                ),
-              ]else if (downloadLevel != null) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSizes.p8,
-                    vertical  : AppSizes.p4,
-                  ),
-                  decoration: BoxDecoration(
-                    color       : downloadLevel.getColor(context).withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(AppSizes.radius8),
-                    border      : Border.all(color: downloadLevel.getColor(context)),
-                  ),
-                  child: Text(
-                    downloadLevel.getBadge(l10n),
-                    style: TextStyle(
-                      fontSize  : AppSizes.font10,
-                      fontWeight: FontWeight.bold,
-                      color     : downloadLevel.getColor(context),
+              // Progress bar when downloading world base map
+              if (isWorldDownloading || isWorldPaused) ...[
+                // Spacing above progress bar
+                const SizedBox(height: AppSizes.p8),
+                // Progress bar track
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(AppSizes.radius6),
+                  child       : Container(
+                    height: AppSizes.p6,
+                    color : AppColors.border(context),
+                    child : FractionallySizedBox(
+                      alignment  : Alignment.centerLeft,
+                      widthFactor: worldProgress.clamp(0.0, 1.0),
+                      child      : Container(
+                        color: isWorldPaused
+                          ? AppColors.detailDetailed(context)
+                          : AppColors.primary(context),
+                      ),
                     ),
                   ),
                 ),
-              ]else ...[
-                const NaIcon(NaIcons.cloudDownload, size: AppSizes.icon20),
-              ],
-
-              // Expand / collapse subregions toggle button
-              if (hasSubRegions) ...[
-                const SizedBox(width: AppSizes.p8),
-                NaIconButton(
-                  icon     : NaIcon(isExpanded ? NaIcons.expandLess : NaIcons.expandMore),
-                  onPressed: () => _toggleCountryExpansion(country.id),
-                ),
               ],
             ],
           ),
-          onTap: () => _openDetailLevelPickerAsync(country, l10n),
         ),
-
-        // Subregions list when expanded
-        if (hasSubRegions && isExpanded) ...[
-          Container(
-            color: AppColors.surface(context).withValues(alpha: 0.5),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children    : [
-                for (final RegionCatalogItemModel subRegion in country.subRegionList) ...[
-                  _buildSubRegionRow(context, subRegion, l10n),
-                ],
-              ],
-            ),
-          ),
-        ],
-
-        if (!isLast) ...[
-          Container(
-            height: AppSizes.borderWidthRegular,
-            color : AppColors.border(context),
-          ),
-        ],
       ],
     );
   }
-
-  /// Builds a nested subregion row (e.g. Italian regions).
-  Widget _buildSubRegionRow(
-    BuildContext context,
-    RegionCatalogItemModel region,
-    AppLocalizations l10n,
-  ) {
-    final MapDetailLevel? downloadLevel = _mapDownloadService.getItemDetailLevel(region.id);
-    final bool isDownloading = _mapDownloadService.isItemDownloading(region.id);
-    final double? progress = _mapDownloadService.getItemProgress(region.id);
-
+  /// Builds the Section 3 (`Selezione`) header bar with the "Zone scaricate" modal button and fullscreen toggle.
+  Widget _buildSelectionHeader(BuildContext context, AppLocalizations l10n) {
+    final int downloadedCount = _mapDownloadService.downloadedZoneCount;
     return Padding(
-      padding: const EdgeInsets.only(left: AppSizes.p24),
-      child  : NaListTile(
-        leading: const NaIcon(NaIcons.locationOn, size: AppSizes.icon16),
-        title  : Text(
-          region.name,
-          style: const TextStyle(fontSize: AppSizes.font14),
-        ),
-        subtitle: Text(
-          l10n.commonApproximateMegabytesValue(region.getEstimatedMb(MapDetailLevel.base).toString()),
-          style: TextStyle(
-            fontSize: AppSizes.font12,
-            color   : AppColors.textSecondary(context),
-          ),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children    : [
-            if (isDownloading) ...[
-              Text(
-                l10n.commonPercentValue(((progress ?? 0.0) * 100.0).round()),
-                style: TextStyle(
-                  fontSize  : AppSizes.font12,
-                  fontWeight: FontWeight.bold,
-                  color     : AppColors.primary(context),
-                ),
-              ),
-            ]else if (downloadLevel != null) ...[
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSizes.p8,
-                  vertical  : AppSizes.p2,
-                ),
-                decoration: BoxDecoration(
-                  color       : downloadLevel.getColor(context).withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(AppSizes.radius8),
-                  border      : Border.all(color: downloadLevel.getColor(context)),
-                ),
-                child: Text(
-                  downloadLevel.getBadge(l10n),
-                  style: TextStyle(
-                    fontSize  : AppSizes.font10,
-                    fontWeight: FontWeight.bold,
-                    color     : downloadLevel.getColor(context),
-                  ),
-                ),
-              ),
-            ]else ...[
-              const NaIcon(NaIcons.cloudDownload, size: AppSizes.icon16),
-            ],
-          ],
-        ),
-        onTap: () => _openDetailLevelPickerAsync(region, l10n),
+      padding: const EdgeInsets.only(
+        left  : AppSizes.p8,
+        bottom: AppSizes.p6,
       ),
+      child: Row(
+        children: [
+          // Section title
+          Expanded(
+            child: Text(
+              l10n.mapDownloadSelectionSection,
+              style: TextStyle(
+                fontSize  : AppSizes.font13,
+                fontWeight: FontWeight.bold,
+                color     : AppColors.textSecondary(context),
+              ),
+            ),
+          ),
+          // Button to open the Downloaded Zones list modal
+          GestureDetector(
+            onTap: () => DownloadedZonesModal.showAsync(context),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSizes.p10,
+                vertical  : AppSizes.p6,
+              ),
+              decoration: BoxDecoration(
+                color       : AppColors.surface(context),
+                borderRadius: BorderRadius.circular(AppSizes.radiusCircle),
+                border      : Border.all(
+                  color: AppColors.cardBorder(context),
+                  width: AppSizes.borderWidthThin,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children    : [
+                  // Checklist icon
+                  NaIcon(
+                    NaIcons.checklist,
+                    size : AppSizes.icon16,
+                    color: AppColors.primary(context),
+                  ),
+                  // Spacing
+                  const SizedBox(width: AppSizes.p6),
+                  // Downloaded zones button label with count
+                  Text(
+                    l10n.mapDownloadDownloadedZonesBtn(downloadedCount),
+                    style: TextStyle(
+                      fontSize  : AppSizes.font12,
+                      fontWeight: FontWeight.w600,
+                      color     : AppColors.textPrimary(context),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Spacing before fullscreen toggle
+          const SizedBox(width: AppSizes.p6),
+          // Fullscreen map expand/collapse toggle button
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isMapFullscreen = !_isMapFullscreen;
+              });
+            },
+            child: Container(
+              width     : AppSizes.p32,
+              height    : AppSizes.p32,
+              alignment : Alignment.center,
+              decoration: BoxDecoration(
+                color       : AppColors.surface(context),
+                borderRadius: BorderRadius.circular(AppSizes.radiusCircle),
+                border      : Border.all(
+                  color: AppColors.cardBorder(context),
+                  width: AppSizes.borderWidthThin,
+                ),
+              ),
+              child: NaIcon(
+                _isMapFullscreen ? NaIcons.shrink : NaIcons.expand,
+                size : AppSizes.icon16,
+                color: AppColors.textPrimary(context),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  @override
+  Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    return ListenableBuilder(
+      listenable: Listenable.merge([_mapDownloadService, _settingsService]),
+      builder   : (BuildContext context, Widget? child) {
+        return Container(
+          width : double.infinity,
+          height: double.infinity,
+          color : AppColors.background(context),
+          child : LayoutBuilder(
+            builder: (BuildContext layoutContext, BoxConstraints constraints) {
+              final bool useScrollableFallback = (!_isMapFullscreen) &&
+                  (constraints.maxHeight < AppSizes.mapDownloadCompactThreshold);
+              if (useScrollableFallback) {
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppSizes.p12),
+                  child  : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children          : [
+                      // 1. Server section
+                      _buildServerSection(context, l10n),
+                      // Spacing
+                      const SizedBox(height: AppSizes.p12),
+                      // 2. Base Map section
+                      _buildBaseMapSection(context, l10n),
+                      // Spacing
+                      const SizedBox(height: AppSizes.p12),
+                      // 3. Selection header
+                      _buildSelectionHeader(context, l10n),
+                      // Interactive world map with minimum height
+                      SizedBox(
+                        height: AppSizes.mapSelectionMinHeight,
+                        child : WorldSelectionMap(key: _worldMapKey),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return Padding(
+                padding: const EdgeInsets.all(AppSizes.p12),
+                child  : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children          : [
+                    // 1. Server & 2. Base Map sections (hidden when map is expanded fullscreen)
+                    if (!_isMapFullscreen) ...[
+                      // Server section
+                      _buildServerSection(context, l10n),
+                      // Spacing
+                      const SizedBox(height: AppSizes.p12),
+                      // Base Map section
+                      _buildBaseMapSection(context, l10n),
+                      // Spacing
+                      const SizedBox(height: AppSizes.p12),
+                    ],
+                    // 3. Selection header
+                    _buildSelectionHeader(context, l10n),
+                    // Interactive world map filling remaining viewport height
+                    Expanded(
+                      child: WorldSelectionMap(key: _worldMapKey),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

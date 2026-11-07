@@ -15,6 +15,7 @@ namespace NaRotta.MapBuilder.Core.Models {
         public string Md5Url { get; set; } = string.Empty;
         public string PolyUrl { get; set; } = string.Empty;
         public List<double> BoundingBoxList { get; set; } = new List<double>();
+        [System.Text.Json.Serialization.JsonIgnore]
         public Geometry? BoundaryGeometry { get; set; }
 
         /// <summary>

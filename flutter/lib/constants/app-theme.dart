@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
+import 'app-sizes.dart';
 import 'app-colors.dart';
 
 /// Configures the light and dark themes for the application.
@@ -19,6 +20,20 @@ class AppTheme {
         primary   : AppColors.primary(context, brightness: effectiveBrightness),
         surface   : AppColors.surface(context, brightness: effectiveBrightness),
         error     : AppColors.error(context, brightness: effectiveBrightness),
+      ),
+      cardTheme: CardThemeData(
+        color           : AppColors.surface(context, brightness: effectiveBrightness),
+        surfaceTintColor: AppColors.transparent(context, brightness: effectiveBrightness),
+        elevation       : 0,
+        margin          : EdgeInsets.zero,
+        clipBehavior    : Clip.antiAlias,
+        shape           : RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSizes.radius12),
+          side        : BorderSide(
+            color: AppColors.cardBorder(context, brightness: effectiveBrightness),
+            width: AppSizes.borderWidthThin,
+          ),
+        ),
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.background(context, brightness: effectiveBrightness),
@@ -40,7 +55,7 @@ class AppTheme {
     return CupertinoThemeData(
       brightness             : effectiveBrightness,
       primaryColor           : AppColors.primary(context, brightness: effectiveBrightness),
-      primaryContrastingColor: const Color(0xFFFFFFFF),
+      primaryContrastingColor: AppColors.white(context, brightness: effectiveBrightness),
       scaffoldBackgroundColor: AppColors.background(context, brightness: effectiveBrightness),
       barBackgroundColor     : AppColors.surface(context, brightness: effectiveBrightness),
     );

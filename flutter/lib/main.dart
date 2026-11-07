@@ -1,6 +1,7 @@
-import 'package:nanna/nanna.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
+
+import 'package:nanna/nanna.dart';
 
 import 'app.dart';
 import 'services/settings-service.dart';

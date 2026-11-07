@@ -81,5 +81,30 @@ namespace NaRotta.MapBuilder.Tests {
             // Assert
             Assert.Equal("-180.0,-85.0,180.0,85.0", boundingBoxText);
         }
+
+        [Fact]
+        public void Serialize_WhenBoundaryGeometryIsPresent_DoesNotThrowAndOmitsGeometry() {
+            // Arrange
+            var factory = new NetTopologySuite.Geometries.GeometryFactory();
+            var polygon = factory.CreatePolygon(new NetTopologySuite.Geometries.Coordinate[] {
+                new NetTopologySuite.Geometries.Coordinate(0, 0),
+                new NetTopologySuite.Geometries.Coordinate(0, 1),
+                new NetTopologySuite.Geometries.Coordinate(1, 1),
+                new NetTopologySuite.Geometries.Coordinate(1, 0),
+                new NetTopologySuite.Geometries.Coordinate(0, 0)
+            });
+            var region = new GeofabrikRegionModel {
+                Id = "test",
+                Name = "Test",
+                BoundaryGeometry = polygon
+            };
+
+            // Act
+            string json = System.Text.Json.JsonSerializer.Serialize(region);
+
+            // Assert
+            Assert.Contains("\"Id\":\"test\"", json);
+            Assert.DoesNotContain("BoundaryGeometry", json);
+        }
     }
 }

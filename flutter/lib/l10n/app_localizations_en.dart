@@ -16,6 +16,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonCancel => 'Cancel';
 
   @override
+  String get commonPause => 'Pause';
+
+  @override
+  String get commonResume => 'Resume';
+
+  @override
+  String get commonSave => 'Save';
+
+  @override
+  String get commonDelete => 'Delete';
+
+  @override
+  String get commonClose => 'Close';
+
+  @override
   String get commonSystemDefault => 'System Default';
 
   @override
@@ -70,6 +85,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mapVoidGridBadge => 'Cartographic Grid - Awaiting map data';
+
+  @override
+  String get mapStatusOfflineReady => 'Offline map active';
+
+  @override
+  String get mapStatusWorldOverview => 'Global base map';
 
   @override
   String get mapZoomIn => 'Zoom In';
@@ -135,41 +156,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsDarkTheme => 'Dark';
 
   @override
-  String get settingsMapsSection => 'Maps & Offline Downloads';
+  String get settingsMapsSection => 'Maps & Downloads';
 
   @override
-  String get settingsMapDownloadMode => 'Download mode';
+  String get settingsDownloadMapsTitle => 'Download maps';
 
   @override
-  String get settingsMapDownloadModeSelect => 'Select download mode';
+  String get settingsMapStyleTitle => 'Map style';
 
   @override
-  String get settingsMapModeByRegionTitle => 'By Country or Region';
+  String get settingsMapStyleSelect => 'Select map style';
 
   @override
-  String get settingsMapModeByRegionDesc =>
-      'Download full countries or administrative regions from catalog';
+  String get mapStyleTacticalTitle => 'Tactical Cartographic';
 
   @override
-  String get settingsMapModeCircleAreaTitle => 'Circle with finger';
-
-  @override
-  String get settingsMapModeCircleAreaDesc =>
-      'Draw freehand on the map to download only the desired area';
-
-  @override
-  String get settingsMapModeRouteCorridorTitle => 'Along route only';
-
-  @override
-  String get settingsMapModeRouteCorridorDesc =>
-      'Detail in +/-15 km corridor and HD destination, base map elsewhere';
-
-  @override
-  String get settingsMapCircleDownloadAction => 'Circle and download';
-
-  @override
-  String get settingsMapCircleDownloadDesc =>
-      'Select and download 0.5 x 0.5 cells with your finger';
+  String get mapStyleTacticalDesc =>
+      'High-contrast vectors with precision grid, cities, and major highways.';
 
   @override
   String get settingsMapWifiOnlyTitle => 'Download via Wi-Fi only';
@@ -177,37 +180,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsMapWifiOnlyDesc =>
       'Prevent cellular data usage during map downloads';
-
-  @override
-  String get settingsMapLayersSection => 'Additional Detail Layers';
-
-  @override
-  String get settingsMapLayerBuildingsTitle => '3D Buildings (Z13-15)';
-
-  @override
-  String get settingsMapLayerBuildingsDesc =>
-      'Volumetric extrusions of urban blocks';
-
-  @override
-  String get settingsMapLayerPedestrianTitle =>
-      'Pedestrian & Soft Mobility (Z13-15)';
-
-  @override
-  String get settingsMapLayerPedestrianDesc =>
-      'Walking paths, hiking trails and Park & Walk';
-
-  @override
-  String get settingsMapLayerTerrainTitle => 'HD Elevation Contours';
-
-  @override
-  String get settingsMapLayerTerrainDesc =>
-      'DEM elevation models and mountain contour lines';
-
-  @override
-  String get settingsMapServerUrlTitle => 'Map Server Web API';
-
-  @override
-  String get settingsMapServerUrlDesc => 'Map distribution service address';
 
   @override
   String get settingsMapServerUrlDialogTitle => 'Configure Map Server';
@@ -252,115 +224,104 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsMapServerCustomHint => 'http://192.168.x.x:5001';
 
   @override
-  String get commonSave => 'Save';
+  String get mapDownloadTitle => 'Download Maps';
 
   @override
-  String get commonDelete => 'Delete';
+  String get mapDownloadServerSection => 'Server';
 
   @override
-  String get commonClose => 'Close';
+  String get mapDownloadServerChecking => 'Checking...';
 
   @override
-  String get circleDownloadTitle => 'Circle & Download';
+  String get mapDownloadServerStatusOnline => 'Online';
 
   @override
-  String get circleDownloadDrawInstruction =>
-      'Draw a circle or polygon with your finger to select an area';
+  String get mapDownloadServerStatusOffline => 'Offline';
 
   @override
-  String get circleDownloadModeDraw => 'Draw';
-
-  @override
-  String get circleDownloadModePan => 'Pan';
-
-  @override
-  String get circleDownloadActionClear => 'Clear';
-
-  @override
-  String get circleDownloadActionRecenter => 'Recenter';
-
-  @override
-  String circleDownloadSelectedCellsCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other : '$count cells (0.5 x 0.5)',
-      one   : '1 cell (0.5 x 0.5)',
-    );
-    return '$_temp0';
+  String mapDownloadServerOnline(String url) {
+    return 'Map Server online ($url)';
   }
 
   @override
-  String circleDownloadEstimatedSize(String size) {
-    return 'Estimated size: $size MB';
+  String mapDownloadServerOffline(String url) {
+    return 'Map Server unreachable ($url)';
   }
 
   @override
-  String get circleDownloadActionDownload => 'Download selected area';
-
-  @override
-  String circleDownloadProgressPercent(int percent) {
-    return 'Downloading: $percent%';
+  String mapDownloadServerOfflineError(String url) {
+    return 'Unable to download: Map Server ($url) is unreachable. Please verify it is running.';
   }
 
   @override
-  String get circleDownloadCompleted => 'Download successfully completed!';
+  String get mapDownloadBaseMapSection => 'Base map';
 
   @override
-  String get circleDownloadNoSelectionHint =>
-      'No area selected. Tap \'Draw\' and trace with your finger on the map.';
+  String get mapDownloadBaseMapTitle => 'World overview map';
 
   @override
-  String get circleDownloadLayerBase => 'Base Driving';
-
-  @override
-  String get circleDownloadLayerBuildings => '3D Buildings';
-
-  @override
-  String get circleDownloadLayerPedestrian => 'Pedestrian';
-
-  @override
-  String get settingsMapDownloadManagerTitle => 'Download offline maps';
-
-  @override
-  String get settingsMapDownloadManagerDesc =>
-      'World map, countries and regions with detail selection';
-
-  @override
-  String get mapDownloadTitle => 'Offline Maps Download';
-
-  @override
-  String get mapDownloadWorldSection => 'World Base Map';
-
-  @override
-  String get mapDownloadWorldDesc =>
-      'Global overview (Zoom 0-7) - Essential for offline orientation across countries and continents';
-
-  @override
-  String mapDownloadWorldDownloadBtn(String size) {
-    return 'Download World Base Map ($size MB)';
+  String mapDownloadBaseMapSubtitle(String size) {
+    return 'Zoom 0-7 • ~$size MB';
   }
 
   @override
-  String get mapDownloadWorldDownloaded => 'World Map downloaded';
+  String get mapDownloadBaseMapDownloadAction => 'Download';
 
   @override
-  String get mapDownloadRegionsSection => 'Countries and Regions';
+  String get mapDownloadWorldDownloaded => 'Downloaded';
 
   @override
-  String get mapDownloadRegionsDesc =>
-      'Select a country or region to choose detail level and download';
-
-  @override
-  String get mapDownloadRegionsSearchHint => 'Search country or region...';
-
-  @override
-  String get mapDownloadDetailLevelTitle => 'Detail level';
-
-  @override
-  String mapDownloadDetailSelectFor(String name) {
-    return 'Select detail for $name';
+  String mapDownloadStatusDownloading(int percent) {
+    return 'Downloading ($percent%)';
   }
+
+  @override
+  String mapDownloadStatusPaused(int percent) {
+    return 'Paused ($percent%)';
+  }
+
+  @override
+  String get mapDownloadActionDeleteConfirmTitle => 'Delete map';
+
+  @override
+  String mapDownloadActionDeleteConfirmMsg(String name) {
+    return 'Are you sure you want to delete offline data for $name?';
+  }
+
+  @override
+  String get mapDownloadSelectionSection => 'Selection';
+
+  @override
+  String mapDownloadDownloadedZonesBtn(int count) {
+    return 'Downloaded zones ($count)';
+  }
+
+  @override
+  String get mapDownloadSearchPlaceholder =>
+      'Search city, region or country...';
+
+  @override
+  String get mapDownloadSearchNoResults => 'No results found';
+
+  @override
+  String get mapDownloadPlaceTypeCountry => 'Country';
+
+  @override
+  String get mapDownloadPlaceTypeRegion => 'Region';
+
+  @override
+  String get mapDownloadPlaceTypeCity => 'City';
+
+  @override
+  String get mapDownloadPlaceTypeCustom => 'Custom area';
+
+  @override
+  String mapDownloadCustomZoneLabel(String coordinates, int count) {
+    return 'Area $coordinates ($count cells)';
+  }
+
+  @override
+  String get mapDownloadLegendLabel => 'Downloaded:';
 
   @override
   String get mapDownloadDetailBaseTitle => 'Base (Roads & Navigation)';
@@ -385,6 +346,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Roads + trails + 3D building extrusions and DEM contours (Z8-16)';
 
   @override
+  String get mapDownloadDetailLevelsInfoTitle => 'Map Detail Levels';
+
+  @override
+  String get mapDownloadDetailLevelsInfoSubtitle =>
+      'Choose the data detail level to download for offline navigation:';
+
+  @override
   String get mapDownloadDetailBaseBadge => 'Base';
 
   @override
@@ -394,60 +362,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mapDownloadDetailCompleteBadge => 'Complete';
 
   @override
-  String get mapDownloadStatusDownloaded => 'Downloaded';
+  String get mapDownloadModeRemoveBadge => 'Remove';
 
   @override
-  String get mapDownloadStatusNotDownloaded => 'Not downloaded';
+  String get mapDownloadToolPan => 'Pan';
 
   @override
-  String mapDownloadStatusDownloading(int percent) {
-    return 'Downloading ($percent%)';
-  }
+  String get mapDownloadToolLasso => 'Circle';
 
   @override
-  String mapDownloadActionDownload(String size) {
-    return 'Download ($size MB)';
-  }
+  String get mapDownloadWorldView => 'World view';
 
   @override
-  String get mapDownloadActionUpdate => 'Update detail level';
+  String get mapDownloadFullscreenEnter => 'Expand map';
 
   @override
-  String get mapDownloadActionDelete => 'Delete downloaded map';
+  String get mapDownloadFullscreenExit => 'Collapse map';
 
   @override
-  String get mapDownloadActionDeleteConfirmTitle => 'Delete map';
+  String get mapDownloadSelectionEmptyHint =>
+      'Tap or click cells, use Circle, or search for a city, region, or country.';
 
   @override
-  String mapDownloadActionDeleteConfirmMsg(String name) {
-    return 'Are you sure you want to delete offline data for $name?';
-  }
-
-  @override
-  String get mapDownloadCircleActionTitle => 'Circle and download on map';
-
-  @override
-  String get mapDownloadCircleActionDesc =>
-      'Draw freehand on the world map to download only desired cells';
-
-  @override
-  String get circleDownloadDetailModalTitle =>
-      'Download detail for selected area';
-
-  @override
-  String get circleDownloadLegendTitle => 'Downloaded levels:';
-
-  @override
-  String get circleDownloadLegendBase => 'Base';
-
-  @override
-  String get circleDownloadLegendDetailed => 'Detailed';
-
-  @override
-  String get circleDownloadLegendComplete => 'Complete';
-
-  @override
-  String circleDownloadCellsSelectedCount(int count) {
+  String mapDownloadSelectedCellsSummary(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -458,21 +395,101 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get circleDownloadActionChooseDetail => 'Choose detail and download';
-
-  @override
-  String mapDownloadServerOnline(String url) {
-    return 'Map Server online ($url)';
+  String mapDownloadNamedSelectionSummary(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other : '$count cells',
+      one   : '1 cell',
+    );
+    return '$name • $_temp0';
   }
 
   @override
-  String mapDownloadServerOffline(String url) {
-    return 'Map Server unreachable ($url)';
+  String mapDownloadRemoveSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other : '$count downloaded cells to remove',
+      one   : '1 downloaded cell to remove',
+      zero  : 'No downloaded cells in selection',
+    );
+    return '$_temp0';
   }
 
   @override
-  String mapDownloadServerOfflineError(String url) {
-    return 'Unable to download: Map Server ($url) is unreachable. Please verify it is running.';
+  String mapDownloadApplyDownloadAction(String level, String size) {
+    return 'Download $level (~$size MB)';
+  }
+
+  @override
+  String mapDownloadApplyRemoveAction(int count) {
+    return 'Remove ($count)';
+  }
+
+  @override
+  String get mapDownloadClearSelectionAction => 'Clear';
+
+  @override
+  String get mapDownloadZonesModalTitle => 'Downloaded zones';
+
+  @override
+  String get mapDownloadZonesEmptyTitle => 'No downloaded zones';
+
+  @override
+  String get mapDownloadZonesEmptyDesc =>
+      'Select an area on the world map or search for a city, region, or country to download it.';
+
+  @override
+  String get mapDownloadZonesSelectAll => 'Select all';
+
+  @override
+  String get mapDownloadZonesDeselectAll => 'Deselect all';
+
+  @override
+  String mapDownloadZonesSelectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other : '$count selected',
+      one   : '1 selected',
+      zero  : 'None selected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mapDownloadZonesChangeLevelBtn => 'Change level';
+
+  @override
+  String get mapDownloadZonesChangeLevelTitle => 'Choose new detail level';
+
+  @override
+  String get mapDownloadZonesRemoveBtn => 'Remove';
+
+  @override
+  String get mapDownloadZonesRemoveConfirmTitle => 'Remove selected zones';
+
+  @override
+  String mapDownloadZonesRemoveConfirmMsg(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other : 'Do you want to remove the $count selected zones from the device?',
+      one   : 'Do you want to remove the selected zone from the device?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String mapDownloadZoneItemSubtitle(String type, int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other : '$count cells',
+      one   : '1 cell',
+    );
+    return '$type • $_temp0 • ~$size MB';
   }
 
   @override

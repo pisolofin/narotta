@@ -102,6 +102,15 @@ namespace NaRotta.MapBuilder.Web {
 
             WebApplication app = builder.Build();
 
+            app.Use(async (context, next) => {
+                try {
+                    await next();
+                }catch (Exception exception) {
+                    logBuffer.AppendLog("Unhandled API error at " + context.Request.Path + ": " + exception.Message, "ERROR");
+                    throw;
+                }
+            });
+
             app.UseCors();
             app.UseDefaultFiles();
             app.UseStaticFiles();

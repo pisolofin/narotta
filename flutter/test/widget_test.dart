@@ -1,8 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:nanna_platform/nanna_platform.dart';
-
 import 'package:narotta/app.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:narotta/pages/home/home.page.dart';
+import 'package:nanna_platform/nanna_platform.dart';
 import 'package:narotta/pages/map/widgets/map-view.widget.dart';
 import 'package:narotta/pages/settings/widgets/settings.widget.dart';
 
