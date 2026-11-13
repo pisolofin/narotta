@@ -11,6 +11,7 @@ import '../constants/app-colors.dart';
 import '../l10n/app_localizations.dart';
 
 import 'geo-cell-service.dart';
+import 'settings-service.dart';
 import 'map-server-service.dart';
 import 'geo-catalog-service.dart';
 
@@ -276,6 +277,18 @@ class MapDownloadService extends ChangeNotifier {
       }
       return tempDir;
     }
+    final String? customPath = SettingsService().customMapsDirectory;
+    if ((customPath != null) && customPath.isNotEmpty) {
+      try {
+        final Directory customDir = Directory(customPath);
+        if (!customDir.existsSync()) {
+          await customDir.create(recursive: true);
+        }
+        return customDir;
+      }catch (_) {
+        // Fallback to default documents directory on failure
+      }
+    }
     try {
       final Directory appDocDir = await getApplicationDocumentsDirectory();
       final Directory mapsDir   = Directory('${appDocDir.path}/maps');
@@ -305,7 +318,7 @@ class MapDownloadService extends ChangeNotifier {
           for (final dynamic rawZone in rawZoneList) {
             if (rawZone is Map<String, dynamic>) {
               final DownloadedZoneModel zone = DownloadedZoneModel.fromJsonMap(rawZone);
-              if (zone.id.isNotEmpty && zone.cellIdList.isNotEmpty) {
+              if ((zone.id.isNotEmpty) && (zone.cellIdList.isNotEmpty)) {
                 _downloadedZoneMap[zone.id] = zone;
               }
             }
@@ -406,16 +419,17 @@ class MapDownloadService extends ChangeNotifier {
     }
   }
   /// Resumes a paused download task for [taskId].
-  Future resumeDownloadAsync(String taskId) async {
+  Future<bool> resumeDownloadAsync(String taskId) async {
     if (getTaskStatus(taskId) == DownloadTaskStatus.paused) {
       _taskPauseRequestedMap[taskId]  = false;
       _taskCancelRequestedMap[taskId] = false;
       if (taskId == worldOverviewId) {
-        await downloadWorldMapAsync(skipServerCheck: false);
+        return await downloadWorldMapAsync(skipServerCheck: false);
       }else if (taskId == activeSelectionDownloadId) {
-        await resumeActiveSelectionDownloadAsync();
+        return await resumeActiveSelectionDownloadAsync();
       }
     }
+    return false;
   }
   /// Cancels a running or paused download task for [taskId] and cleans up temporary files.
   Future cancelDownloadAsync(String taskId) async {
@@ -438,6 +452,22 @@ class MapDownloadService extends ChangeNotifier {
         if (partFile.existsSync()) {
           await partFile.delete();
         }
+      }else if (taskId == activeSelectionDownloadId) {
+        final List<String> pendingCellIdList = _pendingSelectionCellIdList ?? const [];
+        for (final String cellId in pendingCellIdList) {
+          final Directory cellDir = Directory('${mapsDir.path}/cells/$cellId');
+          if (cellDir.existsSync()) {
+            for (final FileSystemEntity entity in cellDir.listSync()) {
+              if ((entity is File) && (entity.path.endsWith('.part'))) {
+                await entity.delete();
+              }
+            }
+          }
+        }
+        _pendingSelectionCellIdList      = null;
+        _pendingSelectionLevel           = null;
+        _pendingSelectionZoneDisplayName = null;
+        _pendingSelectionPlace           = null;
       }
     }catch (_) {}
     notifyListeners();
@@ -487,7 +517,7 @@ class MapDownloadService extends ChangeNotifier {
     final File partFile     = File('${mapsDir.path}/world_overview.mbtiles.part');
     final bool success      = await _runStreamingProgressAsync(
       taskId             : worldOverviewId,
-      relativePath       : skipServerCheck ? null : 'overview/world_overview.mbtiles',
+      relativePath       : skipServerCheck ? null : 'world_overview.mbtiles',
       destinationPartFile: partFile,
     );
     if (success) {
@@ -565,10 +595,6 @@ class MapDownloadService extends ChangeNotifier {
         relativePathList.add('cells/$cellId/${cellId}_tiles_buildings.mbtiles');
         relativePathList.add('cells/$cellId/${cellId}_tiles_terrain_hd.mbtiles');
       }
-    }
-
-    if (place != null) {
-      relativePathList.add('regions/${place.id}/${place.id}_tiles_base.mbtiles');
     }
 
     final bool success = await _downloadBatchFilesAsync(
@@ -700,6 +726,7 @@ class MapDownloadService extends ChangeNotifier {
     for (final String zoneKey in zoneKeysToRemoveList) {
       _downloadedZoneMap.remove(zoneKey);
     }
+    await _deleteOrphanedCellFilesAsync(removeSet);
     await _saveRegistryAsync();
     notifyListeners();
   }
@@ -708,11 +735,37 @@ class MapDownloadService extends ChangeNotifier {
     if (zoneIdList.isEmpty) {
       return;
     }
+    final Set<String> candidateCellIdSet = {};
     for (final String zoneId in zoneIdList) {
-      _downloadedZoneMap.remove(zoneId);
+      final DownloadedZoneModel? removedZone = _downloadedZoneMap.remove(zoneId);
+      if (removedZone != null) {
+        candidateCellIdSet.addAll(removedZone.cellIdList);
+      }
     }
+    await _deleteOrphanedCellFilesAsync(candidateCellIdSet);
     await _saveRegistryAsync();
     notifyListeners();
+  }
+  /// Deletes local cell directories on disk for cells in [candidateCellIdSet] that are no longer referenced by any zone.
+  Future _deleteOrphanedCellFilesAsync(Set<String> candidateCellIdSet) async {
+    if (candidateCellIdSet.isEmpty) {
+      return;
+    }
+    final Set<String> activeCellIdSet = {};
+    for (final DownloadedZoneModel zone in _downloadedZoneMap.values) {
+      activeCellIdSet.addAll(zone.cellIdList);
+    }
+    try {
+      final Directory mapsDir = await getMapsDirectoryAsync();
+      for (final String cellId in candidateCellIdSet) {
+        if (!activeCellIdSet.contains(cellId)) {
+          final Directory cellDir = Directory('${mapsDir.path}/cells/$cellId');
+          if (cellDir.existsSync()) {
+            await cellDir.delete(recursive: true);
+          }
+        }
+      }
+    }catch (_) {}
   }
   /// Builds a concise coordinate label for a custom selection of cells.
   static String formatCustomAreaCoordinates(List<String> cellIdList) {
@@ -778,6 +831,14 @@ class MapDownloadService extends ChangeNotifier {
 
       final File destinationFile     = File('${mapsDir.path}/$relativePath');
       final File destinationPartFile = File('${mapsDir.path}/$relativePath.part');
+
+      if ((!destinationPartFile.existsSync()) && (destinationFile.existsSync()) && (destinationFile.lengthSync() > 0)) {
+        successCount++;
+        completedCount++;
+        _downloadProgressMap[taskId] = (completedCount / relativePathList.length).clamp(0.0, 1.0);
+        notifyListeners();
+        continue;
+      }
 
       if (!destinationFile.parent.existsSync()) {
         await destinationFile.parent.create(recursive: true);
@@ -859,7 +920,7 @@ class MapDownloadService extends ChangeNotifier {
     _downloadProgressMap.putIfAbsent(taskId, () => 0.0);
     notifyListeners();
     bool didStreamSucceed = false;
-    if ((relativePath != null) && relativePath.isNotEmpty && (destinationPartFile != null)) {
+    if ((relativePath != null) && (relativePath.isNotEmpty) && (destinationPartFile != null)) {
       int existingBytes = 0;
       if (destinationPartFile.existsSync()) {
         existingBytes = destinationPartFile.lengthSync();

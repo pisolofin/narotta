@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
-import 'package:intl/intl.dart' as intl;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
 import 'app_localizations_it.dart';
@@ -209,25 +209,25 @@ abstract class AppLocalizations {
   /// No description provided for @locationCoordinates.
   ///
   /// In it, this message translates to:
-  /// **'{ latitude }, { longitude }'**
+  /// **'{latitude}, {longitude}'**
   String locationCoordinates(String latitude, String longitude);
 
   /// No description provided for @locationAccuracyValue.
   ///
   /// In it, this message translates to:
-  /// **'Precisione: +/-{ meters } m'**
+  /// **'Precisione: +/-{meters} m'**
   String locationAccuracyValue(String meters);
 
   /// No description provided for @locationAltitudeValue.
   ///
   /// In it, this message translates to:
-  /// **'Altitudine: { meters } m'**
+  /// **'Altitudine: {meters} m'**
   String locationAltitudeValue(String meters);
 
   /// No description provided for @locationSpeedValue.
   ///
   /// In it, this message translates to:
-  /// **'Velocità: { kmh } km/h'**
+  /// **'Velocità: {kmh} km/h'**
   String locationSpeedValue(String kmh);
 
   /// No description provided for @mapVoidGridBadge.
@@ -281,19 +281,19 @@ abstract class AppLocalizations {
   /// No description provided for @mapScaleMeters.
   ///
   /// In it, this message translates to:
-  /// **'{ meters } m'**
+  /// **'{meters} m'**
   String mapScaleMeters(String meters);
 
   /// No description provided for @mapScaleKilometers.
   ///
   /// In it, this message translates to:
-  /// **'{ kilometers } km'**
+  /// **'{kilometers} km'**
   String mapScaleKilometers(String kilometers);
 
   /// No description provided for @mapHeadingValue.
   ///
   /// In it, this message translates to:
-  /// **'Direzione: { degrees } gradi'**
+  /// **'Direzione: {degrees} gradi'**
   String mapHeadingValue(String degrees);
 
   /// No description provided for @mapTelemetryToggle.
@@ -301,6 +301,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Dettagli telemetria'**
   String get mapTelemetryToggle;
+
+  /// No description provided for @mapMainStreetLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Corso Principale'**
+  String get mapMainStreetLabel;
 
   /// No description provided for @settingsTitle.
   ///
@@ -373,6 +379,30 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Scarica mappe'**
   String get settingsDownloadMapsTitle;
+
+  /// No description provided for @settingsMapStorageFolderTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Cartella di salvataggio mappe'**
+  String get settingsMapStorageFolderTitle;
+
+  /// No description provided for @settingsMapStorageFolderReset.
+  ///
+  /// In it, this message translates to:
+  /// **'Ripristina predefinita'**
+  String get settingsMapStorageFolderReset;
+
+  /// No description provided for @settingsMapStorageFolderChange.
+  ///
+  /// In it, this message translates to:
+  /// **'Cambia cartella'**
+  String get settingsMapStorageFolderChange;
+
+  /// No description provided for @settingsMapStorageFolderDefaultBadge.
+  ///
+  /// In it, this message translates to:
+  /// **'Predefinita'**
+  String get settingsMapStorageFolderDefaultBadge;
 
   /// No description provided for @settingsMapStyleTitle.
   ///
@@ -515,19 +545,19 @@ abstract class AppLocalizations {
   /// No description provided for @mapDownloadServerOnline.
   ///
   /// In it, this message translates to:
-  /// **'Server Mappe online ({ url })'**
+  /// **'Server Mappe online ({url})'**
   String mapDownloadServerOnline(String url);
 
   /// No description provided for @mapDownloadServerOffline.
   ///
   /// In it, this message translates to:
-  /// **'Server Mappe non raggiungibile ({ url })'**
+  /// **'Server Mappe non raggiungibile ({url})'**
   String mapDownloadServerOffline(String url);
 
   /// No description provided for @mapDownloadServerOfflineError.
   ///
   /// In it, this message translates to:
-  /// **'Impossibile scaricare: il Server Mappe ({ url }) non è raggiungibile. Verifica che sia avviato.'**
+  /// **'Impossibile scaricare: il Server Mappe ({url}) non è raggiungibile. Verifica che sia avviato.'**
   String mapDownloadServerOfflineError(String url);
 
   /// No description provided for @mapDownloadBaseMapSection.
@@ -545,7 +575,7 @@ abstract class AppLocalizations {
   /// No description provided for @mapDownloadBaseMapSubtitle.
   ///
   /// In it, this message translates to:
-  /// **'Zoom 0-7 • ~{ size } MB'**
+  /// **'Zoom 0-7 • ~{size} MB'**
   String mapDownloadBaseMapSubtitle(String size);
 
   /// No description provided for @mapDownloadBaseMapDownloadAction.
@@ -563,13 +593,13 @@ abstract class AppLocalizations {
   /// No description provided for @mapDownloadStatusDownloading.
   ///
   /// In it, this message translates to:
-  /// **'Download in corso ({ percent }%)'**
+  /// **'Download in corso ({percent}%)'**
   String mapDownloadStatusDownloading(int percent);
 
   /// No description provided for @mapDownloadStatusPaused.
   ///
   /// In it, this message translates to:
-  /// **'In pausa ({ percent }%)'**
+  /// **'In pausa ({percent}%)'**
   String mapDownloadStatusPaused(int percent);
 
   /// No description provided for @mapDownloadActionDeleteConfirmTitle.
@@ -581,7 +611,7 @@ abstract class AppLocalizations {
   /// No description provided for @mapDownloadActionDeleteConfirmMsg.
   ///
   /// In it, this message translates to:
-  /// **'Sei sicuro di voler eliminare i dati offline per { name }?'**
+  /// **'Sei sicuro di voler eliminare i dati offline per {name}?'**
   String mapDownloadActionDeleteConfirmMsg(String name);
 
   /// No description provided for @mapDownloadSelectionSection.
@@ -593,7 +623,7 @@ abstract class AppLocalizations {
   /// No description provided for @mapDownloadDownloadedZonesBtn.
   ///
   /// In it, this message translates to:
-  /// **'Zone scaricate ({ count })'**
+  /// **'Zone scaricate ({count})'**
   String mapDownloadDownloadedZonesBtn(int count);
 
   /// No description provided for @mapDownloadSearchPlaceholder.
@@ -635,7 +665,7 @@ abstract class AppLocalizations {
   /// No description provided for @mapDownloadCustomZoneLabel.
   ///
   /// In it, this message translates to:
-  /// **'Area { coordinates } ({ count } celle)'**
+  /// **'Area {coordinates} ({count} celle)'**
   String mapDownloadCustomZoneLabel(String coordinates, int count);
 
   /// No description provided for @mapDownloadLegendLabel.
@@ -755,31 +785,31 @@ abstract class AppLocalizations {
   /// No description provided for @mapDownloadSelectedCellsSummary.
   ///
   /// In it, this message translates to:
-  /// **'{count, plural, =1{ 1 cella selezionata } other{{ count } celle selezionate}}'**
+  /// **'{count, plural, =1{1 cella selezionata} other{{count} celle selezionate}}'**
   String mapDownloadSelectedCellsSummary(int count);
 
   /// No description provided for @mapDownloadNamedSelectionSummary.
   ///
   /// In it, this message translates to:
-  /// **'{ name } • {count, plural, =1{ 1 cella } other{{ count } celle}}'**
+  /// **'{name} • {count, plural, =1{1 cella} other{{count} celle}}'**
   String mapDownloadNamedSelectionSummary(String name, int count);
 
   /// No description provided for @mapDownloadRemoveSummary.
   ///
   /// In it, this message translates to:
-  /// **'{count, plural, =0{ Nessuna cella scaricata nella selezione } =1{ 1 cella scaricata da rimuovere } other{{ count } celle scaricate da rimuovere}}'**
+  /// **'{count, plural, =0{Nessuna cella scaricata nella selezione} =1{1 cella scaricata da rimuovere} other{{count} celle scaricate da rimuovere}}'**
   String mapDownloadRemoveSummary(int count);
 
   /// No description provided for @mapDownloadApplyDownloadAction.
   ///
   /// In it, this message translates to:
-  /// **'Scarica { level } (~{ size } MB)'**
+  /// **'Scarica {level} (~{size} MB)'**
   String mapDownloadApplyDownloadAction(String level, String size);
 
   /// No description provided for @mapDownloadApplyRemoveAction.
   ///
   /// In it, this message translates to:
-  /// **'Rimuovi ({ count })'**
+  /// **'Rimuovi ({count})'**
   String mapDownloadApplyRemoveAction(int count);
 
   /// No description provided for @mapDownloadClearSelectionAction.
@@ -821,7 +851,7 @@ abstract class AppLocalizations {
   /// No description provided for @mapDownloadZonesSelectedCount.
   ///
   /// In it, this message translates to:
-  /// **'{count, plural, =0{ Nessuna selezionata } =1{ 1 selezionata } other{{ count } selezionate}}'**
+  /// **'{count, plural, =0{Nessuna selezionata} =1{1 selezionata} other{{count} selezionate}}'**
   String mapDownloadZonesSelectedCount(int count);
 
   /// No description provided for @mapDownloadZonesChangeLevelBtn.
@@ -851,31 +881,31 @@ abstract class AppLocalizations {
   /// No description provided for @mapDownloadZonesRemoveConfirmMsg.
   ///
   /// In it, this message translates to:
-  /// **'{count, plural, =1{ Vuoi rimuovere la zona selezionata dal dispositivo? } other{Vuoi rimuovere le { count } zone selezionate dal dispositivo?}}'**
+  /// **'{count, plural, =1{Vuoi rimuovere la zona selezionata dal dispositivo?} other{Vuoi rimuovere le {count} zone selezionate dal dispositivo?}}'**
   String mapDownloadZonesRemoveConfirmMsg(int count);
 
   /// No description provided for @mapDownloadZoneItemSubtitle.
   ///
   /// In it, this message translates to:
-  /// **'{ type } • {count, plural, =1{ 1 cella } other{{ count } celle}} • ~{ size } MB'**
+  /// **'{type} • {count, plural, =1{1 cella} other{{count} celle}} • ~{size} MB'**
   String mapDownloadZoneItemSubtitle(String type, int count, String size);
 
   /// No description provided for @commonMegabytesValue.
   ///
   /// In it, this message translates to:
-  /// **'{ size } MB'**
+  /// **'{size} MB'**
   String commonMegabytesValue(String size);
 
   /// No description provided for @commonApproximateMegabytesValue.
   ///
   /// In it, this message translates to:
-  /// **'~{ size } MB'**
+  /// **'~{size} MB'**
   String commonApproximateMegabytesValue(String size);
 
   /// No description provided for @commonPercentValue.
   ///
   /// In it, this message translates to:
-  /// **'{ percent }%'**
+  /// **'{percent}%'**
   String commonPercentValue(int percent);
 }
 

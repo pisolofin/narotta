@@ -122,11 +122,11 @@ class GeoCatalogService {
       final String normEn     = _normalizeSearchText(place.englishName);
       final String normParent = _normalizeSearchText('${place.italianParentLabel} ${place.englishParentLabel}');
 
-      if (normIt.startsWith(normalizedQuery) || normEn.startsWith(normalizedQuery)) {
+      if ((normIt.startsWith(normalizedQuery)) || (normEn.startsWith(normalizedQuery))) {
         prefixMatchList.add(place);
-      }else if (normIt.contains(normalizedQuery) ||
-                normEn.contains(normalizedQuery) ||
-                normParent.contains(normalizedQuery)) {
+      }else if ((normIt.contains(normalizedQuery)) ||
+                (normEn.contains(normalizedQuery)) ||
+                (normParent.contains(normalizedQuery))) {
         containsMatchList.add(place);
       }
     }

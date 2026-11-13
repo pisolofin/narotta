@@ -481,6 +481,29 @@ class _WorldSelectionMapState extends State<WorldSelectionMap> {
       }
     }
   }
+  /// Resumes a paused selection download and updates UI state upon completion.
+  Future _resumeSelectionActionAsync() async {
+    setState(() {
+      _isApplyingAction = true;
+    });
+    final bool success = await _mapDownloadService.resumeDownloadAsync(MapDownloadService.activeSelectionDownloadId);
+    if (!mounted) {
+      return;
+    }
+    final bool isPaused = _mapDownloadService.isItemPaused(MapDownloadService.activeSelectionDownloadId);
+    if (isPaused) {
+      return;
+    }
+    setState(() {
+      _isApplyingAction = false;
+    });
+    if (success) {
+      setState(() {
+        _selectedCellMap.clear();
+        _selectedPlace = null;
+      });
+    }
+  }
   /// Builds a circular floating map tool button.
   Widget _buildFloatingToolButton({
     required BuildContext context,
@@ -1117,7 +1140,7 @@ class _WorldSelectionMapState extends State<WorldSelectionMap> {
                                         if (isSelectionPaused) ...[
                                           GestureDetector(
                                             onTap: () {
-                                              _mapDownloadService.resumeDownloadAsync(MapDownloadService.activeSelectionDownloadId);
+                                              _resumeSelectionActionAsync();
                                             },
                                             child: Container(
                                               padding   : const EdgeInsets.symmetric(horizontal: AppSizes.p8, vertical: AppSizes.p4),
@@ -1128,8 +1151,11 @@ class _WorldSelectionMapState extends State<WorldSelectionMap> {
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children    : [
+                                                  // Resume icon
                                                   NaIcon(NaIcons.playArrow, size: AppSizes.icon14, color: AppColors.detailDetailed(context)),
+                                                  // Spacing
                                                   const SizedBox(width: AppSizes.p2),
+                                                  // Resume label
                                                   Text(
                                                     l10n.commonResume,
                                                     style: TextStyle(
@@ -1156,8 +1182,11 @@ class _WorldSelectionMapState extends State<WorldSelectionMap> {
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children    : [
+                                                  // Pause icon
                                                   NaIcon(NaIcons.pause, size: AppSizes.icon14, color: _actionMode.getColor(context)),
+                                                  // Spacing
                                                   const SizedBox(width: AppSizes.p2),
+                                                  // Pause label
                                                   Text(
                                                     l10n.commonPause,
                                                     style: TextStyle(
@@ -1190,8 +1219,11 @@ class _WorldSelectionMapState extends State<WorldSelectionMap> {
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children    : [
+                                                // Cancel icon
                                                 NaIcon(NaIcons.close, size: AppSizes.icon14, color: AppColors.error(context)),
+                                                // Spacing
                                                 const SizedBox(width: AppSizes.p2),
+                                                // Cancel label
                                                 Text(
                                                   l10n.commonCancel,
                                                   style: TextStyle(

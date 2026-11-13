@@ -277,6 +277,18 @@ namespace NaRotta.MapServer.Services {
                 downloadUrlDictionary["pedestrian"] = baseUrl + "/cells/" + cell.CellId + "/" + cell.CellId + "_tiles_pedestrian.mbtiles";
             }
 
+            // HD Terrain & Contours layer (~2 MB average)
+            bool wantTerrainHd = (requestedLayerList != null) && requestedLayerList.Contains("terrain_hd");
+            if (wantTerrainHd) {
+                long terrainHdSize = 2097152L;
+                if ((manifestCell != null) && manifestCell.Layers.TryGetValue("terrain_hd", out ManifestLayerModel? terLayer)) {
+                    terrainHdSize = terLayer.TilesSizeBytes ?? terrainHdSize;
+                }
+                totalSizeBytes += terrainHdSize;
+                availableLayerList.Add("terrain_hd");
+                downloadUrlDictionary["terrain_hd"] = baseUrl + "/cells/" + cell.CellId + "/" + cell.CellId + "_tiles_terrain_hd.mbtiles";
+            }
+
             detail.SizeBytes = totalSizeBytes;
             detail.LayerList = availableLayerList;
             detail.DownloadUrlDictionary = downloadUrlDictionary;

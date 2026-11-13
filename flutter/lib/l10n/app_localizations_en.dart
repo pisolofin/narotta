@@ -126,6 +126,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mapTelemetryToggle => 'Telemetry details';
 
   @override
+  String get mapMainStreetLabel => 'Main Street';
+
+  @override
   String get settingsTitle => 'Settings';
 
   @override
@@ -160,6 +163,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsDownloadMapsTitle => 'Download maps';
+
+  @override
+  String get settingsMapStorageFolderTitle => 'Map storage folder';
+
+  @override
+  String get settingsMapStorageFolderReset => 'Reset to default';
+
+  @override
+  String get settingsMapStorageFolderChange => 'Change folder';
+
+  @override
+  String get settingsMapStorageFolderDefaultBadge => 'Default';
 
   @override
   String get settingsMapStyleTitle => 'Map style';
@@ -388,8 +403,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other : '$count cells selected',
-      one   : '1 cell selected',
+      other: '$count cells selected',
+      one: '1 cell selected',
     );
     return '$_temp0';
   }
@@ -399,8 +414,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other : '$count cells',
-      one   : '1 cell',
+      other: '$count cells',
+      one: '1 cell',
     );
     return '$name • $_temp0';
   }
@@ -410,9 +425,9 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other : '$count downloaded cells to remove',
-      one   : '1 downloaded cell to remove',
-      zero  : 'No downloaded cells in selection',
+      other: '$count downloaded cells to remove',
+      one: '1 downloaded cell to remove',
+      zero: 'No downloaded cells in selection',
     );
     return '$_temp0';
   }
@@ -451,9 +466,9 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other : '$count selected',
-      one   : '1 selected',
-      zero  : 'None selected',
+      other: '$count selected',
+      one: '1 selected',
+      zero: 'None selected',
     );
     return '$_temp0';
   }
@@ -475,8 +490,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other : 'Do you want to remove the $count selected zones from the device?',
-      one   : 'Do you want to remove the selected zone from the device?',
+      other: 'Do you want to remove the $count selected zones from the device?',
+      one: 'Do you want to remove the selected zone from the device?',
     );
     return '$_temp0';
   }
@@ -486,8 +501,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other : '$count cells',
-      one   : '1 cell',
+      other: '$count cells',
+      one: '1 cell',
     );
     return '$type • $_temp0 • ~$size MB';
   }

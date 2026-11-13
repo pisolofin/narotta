@@ -184,4 +184,40 @@ class AppColors {
     final Brightness effectiveBrightness = _getBrightness(context, brightness);
     return (effectiveBrightness == Brightness.dark) ? const Color(0xFFF1F5F9) : const Color(0xFF0F172A);
   }
+
+  /// Retrieves the park / green area fill color on detailed map cells.
+  static Color mapPark(BuildContext context, { Brightness? brightness }) {
+    final Brightness effectiveBrightness = _getBrightness(context, brightness);
+    return (effectiveBrightness == Brightness.dark) ? const Color(0x3310B981) : const Color(0x33059669);
+  }
+
+  /// Retrieves the river / waterway stroke color on detailed map cells.
+  static Color mapRiver(BuildContext context, { Brightness? brightness }) {
+    final Brightness effectiveBrightness = _getBrightness(context, brightness);
+    return (effectiveBrightness == Brightness.dark) ? const Color(0x7338BDF8) : const Color(0x730284C7);
+  }
+
+  /// Retrieves the pedestrian trail / hiking path color on detailed map cells.
+  static Color mapTrail(BuildContext context, { Brightness? brightness }) {
+    final Brightness effectiveBrightness = _getBrightness(context, brightness);
+    return (effectiveBrightness == Brightness.dark) ? const Color(0xFF10B981) : const Color(0xFF059669);
+  }
+
+  /// Retrieves the parking POI marker color on detailed map cells.
+  static Color mapPoiParking(BuildContext context, { Brightness? brightness }) {
+    final Brightness effectiveBrightness = _getBrightness(context, brightness);
+    return (effectiveBrightness == Brightness.dark) ? const Color(0xFF3B82F6) : const Color(0xFF2563EB);
+  }
+
+  /// Retrieves the medical / hospital POI marker color on detailed map cells.
+  static Color mapPoiMedical(BuildContext context, { Brightness? brightness }) {
+    final Brightness effectiveBrightness = _getBrightness(context, brightness);
+    return (effectiveBrightness == Brightness.dark) ? const Color(0xFFEF4444) : const Color(0xFFDC2626);
+  }
+
+  /// Retrieves the fuel station POI marker color on detailed map cells.
+  static Color mapPoiFuel(BuildContext context, { Brightness? brightness }) {
+    final Brightness effectiveBrightness = _getBrightness(context, brightness);
+    return (effectiveBrightness == Brightness.dark) ? const Color(0xFFF59E0B) : const Color(0xFFD97706);
+  }
 }

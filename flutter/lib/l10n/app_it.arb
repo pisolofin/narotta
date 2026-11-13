@@ -86,6 +86,7 @@
     }
   },
   "mapTelemetryToggle": "Dettagli telemetria",
+  "mapMainStreetLabel": "Corso Principale",
   "settingsTitle": "Impostazioni",
   "settingsGeneralSection": "Generali",
   "settingsLanguage": "Lingua",
@@ -98,6 +99,10 @@
   "settingsDarkTheme": "Scuro",
   "settingsMapsSection": "Mappe e download",
   "settingsDownloadMapsTitle": "Scarica mappe",
+  "settingsMapStorageFolderTitle": "Cartella di salvataggio mappe",
+  "settingsMapStorageFolderReset": "Ripristina predefinita",
+  "settingsMapStorageFolderChange": "Cambia cartella",
+  "settingsMapStorageFolderDefaultBadge": "Predefinita",
   "settingsMapStyleTitle": "Stile mappa",
   "settingsMapStyleSelect": "Seleziona stile mappa",
   "mapStyleTacticalTitle": "Cartografico Tattico",

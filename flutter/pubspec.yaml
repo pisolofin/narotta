@@ -41,6 +41,7 @@ dependencies:
   nanna: ^1.3.0
   nanna_platform: ^1.2.1
   path_provider: ^2.1.6
+  file_picker: ^13.3.2
 
 dev_dependencies:
   flutter_test:

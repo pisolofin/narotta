@@ -1,7 +1,7 @@
-using NaRotta.MapBuilder.Cli.Logging;
-using NaRotta.MapBuilder.Cli.Models;
-using NaRotta.MapBuilder.Cli.Runners;
-using NaRotta.MapBuilder.Cli.Services;
+using NaRotta.MapBuilder.Core.Logging;
+using NaRotta.MapBuilder.Core.Models;
+using NaRotta.MapBuilder.Core.Runners;
+using NaRotta.MapBuilder.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

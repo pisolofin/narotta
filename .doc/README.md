@@ -17,6 +17,7 @@ I documenti architetturali e operativi sono strutturati in ordine progressivo:
 | **05** | *In definizione* | **Architettura Mobile & Integrazione Nativa**: Flutter, MapLibre Native, Valhalla C++ FFI e TTS. |
 | **06** | [`06_impostazioni_e_download_mappe_ux.md`](06_impostazioni_e_download_mappe_ux.md) | **Impostazioni & Hub Unificato "Scarica Mappe"**: Analisi grafica card, semplificazione Impostazioni, vista mappa mondiale zoomabile con legenda livelli, selettore download/rimuovi, selezione dito/mouse/cerchia, ricerca città/regioni/stati e gestione lista zone scaricate. |
 | **07** | [`07_stili_visualizzazione_mappa.md`](07_stili_visualizzazione_mappa.md) | **Stili di Visualizzazione Mappa & Temi (Light / Dark)**: Modello `MapDisplayStyle`, matrice colori per tema chiaro/scuro, integrazione MapLibre e procedura per aggiungere nuovi stili grafici. |
+| **08** | [`08_flusso_operativo_e_criticita.md`](08_flusso_operativo_e_criticita.md) | **Flusso Operativo End-to-End & Analisi Criticità**: Schema architetturale dei 3 sottosistemi, pipeline completa generazione/distribuzione/download, registro delle criticità risolte e roadmap per le prossime fasi. |
 
 ---
 

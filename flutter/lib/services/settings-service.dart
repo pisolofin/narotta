@@ -6,11 +6,12 @@ import '../models/map-display-style.model.dart';
 
 /// Service managing global application settings and persisting user preferences locally.
 class SettingsService extends ChangeNotifier {
-  static const String _languageCodePreferenceKey     = 'settings_language_code';
-  static const String _themeModePreferenceKey        = 'settings_theme_mode';
-  static const String _downloadWifiOnlyPreferenceKey = 'settings_download_wifi_only';
-  static const String _mapServerUrlPreferenceKey     = 'settings_map_server_url';
-  static const String _mapDisplayStylePreferenceKey  = 'settings_map_display_style';
+  static const String _languageCodePreferenceKey        = 'settings_language_code';
+  static const String _themeModePreferenceKey           = 'settings_theme_mode';
+  static const String _downloadWifiOnlyPreferenceKey    = 'settings_download_wifi_only';
+  static const String _mapServerUrlPreferenceKey        = 'settings_map_server_url';
+  static const String _mapDisplayStylePreferenceKey     = 'settings_map_display_style';
+  static const String _customMapsDirectoryPreferenceKey = 'settings_custom_maps_directory';
 
   static const String _lightThemeValue = 'light';
   static const String _darkThemeValue  = 'dark';
@@ -35,6 +36,7 @@ class SettingsService extends ChangeNotifier {
   bool            _downloadWifiOnly = true;
   String          _mapServerUrl     = defaultMapServerUrl;
   MapDisplayStyle _mapDisplayStyle  = MapDisplayStyle.tactical;
+  String?         _customMapsDirectory;
 
   /// Returns the currently selected language code (`'it'`, `'en'`), or `null` for system default.
   String? get languageCode => _languageCode;
@@ -50,6 +52,9 @@ class SettingsService extends ChangeNotifier {
 
   /// Currently selected map visualization style.
   MapDisplayStyle get mapDisplayStyle => _mapDisplayStyle;
+
+  /// Custom directory path for map downloads, or null for default path.
+  String? get customMapsDirectory => _customMapsDirectory;
 
   /// Returns a concise display hostname/address for [url].
   static String getServerShortLabel(String url) {
@@ -125,12 +130,19 @@ class SettingsService extends ChangeNotifier {
 
       final String? savedStyle = NaPreferences.getString(_mapDisplayStylePreferenceKey);
       _mapDisplayStyle         = MapDisplayStyle.fromName(savedStyle);
+
+      final String? savedCustomDir = NaPreferences.getString(_customMapsDirectoryPreferenceKey);
+      _customMapsDirectory         = ((savedCustomDir != null) && savedCustomDir.trim().isNotEmpty)
+        ? savedCustomDir.trim()
+        : null
+      ;
     }catch (_) {
-      _languageCode     = null;
-      _themeMode        = ThemeMode.system;
-      _downloadWifiOnly = true;
-      _mapServerUrl     = defaultMapServerUrl;
-      _mapDisplayStyle  = MapDisplayStyle.tactical;
+      _languageCode        = null;
+      _themeMode           = ThemeMode.system;
+      _downloadWifiOnly    = true;
+      _mapServerUrl        = defaultMapServerUrl;
+      _mapDisplayStyle     = MapDisplayStyle.tactical;
+      _customMapsDirectory = null;
     }
     notifyListeners();
   }
@@ -227,6 +239,31 @@ class SettingsService extends ChangeNotifier {
       await NaPreferences.setString(_mapDisplayStylePreferenceKey, style.name);
     }catch (_) {
       // Ignore persistence errors in test environments
+    }
+
+    notifyListeners();
+  }
+
+  /// Updates the custom maps download directory and persists the preference.
+  Future updateCustomMapsDirectoryAsync(String? directoryPath) async {
+    final String? normalizedPath = ((directoryPath == null) || directoryPath.trim().isEmpty)
+      ? null
+      : directoryPath.trim()
+    ;
+    if (_customMapsDirectory == normalizedPath) {
+      return;
+    }
+
+    _customMapsDirectory = normalizedPath;
+
+    try {
+      if (_customMapsDirectory == null) {
+        await NaPreferences.remove(_customMapsDirectoryPreferenceKey);
+      }else {
+        await NaPreferences.setString(_customMapsDirectoryPreferenceKey, _customMapsDirectory!);
+      }
+    }catch (_) {
+      // Ignore persistence errors
     }
 
     notifyListeners();

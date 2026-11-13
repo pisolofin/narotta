@@ -86,6 +86,7 @@
     }
   },
   "mapTelemetryToggle": "Telemetry details",
+  "mapMainStreetLabel": "Main Street",
   "settingsTitle": "Settings",
   "settingsGeneralSection": "General",
   "settingsLanguage": "Language",
@@ -98,6 +99,10 @@
   "settingsDarkTheme": "Dark",
   "settingsMapsSection": "Maps & Downloads",
   "settingsDownloadMapsTitle": "Download maps",
+  "settingsMapStorageFolderTitle": "Map storage folder",
+  "settingsMapStorageFolderReset": "Reset to default",
+  "settingsMapStorageFolderChange": "Change folder",
+  "settingsMapStorageFolderDefaultBadge": "Default",
   "settingsMapStyleTitle": "Map style",
   "settingsMapStyleSelect": "Select map style",
   "mapStyleTacticalTitle": "Tactical Cartographic",

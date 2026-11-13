@@ -184,10 +184,10 @@ namespace NaRotta.MapBuilder.Core.Orchestrator {
                         long mbDownloaded = partFileList[0].Length / (1024 * 1024);
                         stageDescription = "Downloading OpenStreetMap extract for " + activeRegion + " (" + mbDownloaded.ToString() + " MB downloaded)...";
                     }else {
-                        FileInfo[] allPbfs = pbfDirInfo.GetFiles("*.osm.pbf");
-                        if (allPbfs.Length > 0) {
-                            Array.Sort(allPbfs, (FileInfo a, FileInfo b) => b.LastWriteTimeUtc.CompareTo(a.LastWriteTimeUtc));
-                            activeRegion = allPbfs[0].Name.Replace("-latest.osm.pbf", "").Replace(".osm.pbf", "");
+                        FileInfo[] allPbfFileList = pbfDirInfo.GetFiles("*.osm.pbf");
+                        if (allPbfFileList.Length > 0) {
+                            Array.Sort(allPbfFileList, (FileInfo a, FileInfo b) => b.LastWriteTimeUtc.CompareTo(a.LastWriteTimeUtc));
+                            activeRegion = allPbfFileList[0].Name.Replace("-latest.osm.pbf", "").Replace(".osm.pbf", "");
                             stage = BuildStage.BuildingSearchDatabase;
                             stageDescription = "Extracting offline search DB & compiling vector tiles for " + activeRegion;
                         }

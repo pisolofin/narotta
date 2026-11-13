@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:nanna_platform/nanna_platform.dart';
 
 import '../../../constants/app-sizes.dart';
@@ -6,6 +8,7 @@ import '../../../constants/app-colors.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../services/settings-service.dart';
 import '../../../widgets/app-divider.widget.dart';
+import '../../../services/map-download-service.dart';
 import '../../../models/map-display-style.model.dart';
 
 import '../../map-download/map-download.page.dart';
@@ -138,6 +141,21 @@ class Settings extends StatelessWidget {
     if (selectedStyle != null) {
       await SettingsService().updateMapDisplayStyleAsync(selectedStyle);
     }
+  }
+
+  /// Opens file picker to select a custom directory for offline map storage.
+  Future _selectCustomMapsFolderAsync(BuildContext context) async {
+    final String? selectedDirectory = await FilePicker.getDirectoryPath();
+    if ((selectedDirectory != null) && selectedDirectory.trim().isNotEmpty) {
+      await SettingsService().updateCustomMapsDirectoryAsync(selectedDirectory.trim());
+      await MapDownloadService().initAsync();
+    }
+  }
+
+  /// Resets the custom maps directory to the platform default storage directory.
+  Future _resetMapsFolderAsync(BuildContext context) async {
+    await SettingsService().updateCustomMapsDirectoryAsync(null);
+    await MapDownloadService().initAsync();
   }
 
   @override
@@ -284,6 +302,57 @@ class Settings extends StatelessWidget {
                         l10n,
                       ),
                     ),
+
+                    if (defaultTargetPlatform == TargetPlatform.windows) ...[
+                      // Hairline divider between Map style and Windows storage folder
+                      const AppDivider(),
+
+                      // Windows map storage folder tile
+                      FutureBuilder(
+                        future : MapDownloadService.getMapsDirectoryAsync(),
+                        builder: (BuildContext tileContext, AsyncSnapshot snapshot) {
+                          final String currentFolderPath = snapshot.hasData
+                            ? snapshot.data!.path
+                            : (settingsService.customMapsDirectory ?? '...')
+                          ;
+                          final bool isCustom = settingsService.customMapsDirectory != null;
+
+                          return NaListTile(
+                            leading : const NaIcon(NaIcons.folder),
+                            title   : Text(l10n.settingsMapStorageFolderTitle),
+                            subtitle: Text(
+                              currentFolderPath,
+                              style: TextStyle(
+                                fontSize: AppSizes.font12,
+                                color   : AppColors.textSecondary(tileContext),
+                              ),
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children    : [
+                                if (isCustom) ...[
+                                  // Button to reset to default folder
+                                  NaIconButton(
+                                    icon: const NaIcon(
+                                      NaIcons.refresh,
+                                      size: AppSizes.icon18,
+                                    ),
+                                    onPressed: () => _resetMapsFolderAsync(context),
+                                  ),
+                                  // Spacing
+                                  const SizedBox(width: AppSizes.p4),
+                                ],
+                                // Button to choose a folder via picker
+                                NaButtonFilled(
+                                  onPressed: () => _selectCustomMapsFolderAsync(context),
+                                  child    : Text(l10n.settingsMapStorageFolderChange),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
 
                     // Hairline divider between Map style and Wi-Fi only
                     const AppDivider(),

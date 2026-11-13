@@ -39,6 +39,13 @@ class MapGridPainter extends CustomPainter {
   final Color mapHighwayColor;
   final Color mapCityMarkerColor;
   final Color mapCityLabelColor;
+  final Color mapParkColor;
+  final Color mapRiverColor;
+  final Color mapTrailColor;
+  final Color mapPoiParkingColor;
+  final Color mapPoiMedicalColor;
+  final Color mapPoiFuelColor;
+  final String mainStreetLabel;
 
   const MapGridPainter({
     required this.cameraWorldMeters,
@@ -67,6 +74,13 @@ class MapGridPainter extends CustomPainter {
     required this.mapHighwayColor,
     required this.mapCityMarkerColor,
     required this.mapCityLabelColor,
+    required this.mapParkColor,
+    required this.mapRiverColor,
+    required this.mapTrailColor,
+    required this.mapPoiParkingColor,
+    required this.mapPoiMedicalColor,
+    required this.mapPoiFuelColor,
+    required this.mainStreetLabel,
   });
 
   /// Computes a power-of-two metric grid step in meters for the scale indicator.
@@ -578,7 +592,7 @@ class MapGridPainter extends CustomPainter {
     );
 
     final Paint parkPaint = Paint()
-      ..color = const Color(0x3310B981)
+      ..color = this.mapParkColor
       ..style = PaintingStyle.fill
     ;
     canvas.drawRRect(parkRRect, parkPaint);
@@ -593,7 +607,7 @@ class MapGridPainter extends CustomPainter {
       )
     ;
     final Paint riverPaint = Paint()
-      ..color       = const Color(0x7338BDF8)
+      ..color       = this.mapRiverColor
       ..strokeWidth = (this.zoom >= 0.005) ? 4.0 : 2.0
       ..style       = PaintingStyle.stroke
       ..strokeCap   = StrokeCap.round
@@ -661,7 +675,7 @@ class MapGridPainter extends CustomPainter {
     // 5. Pedestrian Trails & Local Paths (Detailed & Complete, Z >= 0.002)
     if ((level != MapDetailLevel.base) && (cellRect.width >= 120.0)) {
       final Paint trailPaint = Paint()
-        ..color       = const Color(0xFF10B981)
+        ..color       = this.mapTrailColor
         ..strokeWidth = 1.4
         ..style       = PaintingStyle.stroke
       ;
@@ -753,7 +767,7 @@ class MapGridPainter extends CustomPainter {
         final TextPainter streetPainter = TextPainter(
           textDirection: TextDirection.ltr,
           text         : TextSpan(
-            text : 'Corso Principale',
+            text : this.mainStreetLabel,
             style: TextStyle(
               fontSize  : AppSizes.font10,
               fontWeight: FontWeight.w600,
@@ -771,9 +785,9 @@ class MapGridPainter extends CustomPainter {
 
     // 8. Points of Interest (Complete, Z >= 0.003 or cellRect.width >= 180.0)
     if ((level == MapDetailLevel.complete) && (cellRect.width >= 180.0)) {
-      _paintPoiMarker(canvas, Offset(cellCenter.dx - 35.0, cellCenter.dy - 35.0), 'P', const Color(0xFF2563EB));
-      _paintPoiMarker(canvas, Offset(cellCenter.dx + 55.0, cellCenter.dy - 45.0), '+', const Color(0xFFDC2626));
-      _paintPoiMarker(canvas, Offset(cellCenter.dx - 45.0, cellCenter.dy + 50.0), '⛽', const Color(0xFFD97706));
+      _paintPoiMarker(canvas, Offset(cellCenter.dx - 35.0, cellCenter.dy - 35.0), 'P', this.mapPoiParkingColor);
+      _paintPoiMarker(canvas, Offset(cellCenter.dx + 55.0, cellCenter.dy - 45.0), '+', this.mapPoiMedicalColor);
+      _paintPoiMarker(canvas, Offset(cellCenter.dx - 45.0, cellCenter.dy + 50.0), '⛽', this.mapPoiFuelColor);
     }
 
     // 9. Outer Cell Border with semantic level color
@@ -812,6 +826,13 @@ class MapGridPainter extends CustomPainter {
       (oldDelegate.detailCompleteColor != this.detailCompleteColor) ||
       (oldDelegate.mapHighwayColor != this.mapHighwayColor) ||
       (oldDelegate.mapCityMarkerColor != this.mapCityMarkerColor) ||
-      (oldDelegate.mapCityLabelColor != this.mapCityLabelColor);
+      (oldDelegate.mapCityLabelColor != this.mapCityLabelColor) ||
+      (oldDelegate.mapParkColor != this.mapParkColor) ||
+      (oldDelegate.mapRiverColor != this.mapRiverColor) ||
+      (oldDelegate.mapTrailColor != this.mapTrailColor) ||
+      (oldDelegate.mapPoiParkingColor != this.mapPoiParkingColor) ||
+      (oldDelegate.mapPoiMedicalColor != this.mapPoiMedicalColor) ||
+      (oldDelegate.mapPoiFuelColor != this.mapPoiFuelColor) ||
+      (oldDelegate.mainStreetLabel != this.mainStreetLabel);
   }
 }

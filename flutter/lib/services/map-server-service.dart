@@ -43,7 +43,7 @@ class MapServerService {
     }
 
     // If local test server is configured, check alternative ports/IPv4 mappings
-    if (serverUrl.contains('localhost') || serverUrl.contains('127.0.0.1')) {
+    if ((serverUrl.contains('localhost')) || (serverUrl.contains('127.0.0.1'))) {
       final List<String> candidateUrlList = [
         'http://127.0.0.1:5001',
         'http://localhost:5001',
@@ -117,7 +117,7 @@ class MapServerService {
         sink = localSink;
 
         await for (final List<int> chunk in response) {
-          if ((isPausedOrCancelled != null) && isPausedOrCancelled()) {
+          if ((isPausedOrCancelled != null) && (isPausedOrCancelled())) {
             await localSink.flush();
             await localSink.close();
             sink = null;

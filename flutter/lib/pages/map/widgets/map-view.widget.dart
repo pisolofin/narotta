@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 
 import '../../../constants/app-sizes.dart';
 import '../../../constants/app-colors.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../services/geo-cell-service.dart';
 import '../../../services/location-service.dart';
 import '../../../services/map-download-service.dart';
@@ -389,6 +390,13 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                                 mapHighwayColor        : AppColors.mapHighway(context),
                                 mapCityMarkerColor     : AppColors.mapCityMarker(context),
                                 mapCityLabelColor      : AppColors.mapCityLabel(context),
+                                mapParkColor           : AppColors.mapPark(context),
+                                mapRiverColor          : AppColors.mapRiver(context),
+                                mapTrailColor          : AppColors.mapTrail(context),
+                                mapPoiParkingColor     : AppColors.mapPoiParking(context),
+                                mapPoiMedicalColor     : AppColors.mapPoiMedical(context),
+                                mapPoiFuelColor        : AppColors.mapPoiFuel(context),
+                                mainStreetLabel        : AppLocalizations.of(context)!.mapMainStreetLabel,
                               ),
                             );
                           },

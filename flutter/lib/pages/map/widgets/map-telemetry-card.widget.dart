@@ -249,7 +249,10 @@ class _MapTelemetryCardState extends State<MapTelemetryCard> {
 
           // Expanded telemetry rows
           if ((position != null) && _isExpanded) ...[
+            // Spacing before expanded telemetry
             const SizedBox(height: AppSizes.p8),
+
+            // Detailed telemetry data rows
             _buildExpandedTelemetry(context, position, l10n),
           ],
 
