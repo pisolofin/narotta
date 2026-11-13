@@ -82,7 +82,7 @@ La pipeline richiede due cartelle distinte con scopi e requisiti di storage diff
 - **Scopo**: archivio permanente e persistente contenente solo i manufatti finali destinati ai dispositivi client Walked/NaRotta:
   - Vector Tiles multi-risoluzione (`<region>_tiles_base.mbtiles`, `pedestrian.mbtiles`, `buildings.mbtiles`, `terrain_hd.mbtiles`, `world_overview.mbtiles`).
   - Database di ricerca offline SQLite FTS5 & R-Tree (`<region>_search.db`).
-  - Grafi gerarchici compressi per navigazione turn-by-turn (`<region>_routing.tar`).
+  - Grafi gerarchici compressi per navigazione turn-by-turn (`<region>_routing_auto.tar`, `<region>_routing_pedestrian.tar`).
   - Catalogo indice firmato SHA-256 (`manifest.json`).
 - **Valore di default**: `\\192.168.8.53\Miscuglio\Narotta\data\output` (share di rete Windows) o `/app/output` (Linux/Docker).
 
@@ -100,23 +100,23 @@ I percorsi possono essere configurati e modificati attraverso 4 livelli di prior
 Il servizio confronta i metadati remoti Geofabrik con i pacchetti registrati in `manifest.json`:
 1. Viene eseguita una richiesta HTTP `HEAD` verso l'URL PBF ufficiale della regione (es. `https://download.geofabrik.de/europe/italy-latest.osm.pbf`).
 2. Vengono estratti gli header `Last-Modified` e `Content-Length`.
-3. Viene confrontata la data con il campo `lastModifiedUtc` dei pacchetti registrati localmente nel `manifest.json`:
-   - **`UpToDate`**: Il pacchetto locale è allineato all'ultimo dump Geofabrik (differenza inferiore a 6 ore).
+3. Viene verificata la presenza della regione nell'array `regions` e confrontata la data remota con il campo `generated_at` del `manifest.json`:
+   - **`UpToDate`**: Il pacchetto locale è presente nel manifest ed è allineato all'ultimo dump Geofabrik (differenza inferiore a 6 ore).
    - **`UpdateAvailable`**: Geofabrik ha pubblicato un dump più recente rispetto alla data di build locale.
-   - **`NotBuiltYet`**: La regione non è ancora mai stata compilata.
+   - **`NotBuiltYet`**: La regione non è ancora presente nel `manifest.json` locale.
 
 Dalla dashboard è possibile fare clic su **"Compila"** direttamente dalla riga dell'aggiornamento per lanciare la pipeline per quella specifica regione.
 
 ---
 
-## 4. Distribuzione su Coolify
+## 5. Distribuzione su Coolify
 
-### 4.1 Prerequisiti su Coolify
+### 5.1 Prerequisiti su Coolify
 - Un server VPS Linux (es. Hetzner, OVH, DigitalOcean, Contabo) con Coolify installato.
 - Almeno 8–16 GB di RAM (consigliati 32 GB se si compilano interi continenti o nazioni estese come Francia o Germania).
 - Docker e Docker Compose abilitati (gestiti in automatico da Coolify).
 
-### 4.2 Configurazione su Coolify (Passo-Passo)
+### 5.2 Configurazione su Coolify (Passo-Passo)
 1. In Coolify, crea un nuovo **Service** o **Application** selezionando **"Git Repository"** (oppure **"Docker Compose"**).
 2. Seleziona il repository Git di `narotta` e specifica la cartella base `map-builder/`.
 3. In **Build Pack**, seleziona **Dockerfile**. Coolify rileverà automaticamente `map-builder/Dockerfile`.
@@ -142,7 +142,7 @@ Dalla dashboard è possibile fare clic su **"Compila"** direttamente dalla riga 
 
 ---
 
-## 5. Dockerfile Multi-Stage (`map-builder/Dockerfile`)
+## 6. Dockerfile Multi-Stage (`map-builder/Dockerfile`)
 
 Il file `Dockerfile` implementa un'immagine runtime ottimizzata:
 - **Base SDK**: `mcr.microsoft.com/dotnet/sdk:10.0` compila `NaRotta.MapBuilder.Core` e `NaRotta.MapBuilder.Web`.
@@ -151,7 +151,7 @@ Il file `Dockerfile` implementa un'immagine runtime ottimizzata:
 
 ---
 
-## 6. Verifica Locale della Web App
+## 7. Verifica Locale della Web App
 
 Per testare la Web App localmente prima del deploy su Coolify:
 ```bash

@@ -194,6 +194,7 @@ Ogni cella ha un ID deterministico basato sull'angolo Sud-Ovest `(minLat, minLon
      - **Buffer Destinazione/Tappe (`±10 km` attorno all'arrivo e alle soste)**: seleziona il sottoinsieme di celle su cui scaricare anche i pacchetti **Alta Risoluzione HD (`buildings_3d` + `pedestrian` `Z13–15`)**.
 3. **Slicing Fisico SQLite `.mbtiles` per Cella (`SliceMbtilesIntoGeoCellsAsync`)**:
    - Quando viene passato il flag `--slice-cells`, `GeoCellGridService` suddivide il file `.mbtiles` regionale/nazionale in pacchetti cella dentro `output/cells/<CELL_ID>/<CELL_ID>_tiles_<layer>.mbtiles`, copiando i tasselli Web Mercator `(z/x/y)` completi e registrando ogni cella nel `manifest.json`.
+   - Per le celle condivise lungo i confini tra nazioni adiacenti, la scrittura SQLite usa `CREATE TABLE IF NOT EXISTS` e `INSERT OR REPLACE INTO tiles`, eseguendo un **merge incrementale** senza perdita dei tasselli già estratti.
 
 ---
 
@@ -300,7 +301,7 @@ output/
 
 Per verificare l'integrità del catalogo generato:
 ```bash
-# Esegue la suite automatica di 38 test unitari e di integrazione sul catalogo e sui modelli
+# Esegue la suite automatica di 66 test unitari e di integrazione sul catalogo e sui modelli
 dotnet test map-builder/NaRotta.MapBuilder.sln
 ```
 

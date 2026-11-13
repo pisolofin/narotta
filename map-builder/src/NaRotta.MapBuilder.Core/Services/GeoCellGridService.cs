@@ -403,10 +403,10 @@ namespace NaRotta.MapBuilder.Core.Services {
 
                 await ExecuteSqlAsync(
                     connection,
-                    "CREATE TABLE metadata (name TEXT, value TEXT); " +
-                    "CREATE UNIQUE INDEX name ON metadata (name); " +
-                    "CREATE TABLE tiles (zoom_level INTEGER, tile_column INTEGER, tile_row INTEGER, tile_data BLOB); " +
-                    "CREATE UNIQUE INDEX tile_index ON tiles (zoom_level, tile_column, tile_row);",
+                    "CREATE TABLE IF NOT EXISTS metadata (name TEXT, value TEXT); " +
+                    "CREATE UNIQUE INDEX IF NOT EXISTS name ON metadata (name); " +
+                    "CREATE TABLE IF NOT EXISTS tiles (zoom_level INTEGER, tile_column INTEGER, tile_row INTEGER, tile_data BLOB); " +
+                    "CREATE UNIQUE INDEX IF NOT EXISTS tile_index ON tiles (zoom_level, tile_column, tile_row);",
                     cancellationToken
                 );
 

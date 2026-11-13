@@ -204,7 +204,7 @@ flowchart TD
 ## 9. Disaccoppiamento della Ricerca Indirizzi & POI (Sempre Full)
 
 A differenza della grafica e del routing che possono essere scaricati a livelli o per singola zona, il **motore di ricerca (Indirizzi & Punti di Interesse)** viene mantenuto **sempre completo e indipendente**:
-- **Ingombro contenuto**: Grazie alla compressione e all'indicizzazione SQLite FTS5 (Full-Text Search) e R-Tree, l'intero database di indirizzi e POI di una nazione occupa uno spazio molto ridotto (~200–300 MB per l'Italia, ~2–3 GB per l'Europa).
+- **Ingombro contenuto**: Grazie alla compressione e all'indicizzazione SQLite FTS5 (Full-Text Search) e R-Tree, l'intero database di indirizzi e POI di una nazione occupa uno spazio contenuto (~200–300 MB per l'Italia, ~5–7 GB per l'intera Europa).
 - **Cerca ovunque in qualsiasi momento**: L'utente può cercare qualunque indirizzo, ristorante, hotel o distributore anche prima di aver scaricato la mappa grafica o il routing di quell'area.
 - **Flusso proattivo**: Individuata la destinazione tramite ricerca, l'applicazione conosce le coordinate `(lat, lon)` e può proporre all'utente di scaricare il livello di dettaglio desiderato per quella specifica zona.
 
@@ -261,9 +261,9 @@ Per consentire all'utente di scaricare non solo interi stati o regioni, ma anche
 
 ```mermaid
 flowchart TD
-    subgraph BaseDevice ["Sempre sul Dispositivo (~50 MB totali)"]
+    subgraph BaseDevice ["Sempre sul Dispositivo (~40 MB + Dorsale in Roadmap)"]
         OV["world_overview.mbtiles (Zoom 0-7)<br/>Mappa base mondiale: confini, mari, città, autostrade"]
-        BB["Dorsale Stradale Primaria (Valhalla Livello 0 & 1)<br/>Autostrade e Strade Statali per calcolo rotte e deviazioni a lungo raggio"]
+        BB["[Roadmap Fase 2] Dorsale Stradale Primaria (Valhalla Livello 0 & 1)<br/>Autostrade e Strade Statali per calcolo rotte e deviazioni a lungo raggio"]
     end
 
     subgraph Modes ["3 Modalità di Download Scelte dall'Utente"]
@@ -273,14 +273,14 @@ flowchart TD
     end
 
     subgraph Grid ["Griglia Universale Geo-Cells (0.5° x 0.5° ~ 50x50 km)"]
-        CELL["Cella es. N45_50_E010_50<br/>- tiles_base.mbtiles (Z8-14)<br/>- tiles_buildings / pedestrian (Z13-15)<br/>- routing_auto.tar + search.db"]
+        CELL["Cella es. N45_50_E010_50<br/>- tiles_base.mbtiles (Z8-14)<br/>- tiles_pedestrian.mbtiles (Z13-15)<br/>- tiles_buildings.mbtiles (Z13-15)<br/>- tiles_terrain_hd.mbtiles (Z9-14)"]
     end
 
     BaseDevice --> Modes
-    M1 -->|"Seleziona tutte le celle della regione"| Grid
-    M2 -->|"Interseca il poligono disegnato col dito"| Grid
+    M1 -->|"Seleziona tutte le celle della regione + routing/search regionali"| Grid
+    M2 -->|"Interseca il poligono disegnato col dito (layer grafici .mbtiles)"| Grid
     M3 -->|"Interseca il buffer ±15 km della rotta"| Grid
-    Grid -->|"Merge SQLite senza duplicati"| LocalDB["Database Locale Unificato sul Dispositivo"]
+    Grid -->|"Archivio locale celle + pacchetti regionali"| LocalDB["Storage Locale Unificato sul Dispositivo"]
 ```
 
 ### Le 3 Modalità di Selezione Utente
@@ -300,6 +300,7 @@ flowchart TD
      - **Destinazione e Tappe (raggio ±10 km)**: l'app scarica automaticamente anche i layer **Alta Risoluzione HD (`buildings_3d` + `pedestrian` Z13–15)** solo sulle celle di arrivo/sosta per la navigazione urbana 3D e pedonale *"Park & Walk"*.
 4. **Evidenziazione Visiva sulla Mappa**:
    - Facendo zoom-out sulla mappa base, l'app mostra un contorno semitrasparente sulle celle e sui corridoi attualmente installati in alta risoluzione, così l'utente distingue sempre a colpo d'occhio le aree ad alto dettaglio dalla mappa base.
+   - **Nota sullo stato attuale**: attualmente `GeoCellGridService` affetta in celle `0.5° × 0.5°` i 4 layer grafici `.mbtiles` (`tiles_base`, `tiles_pedestrian`, `tiles_buildings`, `tiles_terrain_hd`), mentre i pacchetti di routing (`_routing_auto.tar`, `_routing_pedestrian.tar`) e ricerca (`_search.db`) sono generati a livello di regione/nazione. L'estensione della dorsale globale Valhalla Livello 0/1 e del routing/ricerca per corridoio è pianificata per la Fase 2 (Documento 05).
 
 ---
 
@@ -433,7 +434,8 @@ Per garantire un funzionamento impeccabile nel mondo reale, la pipeline risolve 
    - Quando si compila una macro-area (es. `italy`) e si effettua lo split per sub-regioni (es. `lombardia`, `veneto`), i tasselli `z/x/y` che intersecano il confine vengono estratti già completi su entrambi i lati.
    - Lato dispositivo, i file `.mbtiles` dello stesso layer possono essere uniti in un database SQLite locale (`INSERT OR REPLACE INTO tiles`) o serviti tramite un `TileProvider` unificato senza mai creare vuoti bianchi ai confini.
 2. **Continuità Trans-Nazionale del Routing (es. Brennero: Italia ➔ Austria)**:
-   - Per mantenere gli stessi `GraphId` sugli archi stradali transfrontalieri, la build di produzione di Valhalla viene eseguita sull'estratto continentale (`europe-latest.osm.pbf`) e successivamente affettata per nazione/regione tramite poligoni `.poly`/GeoJSON dal servizio `ValhallaTileSplitterService`.
+   - Per mantenere gli stessi `GraphId` sugli archi stradali transfrontalieri, l'architettura target prevede la compilazione di Valhalla sull'estratto continentale (`europe-latest.osm.pbf`) con successivo slicing per nazione/regione tramite poligoni `.poly`/GeoJSON (`ValhallaTileSplitterService`).
+   - *Stato attuale*: il comando `build-world` in `NaRotta.MapBuilder` compila attualmente i grafi Valhalla per singola nazione/stato tramite `ValhallaRoutingService`; la build continentale unificata è pianificata per l'integrazione nativa Valhalla FFI (Documento 05).
 3. **Risoluzione Spaziale "Via ➔ Comune" (Point-in-Polygon) nel DB di Ricerca**:
    - Circa l'80% degli archi stradali (`highway=*`) in OpenStreetMap non possiede il tag `addr:city`.
    - Il costruttore C# di `search.db` esegue una pipeline a due passaggi con **NetTopologySuite (`STRtree`)**: nel primo passaggio indicizza in memoria i poligoni dei confini amministrativi comunali (`admin_level=8`) e i centri abitati; nel secondo passaggio assegna a ogni via e POI il comune di appartenenza tramite test *Point-in-Polygon* sul centroide e deduplica i segmenti contigui della stessa via.

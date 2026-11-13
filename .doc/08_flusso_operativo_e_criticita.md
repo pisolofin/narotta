@@ -48,10 +48,10 @@ flowchart TD
 ### Fase 1: Generazione & Distribuzione Dati (`map-builder` ➔ `map-api`)
 1. **Catalogazione & Download**: `NaRotta.MapBuilder.Cli` o la dashboard Web interrogano il catalogo Geofabrik, scaricano il file `.osm.pbf` e le altimetrie DEM `.hgt`.
 2. **Elaborazione Parallela**:
-   - Compilazione tile vettoriali base Z8-14, pedonale Z8-16, edifici 3D e curve DEM Z8-16 tramite Planetiler.
-   - Slicing automatico delle `.mbtiles` regionali nella griglia mondiale regolare a celle **`0.5° × 0.5°`** (`cell_{latIndex}_{lonIndex}`).
-   - Estrazione POI / strade in SQLite compatto con indici FTS5 e R-Tree (`*_search.sqlite`).
-   - Compilazione del grafo di navigazione Valhalla (`*_routing.tar`).
+   - Compilazione tile vettoriali base Z8–14, pedonale Z13–15, edifici 3D Z13–15 e curve DEM Z9–14 tramite Planetiler (renderizzati con overzoom vettoriale fino a Z16–20).
+   - Slicing automatico delle `.mbtiles` regionali nella griglia mondiale regolare a celle **`0.5° × 0.5°`** (`cells/<CELL_ID>/`, es. `N45_50_E010_50`).
+   - Estrazione POI / strade in SQLite compatto con indici FTS5 e R-Tree (`*_search.db`).
+   - Compilazione dei grafi di navigazione Valhalla (`*_routing_auto.tar`, `*_routing_pedestrian.tar`).
 3. **Manifest & API Server**: Generazione del file `manifest.json` e avvio del server `NaRotta.MapServer.Api`. Il server espone gli endpoint REST con supporto obbligatorio a **`HTTP 206 Partial Content` (`enableRangeProcessing: true`)**.
 
 ### Fase 2: Selezione & Richiesta Offline (`flutter`)
@@ -61,9 +61,9 @@ flowchart TD
    - **Ricerca Toponimi**: Ricerca offline istantanea di nazioni, regioni o città via `GeoCatalogService`. La selezione risolve le celle `0.5° × 0.5°` che compongono l'area.
    - **Selezione Interattiva**: Tocco su celle singole o disegno a mano libera con lo strumento "Cerchia" (lasso), convertito in lista celle tramite query spaziale.
 3. **Livelli di Dettaglio**:
-   - `Base`: Stradale completo, toponimi e routing veicolare (Z8-14).
-   - `Dettagliato`: Stradale + sentieri escursionistici, percorsi pedonali e piste ciclabili (Z8-16).
-   - `Completo`: Stradale + sentieri + edifici 3D volumetrici e curve altimetriche DEM (Z8-16).
+   - `Base`: Stradale completo, toponimi e routing veicolare (`tiles_base` Z8–14, overzoom fino a Z16–20).
+   - `Dettagliato`: Stradale + sentieri escursionistici, percorsi pedonali e piste ciclabili (`tiles_pedestrian` Z13–15).
+   - `Completo`: Stradale + sentieri + edifici 3D volumetrici (`tiles_buildings` Z13–15) e rilievi altimetrici DEM (`tiles_terrain_hd` Z9–14).
 
 ### Fase 3: Download Resumabile & Gestione Storage
 1. **Download a Blocchi**: `MapDownloadService._downloadBatchFilesAsync` scarica i singoli file `.mbtiles` salvandoli come `.part`.
@@ -80,7 +80,7 @@ flowchart TD
 | Componente | Criticità Identificata | Soluzione Applicata |
 | :--- | :--- | :--- |
 | **Flutter / IO** | Path illegale su Windows con caratteri `:` durante download da ricerca (`regions/${place.id}/...`). | Rimosso il percorso ridondante e non valido; il download opera esclusivamente sulle celle `0.5° × 0.5°` risolte. |
-| **Flutter / API** | Disallineamento URL per `world_overview.mbtiles` (`overview/...` vs radice). | Allineato il percorso a `world_overview.mbtiles` corrispondente all'albero file del Map Server. |
+| **Flutter / API** | Disallineamento URL per `world_overview.mbtiles` (`overview/...` vs radice). | Allineato il percorso a `overview/world_overview.mbtiles` su `MapDownloadService`, corrispondente a `MapBuilder` e `MapServer.Api`. |
 | **Flutter / UX** | UI bloccata in stato di download perenne dopo sequenza Pausa ➔ Riprendi. | Introdotto `_resumeSelectionActionAsync` con attesa del Future e reset coerente di `_isApplyingAction` e selezione. |
 | **Flutter / Download** | Riscaricamento da zero dei file già completati dopo ripresa del batch. | Controllo esistenza file `.mbtiles` non parziali (`lengthSync > 0`), avanzando l'avanzamento senza ri-download. |
 | **Flutter / Storage** | File orfani e temporanei `.part` lasciati su disco dopo cancellazioni o annullamenti. | Implementata pulizia ricorsiva `_deleteOrphanedCellFilesAsync` e rimozione `.part` su `cancelDownloadAsync`. |
@@ -95,9 +95,9 @@ flowchart TD
 1. **Integrazione MapLibre Native (Documento 05)**:
    - Sostituire il rendering procedurale simulato in `MapGridPainter` con la decodifica effettiva dei tile vettoriali `.mbtiles` estratti da SQLite tramite libreria nativa o parser MVT.
 2. **Integrazione Database di Ricerca Offline**:
-   - Connettere il motore di ricerca dell'app al file `*_search.sqlite` (FTS5 + R-Tree) generato dal Map Builder anziché limitarsi al catalogo statico in-memory.
+   - Connettere il motore di ricerca dell'app al file `*_search.db` (FTS5 + R-Tree) generato dal Map Builder anziché limitarsi al catalogo statico in-memory.
 3. **Integrazione Engine di Routing Offline Valhalla**:
-   - Caricare i pacchetti `*_routing.tar` ed eseguire il calcolo percorsi cross-cella / trans-regionale via FFI nativa su dispositivo.
+   - Caricare i pacchetti `*_routing_auto.tar` / `*_routing_pedestrian.tar` ed eseguire il calcolo percorsi cross-cella / trans-regionale via FFI nativa su dispositivo.
 4. **Download Guard Wi-Fi**:
    - Collegare il toggle `SettingsService.wifiOnlyDownload` al controllo dell'interfaccia di rete (`connectivity_plus`) prima di avviare o riprendere i download pesanti.
 

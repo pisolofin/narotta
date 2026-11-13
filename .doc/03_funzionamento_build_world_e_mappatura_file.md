@@ -60,7 +60,7 @@ MapBuilder prende quel singolo file `.osm.pbf` scaricato (che da solo non è nav
 #### Ramo 3: L'Affettatrice in Micro-Celle 50x50 km (`GeoCellGridService` in C#)
 - **Cosa fa**: Prende i file `.mbtiles` della regione e li **ritaglia a griglia** in riquadri da 0.5° × 0.5° di latitudine e longitudine (circa 55 km × 55 km).
 - **Cosa genera (Output C)**:
-  📁 `output/cells/<coord>/cell_<lat>_<lon>_<layer>.mbtiles`  
+  📁 `output/cells/<CELL_ID>/<CELL_ID>_tiles_<layer>.mbtiles` (es. `output/cells/N45_50_E010_50/N45_50_E010_50_tiles_base.mbtiles`)  
   *A cosa serve questo all'utente?*  
   Se l'utente sull'app NaRotta non vuole scaricare l'intera Francia da 15 GB, ma vuole fare un weekend solo a Parigi o cerchia col dito un'area sulla mappa, **l'app scarica solo le 2 o 3 celle da 50x50 km che ha cerchiato** (pochi megabyte anziché 15 GB)! La stessa cosa per un itinerario: scarica solo la striscia di celle lungo l'autostrada.
 
@@ -98,18 +98,20 @@ Questi file definiscono le regole di conversione dalle feature grezze OpenStreet
 
 ---
 
-### 1.2 Codice Sorgente CLI C# .NET 10 (`map-builder/src/NaRotta.MapBuilder.Cli/`)
+### 1.2 Codice Sorgente C# .NET 10 (`NaRotta.MapBuilder.Core` & `NaRotta.MapBuilder.Cli`)
 
-#### Root del Progetto
-- **`NaRotta.MapBuilder.Cli.csproj`**: File di progetto per .NET 10 SDK (`net10.0`). Include le librerie ad alte prestazioni `OsmSharp` (parser stream PBF), `NetTopologySuite` (motore geometrico OGC e alberi spaziali), `Microsoft.Data.Sqlite` (motore SQLite per FTS5, R-Tree e MBTiles).
-- **`Program.cs`**: Punto di ingresso (`Main`) e orchestratore dell'intera applicazione.
+La logica condivisa (modelli, servizi, runner e orchestratore) risiede in `map-builder/src/NaRotta.MapBuilder.Core/`, referenziata sia da `NaRotta.MapBuilder.Cli/` sia da `NaRotta.MapBuilder.Web/` sia da `NaRotta.MapServer.Api/`.
+
+#### Root del Progetto CLI (`map-builder/src/NaRotta.MapBuilder.Cli/`)
+- **`NaRotta.MapBuilder.Cli.csproj`**: File di progetto per .NET 10 SDK (`net10.0`). Referenzia `NaRotta.MapBuilder.Core.csproj` (che include `OsmSharp`, `NetTopologySuite` e `Microsoft.Data.Sqlite`).
+- **`Program.cs`**: Punto di ingresso (`Main`) e orchestratore CLI.
   - Inizializza il logger con timestamp su `Console.Out` e `Console.Error`.
   - Configura la gestione dell'annullamento pulito da tastiera (`Console.CancelKeyPress` / Ctrl+C).
-  - Istanzia tutti i servizi applicativi tramite dependency injection manuale.
+  - Istanzia tutti i servizi applicativi di `NaRotta.MapBuilder.Core` tramite dependency injection manuale.
   - Smista i comandi CLI (`doctor`, `list`, `download`, `build-search`, `build-tiles`, `build-routing`, `build-overview`, `build-assets`, `build`, `batch-build`, `build-world`).
-  - Nel comando `build-world`, costruisce la coda mondiale di 261 regioni atomiche escludendo i container monolitici ridondanti.
+  - Nel comando `build-world`, costruisce la coda mondiale di regioni atomiche escludendo i container monolitici ridondanti.
 
-#### Modulo di Logging (`Logging/`)
+#### Modulo di Logging (`NaRotta.MapBuilder.Core/Logging/`)
 - **`TimestampedTextWriter.cs`**: Decoratore thread-safe derivato da `TextWriter`. Intercetta tutto l'output generato dall'applicazione C# e dai processi figli (Planetiler, Valhalla), anteponendo a ogni riga non vuota il timestamp locale preciso al secondo: `[yyyy-MM-dd HH:mm:ss]`.
 
 #### Modelli Dati (`Models/`)
@@ -148,7 +150,7 @@ Questi file definiscono le regole di conversione dalle feature grezze OpenStreet
 ---
 
 ### 1.3 Suite di Test Unitari (`map-builder/tests/NaRotta.MapBuilder.Tests/`)
-La suite contiene 40 test unitari eseguiti con xUnit su .NET 10:
+La suite contiene 66 test unitari e di integrazione eseguiti con xUnit su .NET 10 (`dotnet test map-builder/NaRotta.MapBuilder.sln`):
 
 - **`BuildOptionsModelTests.cs`**: Verifica il corretto parsing di tutti i flag da riga di comando.
 - **`CrossPlatformProcessRunnerTests.cs`**: Verifica la conversione dei percorsi tra Windows e WSL2/Linux.
@@ -198,7 +200,7 @@ Il comando `build-world` è il **motore di generazione globale automatizzato** d
 Affinché un utente in qualsiasi parte del mondo possa aprire l'app NaRotta e decidere liberamente cosa scaricare:
 1. **Un intero stato o regione** (es. *Toscana*, *Baviera*, *California*);
 2. **Un'area libera cerchiata con il dito sullo schermo** (selezione a lazo per non sprecare memoria e scaricare solo pochi megabyte);
-3. **Il corridoio stretto attorno a un itinerario stradale** (es. solo 1 km a destra e a sinistra dell'autostrada da Milano a Parigi);
+3. **Il corridoio stretto attorno a un itinerario stradale** (fascia `±15 km` a destra e sinistra della rotta, più raggio `±10 km` HD sulle destinazioni);
 4. **La navigazione globale a basso zoom** (vedere tutto il pianeta da lontano senza buchi neri);
 5. **La ricerca indirizzi e POI 100% offline** e il **calcolo del percorso senza internet**;
 
@@ -350,7 +352,7 @@ Il file `.osm.pbf` viene scansionato direttamente in C# senza passare per databa
    - Crea un database SQLite temporaneo con `PRAGMA synchronous = OFF` e `PRAGMA journal_mode = MEMORY`.
    - Popola le tabelle relazionali `places`, `streets`, `pois`.
    - Popola l'indice full-text **FTS5** (`search_fts`) con supporto per tokenizzazione e prefissi parziali.
-   - Popola l'indice spaziale **R-Tree** (`streets_rtree`, `pois_rtree`) per ricerche geografiche nel raggio visibile.
+   - Popola l'indice spaziale **R-Tree** (`poi_rtree`) per ricerche geografiche di prossimità nel raggio visibile.
 4. **Rilascio Immediato della Memoria**:
    - `nodeCoordinateDictionary.Clear();`
    - `nodeCoordinateDictionary.TrimExcess();`
@@ -373,14 +375,15 @@ Planetiler (eseguito su JVM 21) legge il file `.osm.pbf` e compila i layer secon
 Per permettere all'utente mobile di selezionare col dito un'area (selezione a lazo) o di scaricare la mappa dettagliata solo lungo una rotta:
 1. Il servizio apre il file `.mbtiles` appena compilato.
 2. Identifica tutte le celle geografiche da mezzo grado per mezzo grado (circa 55 km × 55 km all'equatore) che cadono all'interno della regione.
-3. Estrae i tasselli vettoriali corrispondenti e scrive il micro-archivio `.mbtiles` nella cartella `output/cells/<lat_lon>/`.
+3. Estrae i tasselli vettoriali corrispondenti e scrive il micro-archivio `.mbtiles` nella cartella `output/cells/<CELL_ID>/` (es. `output/cells/N45_50_E010_50/`), eseguendo un merge incrementale (`IF NOT EXISTS` + `INSERT OR REPLACE`) per eventuali celle condivise ai confini tra nazioni.
 
 ---
 
 ### Passo 6: Grafo di Routing Multimodale con Valhalla (`ValhallaRoutingService`)
-1. Viene compilato il grafo gerarchico multimodale Valhalla a due livelli:
-   - **Livello 0 / Arteriale**: Autostrade e grandi strade a scorrimento per il calcolo di rotte a lunghissimo raggio.
-   - **Livello 1 / Locale**: Rete capillare urbana, sensi unici, svolte vietate e percorsi pedonali.
+1. Viene compilato il grafo gerarchico multimodale Valhalla a tre livelli:
+   - **Livello 0 (`4.0° × 4.0°`) — Arteriale**: Autostrade e grandi strade a scorrimento per il calcolo di rotte a lunghissimo raggio.
+   - **Livello 1 (`1.0° × 1.0°`) — Primario**: Strade statali, regionali e provinciali principali.
+   - **Livello 2 (`0.25° × 0.25°`) — Locale**: Rete capillare urbana, sensi unici, svolte vietate e percorsi pedonali.
 2. Vengono integrate le pendenze calcolate dalle tessere altimetriche DEM.
 3. Il grafo viene impacchettato nei due archivi compressi:
    - `<slug>_routing_auto.tar`
@@ -403,7 +406,7 @@ Per evitare qualsiasi accumulo di dati su disco:
 
 ---
 
-## 4. Guida di Riferimento Dettagliata per Ciascun File di Output
+## 3. Guida di Riferimento Dettagliata per Ciascun File di Output
 
 Questa sezione spiega in dettaglio l'esatto scopo, formato, contenuto e momento di utilizzo di ogni singolo file generato all'interno della cartella `output/`.
 

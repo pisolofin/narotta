@@ -47,17 +47,17 @@ Tutti i colori utilizzati nel rendering cartografico sono centralizzati in [`flu
 
 | Elemento Mappa | Metodo `AppColors` | Tema Chiaro (Light) | Tema Scuro (Dark) | Scopo Visivo |
 | :--- | :--- | :--- | :--- | :--- |
-| **Sfondo Reticolo / Vuoto** | `mapVoid(context)` | `#E2E8F0` (Slate 200) | `#020617` (Slate 950) | Spazio esterno alle terre o privo di mappa |
-| **Massa Continentale** | `mapContinent(context)` | `#CBD5E1` (Slate 300) | `#0F172A` (Slate 900) | Terre emerse della mappa base mondiale |
-| **Bordo Costiero / Confini** | `mapContinentBorder(context)` | `#94A3B8` (Slate 400) | `#334155` (Slate 700) | Linea di costa e confini nazionali |
+| **Sfondo Reticolo / Vuoto** | `mapVoid(context)` | `#F1F5F9` (Slate 100) | `#0F172A` (Slate 900) | Spazio esterno alle terre o privo di mappa |
+| **Massa Continentale** | `mapContinent(context)` | `#E2E8F0` (Slate 200) | `#1E293B` (Slate 800) | Terre emerse della mappa base mondiale |
+| **Bordo Costiero / Confini** | `mapContinentBorder(context)` | `#CBD5E1` (Slate 300) | `#334155` (Slate 700) | Linea di costa e confini nazionali |
 | **Dorsali Autostradali** | `mapHighway(context)` | `0xB3D97706` (Ambra calda) | `0x99F59E0B` (Oro brillante) | Spina dorsale arterie principali |
 | **Marker Città** | `mapCityMarker(context)` | `#2563EB` (Royal Blue) | `#38BDF8` (Sky Blue) | Punti di riferimento urbani |
 | **Etichette Toponomastica** | `mapCityLabel(context)` | `#0F172A` (Slate scuro) | `#F1F5F9` (Slate chiaro) | Nomi città con drop shadow anti-contrasto |
-| **Coordinate Principali** | `mapGridMajor(context)` | `0x3364748B` | `0x33475569` | Linee guida griglia principale |
-| **Coordinate Secondarie** | `mapGridMinor(context)` | `0x1A94A3B8` | `0x1A334155` | Suddivisione fine 0.5° gradi |
-| **Livello Base** | `detailBase(context)` | `#059669` (Smeraldo) | `#10B981` (Smeraldo chiaro) | Confini e viabilità primaria |
-| **Livello Dettagliato** | `detailDetailed(context)` | `#2563EB` (Blu) | `#3B82F6` (Blu elettrico) | Strade secondarie, curve, POI base |
-| **Livello Completo** | `detailComplete(context)` | `#7C3AED` (Viola) | `#8B5CF6` (Viola chiaro) | Dettaglio pedonale, 3D, grafi Valhalla |
+| **Coordinate Principali** | `mapGridMajor(context)` | `0x330284C7` | `0x3338BDF8` | Linee guida griglia principale |
+| **Coordinate Secondarie** | `mapGridMinor(context)` | `0x1994A3B8` | `0x1A64748B` | Suddivisione fine 0.5° gradi |
+| **Livello Base** | `detailBase(context)` | `#2563EB` (Blu) | `#3B82F6` (Blu elettrico) | Rete stradale e navigazione (`tiles_base`) |
+| **Livello Dettagliato** | `detailDetailed(context)` | `#D97706` (Ambra) | `#F59E0B` (Ambra chiara) | Stradale + sentieri e percorsi pedonali (`tiles_pedestrian`) |
+| **Livello Completo** | `detailComplete(context)` | `#059669` (Smeraldo) | `#10B981` (Smeraldo chiaro) | Stradale + sentieri + edifici 3D (`tiles_buildings`) + rilievi HD (`tiles_terrain_hd`) |
 
 ---
 

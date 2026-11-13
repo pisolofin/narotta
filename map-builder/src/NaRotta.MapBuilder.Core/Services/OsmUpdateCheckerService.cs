@@ -49,9 +49,10 @@ namespace NaRotta.MapBuilder.Core.Services {
                     using var jsonDocument = JsonDocument.Parse(manifestJson);
                     JsonElement rootElement = jsonDocument.RootElement;
 
+                    DateTime? manifestGeneratedUtc = null;
                     if (rootElement.TryGetProperty("generated_at", out JsonElement genElement)) {
                         if (DateTime.TryParse(genElement.GetString(), out DateTime parsedGen)) {
-                            localLastBuiltUtc = parsedGen;
+                            manifestGeneratedUtc = parsedGen;
                         }
                     }
 
@@ -60,6 +61,7 @@ namespace NaRotta.MapBuilder.Core.Services {
                             string? regionId = regionElement.TryGetProperty("id", out JsonElement idElement) ? idElement.GetString() : null;
                             if (string.Equals(regionId, region.Id, StringComparison.OrdinalIgnoreCase) ||
                                 string.Equals(regionId, region.GetFileSlug(), StringComparison.OrdinalIgnoreCase)) {
+                                localLastBuiltUtc = manifestGeneratedUtc;
                                 
                                 if (regionElement.TryGetProperty("search", out JsonElement searchElement)) {
                                     if (searchElement.TryGetProperty("size_bytes", out JsonElement searchSize)) {

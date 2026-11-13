@@ -517,7 +517,7 @@ class MapDownloadService extends ChangeNotifier {
     final File partFile     = File('${mapsDir.path}/world_overview.mbtiles.part');
     final bool success      = await _runStreamingProgressAsync(
       taskId             : worldOverviewId,
-      relativePath       : skipServerCheck ? null : 'world_overview.mbtiles',
+      relativePath       : skipServerCheck ? null : 'overview/world_overview.mbtiles',
       destinationPartFile: partFile,
     );
     if (success) {

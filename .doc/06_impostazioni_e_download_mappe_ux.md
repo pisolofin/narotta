@@ -103,9 +103,9 @@ L'area **Selezione** occupa lo spazio principale della schermata (con possibilit
 
 1. **Zone già scaricate colorate con Legenda**:
    - Ogni cella già presente sul dispositivo viene renderizzata sulla mappa mondiale con il colore corrispondente al livello installato, affiancata da una legenda sempre visibile:
-     - **Base** (Blu): Rete stradale e navigazione (`Z8-14`).
-     - **Dettagliato** (Ambra): Stradale + sentieri, percorsi pedonali e piste ciclabili (`Z8-16`).
-     - **Completo** (Verde): Stradale + sentieri + edifici 3D e rilievi altimetrici HD (`Z8-16`).
+     - **Base** (Blu): Rete stradale e navigazione (`tiles_base` Z8–14, con overzoom vettoriale fino a Z16–20).
+     - **Dettagliato** (Ambra): Stradale + sentieri, percorsi pedonali e piste ciclabili (`tiles_base` Z8–14 + `tiles_pedestrian` Z13–15).
+     - **Completo** (Verde): Stradale + sentieri + edifici 3D (`tiles_buildings` Z13–15) e rilievi altimetrici HD (`tiles_terrain_hd` Z9–14).
 
 2. **Selettore della modalità di download (tutti i livelli + rimuovi)**:
    - Selettore rapido a 4 stati sempre accessibile:
