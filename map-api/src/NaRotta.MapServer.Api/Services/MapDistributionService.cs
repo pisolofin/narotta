@@ -19,6 +19,7 @@ namespace NaRotta.MapServer.Services {
         private readonly GeoCellGridService _geoCellGridService;
         private readonly ILogger<MapDistributionService> _logger;
         private ManifestRootModel? _cachedManifest;
+        private Dictionary<string, ManifestCellModel> _cachedCellDictionary = new Dictionary<string, ManifestCellModel>(StringComparer.OrdinalIgnoreCase);
         private DateTime _lastManifestReadTime = DateTime.MinValue;
         private readonly object _manifestLock = new object();
 
@@ -36,9 +37,17 @@ namespace NaRotta.MapServer.Services {
         /// Retrieves the current map manifest catalog, reading it from disk or generating a fallback manifest if absent.
         /// </summary>
         public async Task<ManifestRootModel> GetManifestAsync(CancellationToken cancellationToken = default) {
+            (ManifestRootModel manifest, Dictionary<string, ManifestCellModel> _) = await this.GetManifestSnapshotAsync(cancellationToken);
+            return manifest;
+        }
+
+        /// <summary>
+        /// Retrieves the cached manifest along with a pre-indexed cell lookup dictionary.
+        /// </summary>
+        private async Task<(ManifestRootModel Manifest, Dictionary<string, ManifestCellModel> CellDictionary)> GetManifestSnapshotAsync(CancellationToken cancellationToken) {
             lock (_manifestLock) {
                 if ((_cachedManifest != null) && ((DateTime.UtcNow - _lastManifestReadTime).TotalSeconds < 30.0)) {
-                    return _cachedManifest;
+                    return (_cachedManifest, _cachedCellDictionary);
                 }
             }
 
@@ -54,11 +63,13 @@ namespace NaRotta.MapServer.Services {
                     );
 
                     if (parsedManifest != null) {
+                        Dictionary<string, ManifestCellModel> parsedCellDictionary = BuildCellDictionary(parsedManifest);
                         lock (_manifestLock) {
                             _cachedManifest = parsedManifest;
+                            _cachedCellDictionary = parsedCellDictionary;
                             _lastManifestReadTime = DateTime.UtcNow;
                         }
-                        return parsedManifest;
+                        return (parsedManifest, parsedCellDictionary);
                     }
                 }catch (Exception exception) {
                     _logger.LogWarning(exception, "Failed to read existing manifest from {Path}. Using default manifest.", manifestPath);
@@ -66,11 +77,23 @@ namespace NaRotta.MapServer.Services {
             }
 
             ManifestRootModel fallbackManifest = this.CreateFallbackManifest();
+            Dictionary<string, ManifestCellModel> fallbackCellDictionary = BuildCellDictionary(fallbackManifest);
             lock (_manifestLock) {
                 _cachedManifest = fallbackManifest;
+                _cachedCellDictionary = fallbackCellDictionary;
                 _lastManifestReadTime = DateTime.UtcNow;
             }
-            return fallbackManifest;
+            return (fallbackManifest, fallbackCellDictionary);
+        }
+
+        private static Dictionary<string, ManifestCellModel> BuildCellDictionary(ManifestRootModel manifest) {
+            var dictionary = new Dictionary<string, ManifestCellModel>(StringComparer.OrdinalIgnoreCase);
+            foreach (ManifestCellModel cell in manifest.CellList) {
+                if (!string.IsNullOrWhiteSpace(cell.CellId)) {
+                    dictionary[cell.CellId] = cell;
+                }
+            }
+            return dictionary;
         }
 
         /// <summary>
@@ -140,8 +163,8 @@ namespace NaRotta.MapServer.Services {
                 return null;
             }
 
-            ManifestRootModel manifest = await this.GetManifestAsync(cancellationToken);
-            return this.MapCellToDetailModel(cell, manifest, null);
+            (ManifestRootModel _, Dictionary<string, ManifestCellModel> cellDictionary) = await this.GetManifestSnapshotAsync(cancellationToken);
+            return this.MapCellToDetailModel(cell, cellDictionary, null);
         }
 
         /// <summary>
@@ -160,7 +183,7 @@ namespace NaRotta.MapServer.Services {
             }
 
             string sanitizedRelative = relativePath.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
-            string baseDirectory = Path.GetFullPath(_settings.StorageDirectory);
+            string baseDirectory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(_settings.StorageDirectory)) + Path.DirectorySeparatorChar;
             string candidateFullPath = Path.GetFullPath(Path.Combine(baseDirectory, sanitizedRelative.TrimStart(Path.DirectorySeparatorChar)));
 
             if (!candidateFullPath.StartsWith(baseDirectory, StringComparison.OrdinalIgnoreCase)) {
@@ -197,13 +220,13 @@ namespace NaRotta.MapServer.Services {
             List<string>? requestedLayerList,
             CancellationToken cancellationToken
         ) {
-            ManifestRootModel manifest = await this.GetManifestAsync(cancellationToken);
+            (ManifestRootModel _, Dictionary<string, ManifestCellModel> cellDictionary) = await this.GetManifestSnapshotAsync(cancellationToken);
             var response = new QueryPolygonResponseModel();
             var detailList = new List<GeoCellDetailModel>();
             long totalBytes = 0;
 
             foreach (GeoCellCoordinateModel coordinate in cellCoordinateList) {
-                GeoCellDetailModel detail = this.MapCellToDetailModel(coordinate, manifest, requestedLayerList);
+                GeoCellDetailModel detail = this.MapCellToDetailModel(coordinate, cellDictionary, requestedLayerList);
                 totalBytes += detail.SizeBytes;
                 detailList.Add(detail);
             }
@@ -220,7 +243,7 @@ namespace NaRotta.MapServer.Services {
         /// </summary>
         private GeoCellDetailModel MapCellToDetailModel(
             GeoCellCoordinateModel cell,
-            ManifestRootModel manifest,
+            Dictionary<string, ManifestCellModel> cellDictionary,
             List<string>? requestedLayerList
         ) {
             var detail = new GeoCellDetailModel {
@@ -228,13 +251,7 @@ namespace NaRotta.MapServer.Services {
                 BoundingBoxList = cell.GetBoundingBoxList()
             };
 
-            ManifestCellModel? manifestCell = null;
-            foreach (ManifestCellModel existingCell in manifest.CellList) {
-                if (string.Equals(existingCell.CellId, cell.CellId, StringComparison.OrdinalIgnoreCase)) {
-                    manifestCell = existingCell;
-                    break;
-                }
-            }
+            cellDictionary.TryGetValue(cell.CellId, out ManifestCellModel? manifestCell);
 
             string baseUrl = _settings.PublicBaseUrl.TrimEnd('/') + "/api/v1/download";
             var availableLayerList = new List<string>();

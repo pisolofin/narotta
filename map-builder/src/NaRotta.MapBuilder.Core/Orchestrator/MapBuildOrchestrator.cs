@@ -37,6 +37,7 @@ namespace NaRotta.MapBuilder.Core.Orchestrator {
         private Task? _activeBuildTask;
         private string _lastMonitoredRegion = string.Empty;
         private int _lastMonitoredCompletedCount = -1;
+        private DateTime _lastExternalCliCheckUtc = DateTime.MinValue;
 
         public BuildLogBuffer LogBuffer => _logBuffer;
         public string DefaultWorkspaceDirectory { get; set; } = string.Empty;
@@ -111,6 +112,7 @@ namespace NaRotta.MapBuilder.Core.Orchestrator {
                     return Task.FromResult(false);
                 }
 
+                bool hasActiveInternalTask = (_activeBuildTask != null) && (!_activeBuildTask.IsCompleted);
                 _currentProgress.Status = BuildJobStatus.Cancelling;
                 _currentProgress.CurrentStageDescription = "Stopping pipeline, waiting for active processes to terminate...";
                 _logBuffer.AppendLog("Cancellation requested by user. Aborting active build...", "WARN", _currentProgress.ActiveRegionId);
@@ -131,16 +133,24 @@ namespace NaRotta.MapBuilder.Core.Orchestrator {
                     _logBuffer.AppendLog("Failed to stop external CLI process: " + exception.Message, "ERROR");
                 }
 
-                _currentProgress.Status = BuildJobStatus.Cancelled;
-                _currentProgress.CurrentStage = BuildStage.None;
-                _currentProgress.CurrentStageDescription = "Build stopped by user";
-                _currentProgress.FinishedAtUtc = DateTime.UtcNow;
+                // If an internal task is still unwinding, ExecuteBuildJobAsync will transition status to Cancelled on completion.
+                if (!hasActiveInternalTask) {
+                    _currentProgress.Status = BuildJobStatus.Cancelled;
+                    _currentProgress.CurrentStage = BuildStage.None;
+                    _currentProgress.CurrentStageDescription = "Build stopped by user";
+                    _currentProgress.FinishedAtUtc = DateTime.UtcNow;
+                }
 
                 return Task.FromResult(true);
             }
         }
 
         private void RefreshExternalCliProcessStatus() {
+            if ((DateTime.UtcNow - _lastExternalCliCheckUtc).TotalSeconds < 5.0) {
+                return;
+            }
+            _lastExternalCliCheckUtc = DateTime.UtcNow;
+
             Process[] processList = Process.GetProcessesByName("narotta-map");
             Process? externalProcess = null;
             int currentPid = Environment.ProcessId;
